@@ -1,0 +1,359 @@
+:root {
+    /* Variables para colores */
+    --color-fondo-primario: #121212;
+    --color-fondo-secundario: #292929;
+    --color-texto-primario: white;
+    --color-texto-secundario: #adadad;
+    --color-resaltado: #007bff;
+    --color-borde: #ddd;
+    --color-fondo-tarjeta: #f9f9f9;
+    --color-fondo-tarjeta-oscuro: #6e6363;
+    --color-boton: #007bff;
+    --color-boton-hover: #0056b3;
+    --color-fondo-footer: #292929;
+    --color-borde-hr: #968d52;
+    --padding-por-defecto: 20px;
+    --light-bg: #ffffff;
+    --light-text: #212529;
+    --dark-bg: #212529;
+    --dark-text: #ffffff;
+}
+/*Quita el estilo outline del input de búsqueda(no queda del todo bien con outline)*/
+#inputSearch{
+    outline: none;
+    box-shadow: none;
+}
+/*Hover del botón del tema claro/oscuro*/
+#darkModeToggle:hover{
+    background-color: var(--color-texto-primario);
+    color: var(--color-fondo-primario);
+}
+/* Ajusta el botón de búsqueda */
+#button-search {
+    background-color: purple;
+    border: none;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estilo para los elementos del menú de navegación */
+.nav-item {
+    padding: 5px;
+}
+
+/* Colores para diferentes logos */
+#info-logo {
+    color: rgb(51, 88, 190);
+}
+
+#gamification-logo {
+    color: rgb(189, 192, 25);
+}
+
+#teacher-logo {
+    color: rgb(95, 20, 186);
+}
+
+#student-logo {
+    color: rgb(195, 23, 189);
+}
+
+/* Estilo para títulos en modo oscuro */
+.dark-mode .feature-holder > h3 {
+    color: var(--color-texto-primario);
+}
+
+/* Estilo general para el body en modo oscuro */
+body.dark-mode {
+    background-color: var(--color-fondo-primario);
+    color: var(--color-texto-primario);
+}
+
+/* Estilo para el aside en modo oscuro */
+.dark-mode #asideContent,
+.dark-mode #aside .card {
+    background-color: var(--color-fondo-tarjeta-oscuro);
+    color: var(--color-texto-primario);
+}
+
+/* Estilo para imágenes en el aside */
+.dark-mode #aside figure {
+    background-color: #444;
+}
+
+/* Estilo general para el aside */
+#aside {
+    background-color: var(--color-fondo-tarjeta);
+    color: #333;
+    background-color: #c9c1c1;
+}
+
+/* Estilo de las tarjetas */
+.card {
+    background-color: var(--color-fondo-tarjeta);
+    border: 1px solid var(--color-borde);
+    border-radius: 10px;
+}
+
+/* Fondos para figuras específicas */
+#figure1, #figure2 {
+    background-color: rgb(171, 163, 163);
+}
+
+/* Colores y estilos para el encabezado */
+header {
+    padding-top: 150px;
+    padding-bottom: 100px;
+    background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.6)), url("../../images/tortugaNinja.gif");
+    background-repeat: no-repeat;
+    color: var(--color-texto-primario);
+    background-size: 100% 100%;
+    background-position: center;
+    width: 100%;
+}
+
+/* Secciones y botones */
+.feature-holder {
+    margin-bottom: 20px;
+    text-align: center;
+    margin-bottom: 25px;
+    border: 1px solid var(--color-borde);
+    padding: var(--padding-por-defecto);
+    border-radius: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    word-wrap: break-word;
+}
+
+/* Títulos dentro de las tarjetas */
+.feature-holder h3,
+.card h3 {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #333;
+}
+
+/* Línea de separación en las tarjetas */
+hr {
+    border: 1px solid var(--color-borde-hr);
+    margin: 10px 0;
+}
+
+/* Imágenes dentro de las tarjetas */
+.card figure img {
+    width: 80%;
+    max-width: 150px;
+    margin: 0 auto;
+    display: block;
+    padding: 5px;
+    border-radius: 50%;
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Transición de la figura */
+.card figure {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Efecto al hacer hover sobre la figura */
+.card figure:hover {
+    transform: scale(1.1);
+}
+
+/* Efecto al hacer hover sobre la imagen */
+.card figure img:hover {
+    transform: scale(1.2);
+    cursor: pointer;
+}
+
+/* Efecto al hacer hover sobre el contenedor de características */
+.feature-holder:hover {
+    transform: translateY(-10px);
+    cursor: pointer;
+}
+
+/* Estilo para la leyenda del carrusel */
+.carousel-caption {
+    background-color: rgba(0, 0, 0, 0.5);
+    border-radius: 20px;
+}
+
+/* Estilo para los controles del carrusel */
+.carousel-control-prev-icon, .carousel-control-next-icon {
+    background-color: rgba(0, 0, 0, 0.35);
+    padding: 20px;
+    border-radius: 50%;
+}
+
+/* Estilos del pie de página principal */
+footer.main-footer {
+    background-color: var(--color-fondo-footer);
+    color: var(--color-texto-primario);
+    padding-top: 35px;
+    padding-bottom: 35px;
+}
+
+/* Estilos de los enlaces del pie de página */
+aside.footer-widget ul li a {
+    text-decoration: none;
+    font-size: 14px;
+    color: var(--color-texto-secundario);
+    display: inline-block;
+    margin-bottom: 5px;
+}
+
+/* Estilo general para la sección de mejoras */
+#mejoras {
+    background-color: var(--color-fondo-tarjeta);
+}
+
+/* Estilo de mejoras en modo oscuro */
+.dark-mode #mejoras {
+    background-color: var(--color-fondo-tarjeta-oscuro);
+}
+
+/* Estilo para acordeones en modo oscuro */
+.dark-mode .accordion-item, 
+.dark-mode .accordion-header,
+.dark-mode .accordion-button, 
+.dark-mode .accordion-body {
+    background-color: var(--color-fondo-primario);
+    color: var(--color-texto-primario);
+}
+
+/* Estilo de los enlaces al pasar el ratón */
+.footer-widget > ul > li > a:hover {
+    color: var(--color-texto-primario);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes bounceIn {
+    0% {
+      transform: scale(0);
+      opacity: 0;
+    }
+    60% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+    80% {
+      transform: scale(0.9);
+    }
+    100% {
+      transform: scale(1);
+    }
+}
+
+/* Animación de entrada con rebote */
+.bounce-in {
+    animation: bounceIn 1.5s ease-out;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.1);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* Animación de aparición */
+.fade-in {
+    animation: fadeIn 0.75s ease-in-out;
+}
+
+/* Animación de pulso */
+.pulse {
+    animation: pulse 1s;
+}
+
+/* Media Queries para adaptabilidad */
+@media (min-width: 576px) {
+    .feature-holder {
+        min-height: 265px;
+    }
+}
+
+@media (min-width: 768px) {
+    .feature-holder {
+        min-height: 320px;
+    }
+    #lastFeature {
+        min-height: 180px;
+    }
+}
+
+@media (min-width: 1200px) {
+    .feature-holder {
+        min-height: 350px;
+    }
+    #lastFeature {
+        min-height: 350px;
+    }
+}
+
+@media (min-width: 1400px) {
+    .feature-holder {
+        min-height: 300px;
+    }
+    #lastFeature {
+        min-height: 300px;
+    }
+}
+
+.dark-mode {
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
+  }
+  
+  .dark-mode .navbar {
+    background-color: #000 !important;
+  }
+  
+  .dark-mode .card {
+    background-color: #2c3034;
+    color: var(--dark-text);
+  }
+  
+  .dark-mode .accordion-item {
+    background-color: #2c3034;
+    color: var(--dark-text);
+  }
+  
+  .dark-mode .accordion-button {
+    background-color: #2c3034;
+    color: var(--dark-text);
+  }
+  
+  .dark-mode .accordion-button:not(.collapsed) {
+    background-color: #212529;
+    color: var(--dark-text);
+  }
+  
+  .dark-mode .dropdown-menu {
+    background-color: #2c3034;
+    color: var(--dark-text);
+  }
+  
+  .dark-mode .dropdown-item {
+    color: var(--dark-text);
+  }
+  
+  .dark-mode .dropdown-item:hover {
+    background-color: #212529;
+  }

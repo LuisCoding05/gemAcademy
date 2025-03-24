@@ -1,0 +1,193 @@
+<?php
+
+namespace App\Entity;
+
+use App\Repository\UsuarioCursoRepository;
+use Doctrine\DBAL\Types\Types;
+use Doctrine\ORM\Mapping as ORM;
+
+#[ORM\Entity(repositoryClass: UsuarioCursoRepository::class)]
+class UsuarioCurso
+{
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+    private ?int $id = null;
+
+    #[ORM\ManyToOne(inversedBy: 'usuarioCursos')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Usuario $idUsuario = null;
+
+    #[ORM\ManyToOne(inversedBy: 'usuarioCursos')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Curso $idCurso = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $fechaInscripcion = null;
+
+    #[ORM\Column]
+    private ?int $materialesCompletados = null;
+
+    #[ORM\Column]
+    private ?int $materialesTotales = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private ?int $tareasCompletadas = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private ?int $tareasTotales = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private ?int $quizzesCompletados = null;
+
+    #[ORM\Column(options: ['default' => 0])]
+    private ?int $quizzesTotales = null;
+
+    #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2, options: ['default' => 0])]
+    private ?string $porcentajeCompletado = null;
+
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $ultimaActualizacion = null;
+
+    public function __construct()
+    {
+        $this->fechaInscripcion = new \DateTime();
+    }
+
+    public function getId(): ?int
+    {
+        return $this->id;
+    }
+
+    public function getIdUsuario(): ?Usuario
+    {
+        return $this->idUsuario;
+    }
+
+    public function setIdUsuario(?Usuario $idUsuario): static
+    {
+        $this->idUsuario = $idUsuario;
+
+        return $this;
+    }
+
+    public function getIdCurso(): ?Curso
+    {
+        return $this->idCurso;
+    }
+
+    public function setIdCurso(?Curso $idCurso): static
+    {
+        $this->idCurso = $idCurso;
+
+        return $this;
+    }
+
+    public function getFechaInscripcion(): ?\DateTimeInterface
+    {
+        return $this->fechaInscripcion;
+    }
+
+    public function setFechaInscripcion(\DateTimeInterface $fechaInscripcion): static
+    {
+        $this->fechaInscripcion = $fechaInscripcion;
+
+        return $this;
+    }
+
+    public function getMaterialesCompletados(): ?int
+    {
+        return $this->materialesCompletados;
+    }
+
+    public function setMaterialesCompletados(int $materialesCompletados): static
+    {
+        $this->materialesCompletados = $materialesCompletados;
+
+        return $this;
+    }
+
+    public function getMaterialesTotales(): ?int
+    {
+        return $this->materialesTotales;
+    }
+
+    public function setMaterialesTotales(int $materialesTotales): static
+    {
+        $this->materialesTotales = $materialesTotales;
+
+        return $this;
+    }
+
+    public function getTareasCompletadas(): ?int
+    {
+        return $this->tareasCompletadas;
+    }
+
+    public function setTareasCompletadas(int $tareasCompletadas): static
+    {
+        $this->tareasCompletadas = $tareasCompletadas;
+
+        return $this;
+    }
+
+    public function getTareasTotales(): ?int
+    {
+        return $this->tareasTotales;
+    }
+
+    public function setTareasTotales(int $tareasTotales): static
+    {
+        $this->tareasTotales = $tareasTotales;
+
+        return $this;
+    }
+
+    public function getQuizzesCompletados(): ?int
+    {
+        return $this->quizzesCompletados;
+    }
+
+    public function setQuizzesCompletados(int $quizzesCompletados): static
+    {
+        $this->quizzesCompletados = $quizzesCompletados;
+
+        return $this;
+    }
+
+    public function getQuizzesTotales(): ?int
+    {
+        return $this->quizzesTotales;
+    }
+
+    public function setQuizzesTotales(int $quizzesTotales): static
+    {
+        $this->quizzesTotales = $quizzesTotales;
+
+        return $this;
+    }
+
+    public function getPorcentajeCompletado(): ?string
+    {
+        return $this->porcentajeCompletado;
+    }
+
+    public function setPorcentajeCompletado(string $porcentajeCompletado): static
+    {
+        $this->porcentajeCompletado = $porcentajeCompletado;
+
+        return $this;
+    }
+
+    public function getUltimaActualizacion(): ?\DateTimeInterface
+    {
+        return $this->ultimaActualizacion;
+    }
+
+    public function setUltimaActualizacion(\DateTimeInterface $ultimaActualizacion): static
+    {
+        $this->ultimaActualizacion = $ultimaActualizacion;
+
+        return $this;
+    }
+}
