@@ -102,6 +102,9 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Log::class, mappedBy: 'usuario')]
     private Collection $log;
 
+    #[ORM\Column(length: 100, nullable: true)]
+    private ?string $tokenVerificacion = null;
+
     public function __construct()
     {
         $this->usuarioCursos = new ArrayCollection();
@@ -520,6 +523,18 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
                 $log->setUsuario(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getTokenVerificacion(): ?string
+    {
+        return $this->tokenVerificacion;
+    }
+
+    public function setTokenVerificacion(?string $tokenVerificacion): static
+    {
+        $this->tokenVerificacion = $tokenVerificacion;
 
         return $this;
     }

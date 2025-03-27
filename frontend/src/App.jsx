@@ -6,6 +6,8 @@ import { Aside } from './components/Aside'
 import { Navbar } from './components/Navbar'
 import { Copy } from './components/Copy'
 import { ThemeProvider } from './components/ThemeContext';
+import MainRegister from './components/register/MainRegister'
+import MainLogin from './components/register/MainLogin'
 
 function App() {
   return (
@@ -27,6 +29,18 @@ function App() {
             <div className="wrapper">
               <Navbar />
               <Home />
+              <Copy />
+            </div>
+          } />
+          <Route path="/register" element={
+            <div className="wrapper">
+              <MainRegister />
+              <Copy />
+            </div>
+          } />
+          <Route path="/login" element={
+            <div className="wrapper">
+              <MainLogin />
               <Copy />
             </div>
           } />
