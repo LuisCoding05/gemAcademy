@@ -8,6 +8,7 @@ import { Copy } from './components/Copy'
 import { ThemeProvider } from './components/ThemeContext';
 import MainRegister from './components/register/MainRegister'
 import MainLogin from './components/register/MainLogin'
+import VerificationResetPassword from './components/register/VerificationResetPassword'
 
 function App() {
   return (
@@ -41,6 +42,13 @@ function App() {
           <Route path="/login" element={
             <div className="wrapper">
               <MainLogin />
+              <Copy />
+            </div>
+          } />
+
+        <Route path="/verify" element={
+            <div className="wrapper">
+              <VerificationResetPassword />
               <Copy />
             </div>
           } />

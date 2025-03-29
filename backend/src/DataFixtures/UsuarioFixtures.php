@@ -1,5 +1,5 @@
 <?php
-
+// src/DataFixtures/UsuarioFixtures.php
 namespace App\DataFixtures;
 
 use App\Entity\Usuario;
@@ -9,55 +9,55 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UsuarioFixtures extends Fixture
 {
+    public const ADMIN_USER_REFERENCE = 'admin-user';
+    public const TEACHER_USER_REFERENCE = 'teacher-user';
+    public const STUDENT_USER_REFERENCE = 'student-user';
+
     public function __construct(
         private UserPasswordHasherInterface $passwordHasher
     ) {}
 
-    // src/DataFixtures/UsuarioFixtures.php
-public function load(ObjectManager $manager): void
-{
-    $usuarios = [
-        [
-            'username' => 'admin',
-            'email' => 'admin@academy.com',
-            'password' => 'admin123',
-            'ban' => false,
-            'roles' => ['ROLE_ADMIN']
-        ],
-        [
-            'username' => 'profesor1',
-            'email' => 'profesor1@academy.com',
-            'password' => 'prof123',
-            'ban' => false,
-            'roles' => ['ROLE_USER']
-        ],
-        [
-            'username' => 'estudiante1',
-            'email' => 'estudiante1@academy.com',
-            'password' => 'est123',
-            'ban' => false,
-            'roles' => ['ROLE_USER']
-        ]
-    ];
+    public function load(ObjectManager $manager): void
+    {
+        // Admin
+        $admin = new Usuario();
+        $admin->setUsername('admin')
+            ->setEmail('admin@example.com')
+            ->setPassword($this->passwordHasher->hashPassword($admin, 'admin123'))
+            ->setNombre('Admin')
+            ->setApellido('Istrador')
+            ->setRoles(['ROLE_ADMIN'])
+            ->setVerificado(true)
+            ->setBan(false);
+        $manager->persist($admin);
+        $this->addReference(self::ADMIN_USER_REFERENCE, $admin);
 
-    foreach ($usuarios as $userData) {
-        $usuario = new Usuario();
-        $usuario->setUsername($userData['username']);
-        $usuario->setEmail($userData['email']);
-        $usuario->setRoles($userData['roles']);
-        $usuario->setBan($userData['ban']);
-        $usuario->setFechaRegistro(new \DateTime());
-        
-        // Hashear la contraseña
-        $hashedPassword = $this->passwordHasher->hashPassword(
-            $usuario,
-            $userData['password']
-        );
-        $usuario->setPassword($hashedPassword);
+        // Profesor
+        $teacher = new Usuario();
+        $teacher->setUsername('profesor1')
+            ->setEmail('profesor@example.com')
+            ->setPassword($this->passwordHasher->hashPassword($teacher, 'profesor123'))
+            ->setNombre('Juan')
+            ->setApellido('Pérez')
+            ->setRoles(['ROLE_USER'])
+            ->setVerificado(true)
+            ->setBan(false);
+        $manager->persist($teacher);
+        $this->addReference(self::TEACHER_USER_REFERENCE, $teacher);
 
-        $manager->persist($usuario);
+        // Estudiante
+        $student = new Usuario();
+        $student->setUsername('estudiante1')
+            ->setEmail('estudiante@example.com')
+            ->setPassword($this->passwordHasher->hashPassword($student, 'estudiante123'))
+            ->setNombre('María')
+            ->setApellido('García')
+            ->setRoles(['ROLE_USER'])
+            ->setVerificado(true)
+            ->setBan(false);
+        $manager->persist($student);
+        $this->addReference(self::STUDENT_USER_REFERENCE, $student);
+
+        $manager->flush();
     }
-
-    $manager->flush();
-}
 }
