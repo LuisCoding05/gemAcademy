@@ -2,18 +2,18 @@
 
 namespace App\Repository;
 
-use App\Entity\Logs;
+use App\Entity\Log;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
 /**
- * @extends ServiceEntityRepository<Logs>
+ * @extends ServiceEntityRepository<Log>
  */
-class LogsRepository extends ServiceEntityRepository
+class LogRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, Logs::class);
+        parent::__construct($registry, Log::class);
     }
 
     //    /**

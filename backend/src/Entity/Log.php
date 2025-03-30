@@ -2,11 +2,11 @@
 
 namespace App\Entity;
 
-use App\Repository\LogsRepository;
+use App\Repository\LogRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: LogsRepository::class)]
+#[ORM\Entity(repositoryClass: LogRepository::class)]
 class Log
 {
     #[ORM\Id]

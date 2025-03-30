@@ -1,20 +1,64 @@
+import { useEffect, useState } from 'react';
 import { useTheme } from './ThemeContext';
 
 export const Home = () => {
     const { isDarkMode } = useTheme();
+    const [logs, setLogs] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState(null);
+
+    async function fetchData() {
+        try {
+            setIsLoading(true);
+            const response = await fetch("http://localhost:8000/test");
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            const data = await response.json();
+            setLogs(data.logs);
+        } catch (error) {
+            setError(error.message);
+        } finally {
+            setIsLoading(false);
+        }
+    }
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    if (isLoading) return <div className="text-center mt-5"><img src="images/charging/charging.gif" alt="" /></div>;
+    if (error) return <div className="text-center mt-5 text-danger">Error: {error}</div>;
 
     return (
         <div className={`container ${isDarkMode ? 'dark-mode' : ''}`}>
-            <div className="row min-vh-100 align-items-center justify-content-center text-center">
-                <div className="col-md-8">
-                    <h1 className="display-4 mt-5 pt-5 fw-bold">Bienvenido a nuestra plataforma</h1>
-                    <p className="lead mt-3">
-                        Explora nuestro espacio de aprendizaje gamificado y descubre una nueva forma de aprender.
-                    </p>
-                    <hr className="my-4" />
-                    <p className="fs-5">
-                        Únete a nuestra comunidad educativa y transforma tu experiencia de aprendizaje.
-                    </p>
+            <div className="row" style={{ marginTop: '6rem' }}>
+                <div className="col-12">
+                    <h2>Registro de Actividades</h2>
+                    {logs.length > 0 ? (
+                        <div className="table-responsive">
+                            <table className="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Nombre</th>
+                                        <th>Email</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {logs.map((log, index) => (
+                                        <tr key={index}>
+                                            <td>{log.fecha}</td>
+                                            <td>{log.usuario.nombre}</td>
+                                            <td>{log.usuario.email}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <p>No hay registros disponibles.</p>
+                    )}
                 </div>
             </div>
         </div>
