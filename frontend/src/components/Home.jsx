@@ -31,14 +31,14 @@ export const Home = () => {
     if (error) return <div className="text-center mt-5 text-danger">Error: {error}</div>;
 
     return (
-        <div className={`container ${isDarkMode ? 'dark-mode' : ''}`}>
-            <div className="row" style={{ marginTop: '6rem' }}>
+        <div className={`${isDarkMode ? 'dark-mode' : ''}`}>
+            <div className="row">
                 <div className="col-12">
-                    <h2>Registro de Actividades</h2>
+                    <h2 className="mb-4">Registro de Actividades</h2>
                     {logs.length > 0 ? (
                         <div className="table-responsive">
-                            <table className="table table-striped">
-                                <thead>
+                            <table className="table table-striped table-hover">
+                                <thead className="table-dark">
                                     <tr>
                                         <th>Fecha</th>
                                         <th>Nombre</th>

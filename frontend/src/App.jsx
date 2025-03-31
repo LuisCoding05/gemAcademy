@@ -9,51 +9,66 @@ import { ThemeProvider } from './components/ThemeContext';
 import MainRegister from './components/register/MainRegister'
 import MainLogin from './components/register/MainLogin'
 import VerificationResetPassword from './components/register/VerificationResetPassword'
+import Dashboard from './components/dashboard/Dashboard'
+import ProtectedRoute from './components/auth/ProtectedRoute'
+import { AuthProvider } from './context/AuthContext'
 
 function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Layout />}>
-            <Route index element={
-              <div className="container">
-                <div className="row">
-                  <MainContent />
-                  <Aside />
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Layout />}>
+              <Route index element={
+                <div className="container">
+                  <div className="row">
+                    <MainContent />
+                    <Aside />
+                  </div>
                 </div>
+              } />
+            </Route>
+            
+            <Route path="/home" element={
+              <div className="wrapper">
+                <Navbar />
+                <Home />
+                <Copy />
               </div>
             } />
-          </Route>
-          
-          <Route path="/home" element={
-            <div className="wrapper">
-              <Navbar />
-              <Home />
-              <Copy />
-            </div>
-          } />
-          <Route path="/register" element={
-            <div className="wrapper">
-              <MainRegister />
-              <Copy />
-            </div>
-          } />
-          <Route path="/login" element={
-            <div className="wrapper">
-              <MainLogin />
-              <Copy />
-            </div>
-          } />
-
-        <Route path="/verify" element={
-            <div className="wrapper">
-              <VerificationResetPassword />
-              <Copy />
-            </div>
-          } />
-        </Routes>
-      </BrowserRouter>
+            <Route path="/register" element={
+              <div className="wrapper">
+                <MainRegister />
+                <Copy />
+              </div>
+            } />
+            <Route path="/login" element={
+              <div className="wrapper">
+                <MainLogin />
+                <Copy />
+              </div>
+            } />
+            <Route path="/verify" element={
+              <div className="wrapper">
+                <VerificationResetPassword />
+                <Copy />
+              </div>
+            } />
+            
+            {/* Ruta protegida */}
+            <Route path="/dashboard" element={
+              <div className="wrapper">
+                <ProtectedRoute>
+                  <Navbar />
+                  <Dashboard />
+                  <Copy />
+                </ProtectedRoute>
+              </div>
+            } />
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
     </ThemeProvider>
   )
 }

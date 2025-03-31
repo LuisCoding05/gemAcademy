@@ -3,7 +3,12 @@ framework:
     secret: '%env(APP_SECRET)%'
 
     # Note that the session will be started ONLY if you read or write from it.
-    session: true
+    session:
+        handler_id: 'session.handler.native_file' # Almacenamiento en archivos
+        save_path: '%kernel.project_dir%/var/sessions'
+        cookie_secure: auto # HTTPS
+        cookie_samesite: 'lax'
+    
 
     #esi: true
     #fragments: true
