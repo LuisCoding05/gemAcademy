@@ -12,6 +12,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Psr\Log\LoggerInterface;
+use App\Entity\Log;
 
 class AuthController extends AbstractController
 {
@@ -44,6 +45,12 @@ class AuthController extends AbstractController
             ], 401);
         }
 
+        // Registrar el log de inicio de sesión
+        $log = new Log();
+        $log->setUsuario($user);
+        $this->entityManager->persist($log);
+        $this->entityManager->flush();
+
         $token = $JWTManager->create($user);
         $this->logger->info('Token generado correctamente');
 
@@ -53,7 +60,8 @@ class AuthController extends AbstractController
                 'id' => $user->getId(),
                 'email' => $user->getEmail(),
                 'nombre' => $user->getNombre(),
-                'apellido' => $user->getApellido()
+                'apellido' => $user->getApellido(),
+                'roles' => $user->getRoles()
             ]
         ]);
     }

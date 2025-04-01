@@ -32,9 +32,11 @@ function App() {
             
             <Route path="/home" element={
               <div className="wrapper">
-                <Navbar />
-                <Home />
-                <Copy />
+                <ProtectedRoute requiredRole="ROLE_ADMIN">
+                  <Navbar />
+                  <Home />
+                  <Copy />
+                </ProtectedRoute>
               </div>
             } />
             <Route path="/register" element={

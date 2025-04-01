@@ -10,12 +10,22 @@ export const AuthProvider = ({ children }) => {
     // Verificar si hay un usuario guardado al cargar la aplicación
     const storedUser = localStorage.getItem('user');
     if (storedUser) {
-      setUser(JSON.parse(storedUser));
+      const parsedUser = JSON.parse(storedUser);
+      // Asegurarnos de que roles sea un array
+      if (parsedUser && !Array.isArray(parsedUser.roles)) {
+        parsedUser.roles = [parsedUser.roles];
+      }
+      setUser(parsedUser);
     }
     setLoading(false);
   }, []);
 
   const login = (userData) => {
+    // Asegurarnos de que roles sea un array
+    if (userData && !Array.isArray(userData.roles)) {
+      userData.roles = [userData.roles];
+    }
+    console.log('Usuario con roles:', userData); // Para debug
     setUser(userData);
     localStorage.setItem('user', JSON.stringify(userData));
   };

@@ -453,6 +453,13 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    public function setApellido2(string $apellido2): static
+    {
+        $this->apellido2 = $apellido2;
+
+        return $this;
+    }
+
     public function getApellido2(): ?string
     {
         return $this->apellido2;
@@ -469,25 +476,13 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         return (string) $this->email;
     }
 
-    // public function getRoles(): array
-    // {
-    //     $roles = $this->roles;
-    //     // Garantiza que todos los usuarios tengan al menos ROLE_USER
-    //     $roles[] = 'ROLE_USER';
-
-    //     return array_unique($roles);
-    // }
-
-    public function setApellido2(?string $apellido2): static
-    {
-        $this->apellido2 = $apellido2;
-
-        return $this;
-    }
-
     public function getRoles(): array
     {
-        return $this->roles;
+        $roles = $this->roles;
+        // Garantiza que todos los usuarios tengan al menos ROLE_USER
+        $roles[] = 'ROLE_USER';
+
+        return array_unique($roles);
     }
 
     public function setRoles(array $roles): static
