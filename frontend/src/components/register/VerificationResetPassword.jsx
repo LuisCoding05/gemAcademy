@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
+import axios from '../../utils/axios';
+import { useNavigate } from 'react-router-dom';
 
 const VerificationResetPassword = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     verificationCode: '',
     newPassword: '',
     showPasswordField: false
   });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -14,6 +20,8 @@ const VerificationResetPassword = () => {
       ...prevState,
       [id]: value
     }));
+    setError('');
+    setSuccess('');
   };
 
   const togglePasswordField = () => {
@@ -23,21 +31,51 @@ const VerificationResetPassword = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Lógica de verificación o restablecimiento
-    if (formData.showPasswordField) {
-      console.log('Restablecer contraseña:', formData);
-      alert('Contraseña restablecida con éxito');
-    } else {
-      console.log('Verificar cuenta:', formData);
-      alert('Cuenta verificada con éxito');
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      if (formData.showPasswordField) {
+        const response = await axios.post('/api/reset-password', {
+          email: formData.email,
+          verificationCode: formData.verificationCode,
+          newPassword: formData.newPassword
+        });
+        setSuccess(response.data.message);
+        setTimeout(() => navigate('/login'), 2000);
+      } else {
+        const response = await axios.post('/api/verify', {
+          email: formData.email,
+          verificationCode: formData.verificationCode
+        });
+        setSuccess(response.data.message);
+        setTimeout(() => navigate('/login'), 2000);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Ha ocurrido un error');
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleResendCode = () => {
-    console.log('Reenviar código a:', formData.email);
-    alert('Código reenviado');
+  const handleResendCode = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await axios.post('/api/send-verification', {
+        email: formData.email
+      });
+      setSuccess(response.data.message);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Ha ocurrido un error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -87,32 +125,45 @@ const VerificationResetPassword = () => {
             <h2 className="text-center mb-4">
               {formData.showPasswordField ? 'Restablecer Contraseña' : 'Verificar Cuenta'}
             </h2>
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="alert alert-success" role="alert">
+                {success}
+              </div>
+            )}
             <form onSubmit={handleSubmit}>
               <div className="row">
                 <div className="col-md-12 mb-3">
                   <label htmlFor="email" className="form-label">Correo Electrónico:</label>
                   <input 
                     type="email" 
-                    className="form-control bg-secondary bg-gradient" 
+                    className="form-control bg-secondary bg-gradient text-white" 
                     id="email" 
                     value={formData.email}
                     onChange={handleChange}
                     required 
+                    disabled={loading}
+                    placeholder="tu.correo@ejemplo.com"
                   />
                 </div>
                 <div className="col-md-12 mb-3">
                   <label htmlFor="verificationCode" className="form-label">Código de Verificación:</label>
                   <input 
                     type="text" 
-                    className="form-control bg-secondary bg-gradient" 
+                    className="form-control bg-secondary bg-gradient text-white" 
                     id="verificationCode" 
                     value={formData.verificationCode}
                     onChange={handleChange}
                     required 
+                    disabled={loading}
+                    placeholder="Ingresa el código recibido"
                   />
                 </div>
                 
-                {/* Opción para mostrar/ocultar campo de contraseña */}
                 <div className="col-md-12 mb-3">
                   <div className="form-check form-switch">
                     <input 
@@ -121,6 +172,7 @@ const VerificationResetPassword = () => {
                       id="togglePassword" 
                       checked={formData.showPasswordField}
                       onChange={togglePasswordField}
+                      disabled={loading}
                     />
                     <label className="form-check-label" htmlFor="togglePassword">
                       Restablecer contraseña
@@ -128,40 +180,43 @@ const VerificationResetPassword = () => {
                   </div>
                 </div>
                 
-                {/* Campo de nueva contraseña (condicional) */}
                 {formData.showPasswordField && (
                   <div className="col-md-12 mb-3">
                     <label htmlFor="newPassword" className="form-label">Nueva Contraseña:</label>
                     <input 
                       type="password" 
-                      className="form-control bg-secondary bg-gradient" 
+                      className="form-control bg-secondary bg-gradient text-white" 
                       id="newPassword" 
                       value={formData.newPassword}
                       onChange={handleChange}
                       required={formData.showPasswordField}
+                      disabled={loading}
+                      placeholder="Ingresa tu nueva contraseña"
                     />
                   </div>
                 )}
                 
-                {/* Botones */}
-                <div className="col-md-12 mb-3 d-grid">
-                  <button type="submit" className="btn btn-primary">
-                    {formData.showPasswordField ? 'Restablecer Contraseña' : 'Verificar Cuenta'}
+                <div className="col-md-12 mb-3 d-grid gap-2">
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary py-2"
+                    disabled={loading}
+                  >
+                    {loading ? 'Procesando...' : (formData.showPasswordField ? 'Restablecer Contraseña' : 'Verificar Cuenta')}
                   </button>
-                </div>
                 
-                <div className="col-md-12 mb-3 d-grid">
                   <button 
                     type="button" 
-                    className="btn btn-outline-light" 
+                    className="btn btn-outline-light py-2" 
                     onClick={handleResendCode}
+                    disabled={loading}
                   >
                     Reenviar Código
                   </button>
                 </div>
                 
-                <div className="col-md-12 text-center mt-3">
-                  <a href="#" className="text-light">Volver al inicio de sesión</a>
+                <div className="col-md-12 text-center">
+                  <a href="/login" className="text-light text-decoration-none">Volver al inicio de sesión</a>
                 </div>
               </div>
             </form>
@@ -170,13 +225,56 @@ const VerificationResetPassword = () => {
       </div>
 
       {/* Estilos adicionales */}
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0% { transform: translateY(0px); }
           100% { transform: translateY(-20px); }
         }
         .floating-object {
           animation: float 3s ease-in-out infinite alternate;
+        }
+        .form-control::placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+        .form-control:focus {
+          background-color: rgba(255, 255, 255, 0.1) !important;
+          color: white;
+          box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+        }
+        .form-check-input:checked {
+          background-color: #0d6efd;
+          border-color: #0d6efd;
+        }
+        .form-check-input:focus {
+          border-color: #86b7fe;
+          box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        @media (max-width: 768px) {
+          .floating-object {
+            display: none;
+          }
+          .container {
+            padding: 10px;
+          }
+          .col-md-6 {
+            width: 100%;
+            max-width: 100%;
+          }
+          .bg-dark {
+            border-radius: 10px;
+            margin: 10px;
+          }
+          main {
+            min-height: 100vh;
+            padding: 20px 0;
+          }
+          .form-control {
+            height: 45px;
+          }
+          .btn {
+            height: 45px;
+            font-size: 16px;
+          }
         }
       `}</style>
     </main>

@@ -32,6 +32,12 @@ const MainLogin = () => {
       const response = await axios.post('/api/login', loginData);
       console.log('Respuesta:', response.data); // Para debug
       
+      // Verificar si la cuenta está verificada
+      if (!response.data.user.verificado) {
+        setError('Tu cuenta no está verificada. Por favor, verifica tu cuenta antes de iniciar sesión.');
+        return;
+      }
+      
       // Guardar el token en localStorage
       localStorage.setItem('token', response.data.token);
       
@@ -116,6 +122,13 @@ const MainLogin = () => {
             {error && (
               <div className="alert alert-danger" role="alert">
                 {error}
+                {error.includes('no está verificada') && (
+                  <div className="mt-2">
+                    <a href="/verify" className="btn btn-outline-light btn-sm">
+                      Verificar Cuenta
+                    </a>
+                  </div>
+                )}
               </div>
             )}
             <form onSubmit={handleSubmit}>
@@ -167,7 +180,7 @@ const MainLogin = () => {
                   </button>
                 </div>
                 <div className="col-md-12 text-center">
-                  <a href="#" className="text-light">¿Olvidaste tu contraseña?</a>
+                  <a href="/verify" className="text-light">¿Olvidaste tu contraseña?</a>
                 </div>
                 <div className="col-md-12 text-center mt-3">
                   <p>¿No tienes cuenta? <a href="/register" className="text-primary">Regístrate</a></p>

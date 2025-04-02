@@ -61,7 +61,8 @@ class AuthController extends AbstractController
                 'email' => $user->getEmail(),
                 'nombre' => $user->getNombre(),
                 'apellido' => $user->getApellido(),
-                'roles' => $user->getRoles()
+                'roles' => $user->getRoles(),
+                'verificado' => $user->isVerificado()
             ]
         ]);
     }
@@ -69,41 +70,197 @@ class AuthController extends AbstractController
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]
     public function register(Request $request): JsonResponse
     {
+        try {
+            $data = json_decode($request->getContent(), true);
+            $this->logger->info('Datos de registro recibidos:', ['data' => $data]);
+
+            // Validar campos requeridos
+            if (!isset($data['email']) || !isset($data['password']) || !isset($data['nombre']) || !isset($data['apellido'])) {
+                return $this->json([
+                    'message' => 'Todos los campos son requeridos'
+                ], 400);
+            }
+
+            // Validar formato de email
+            if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+                return $this->json([
+                    'message' => 'El formato del correo electrónico no es válido'
+                ], 400);
+            }
+
+            // Validar longitud de la contraseña
+            if (strlen($data['password']) < 6) {
+                return $this->json([
+                    'message' => 'La contraseña debe tener al menos 6 caracteres'
+                ], 400);
+            }
+
+            // Verificar si el email ya existe
+            $existingUser = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $data['email']]);
+            if ($existingUser) {
+                return $this->json([
+                    'message' => 'El email ya está registrado'
+                ], 400);
+            }
+
+            // Verificar si el username ya existe (si se proporciona)
+            if (isset($data['username']) && $data['username']) {
+                $existingUsername = $this->entityManager->getRepository(Usuario::class)->findOneBy(['username' => $data['username']]);
+                if ($existingUsername) {
+                    return $this->json([
+                        'message' => 'El nombre de usuario ya está en uso'
+                    ], 400);
+                }
+            }
+
+            $user = new Usuario();
+            $user->setEmail($data['email']);
+            $user->setNombre($data['nombre']);
+            $user->setApellido($data['apellido'] ?? "");
+            $user->setApellido2($data['apellido2'] ?? null);
+            $user->setUsername($data['username'] ?? $data['email']);
+            $user->setBan(false);
+            
+            $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
+            $user->setPassword($hashedPassword);
+
+            // Generar token de verificación
+            $verificationCode = bin2hex(random_bytes(16));
+            $user->setTokenVerificacion($verificationCode);
+            $user->setVerificado(false);
+
+            $this->entityManager->persist($user);
+            $this->entityManager->flush();
+
+            $this->logger->info('Usuario registrado exitosamente', [
+                'userId' => $user->getId(),
+                'email' => $user->getEmail()
+            ]);
+
+            return $this->json([
+                'message' => 'Usuario registrado exitosamente. Por favor, verifica tu cuenta con el código enviado a tu correo electrónico.',
+                'user' => [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'nombre' => $user->getNombre(),
+                    'apellido' => $user->getApellido()
+                ]
+            ], 201);
+
+        } catch (\Exception $e) {
+            $this->logger->error('Error en el registro de usuario', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return $this->json([
+                'message' => 'Error interno del servidor. Por favor, intenta nuevamente más tarde.' . $e->getMessage() .' trace: '. $e->getTraceAsString()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/verify', name: 'api_verify', methods: ['POST'])]
+    public function verifyAccount(Request $request): JsonResponse
+    {
         $data = json_decode($request->getContent(), true);
 
-        if (!isset($data['email']) || !isset($data['password']) || !isset($data['nombre']) || !isset($data['apellido'])) {
+        if (!isset($data['email']) || !isset($data['verificationCode'])) {
             return $this->json([
-                'message' => 'Todos los campos son requeridos'
+                'message' => 'Email y código de verificación son requeridos'
             ], 400);
         }
 
-        $existingUser = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $data['email']]);
+        $user = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $data['email']]);
 
-        if ($existingUser) {
+        if (!$user) {
             return $this->json([
-                'message' => 'El email ya está registrado'
+                'message' => 'Usuario no encontrado'
+            ], 404);
+        }
+
+        if ($user->getTokenVerificacion() !== $data['verificationCode']) {
+            return $this->json([
+                'message' => 'Código de verificación inválido'
             ], 400);
         }
 
-        $user = new Usuario();
-        $user->setEmail($data['email']);
-        $user->setNombre($data['nombre']);
-        $user->setApellido($data['apellido']);
-        
-        $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
-        $user->setPassword($hashedPassword);
-
-        $this->entityManager->persist($user);
+        $user->setVerificado(true);
+        $user->setTokenVerificacion(null);
         $this->entityManager->flush();
 
         return $this->json([
-            'message' => 'Usuario registrado exitosamente',
-            'user' => [
-                'id' => $user->getId(),
-                'email' => $user->getEmail(),
-                'nombre' => $user->getNombre(),
-                'apellido' => $user->getApellido()
-            ]
-        ], 201);
+            'message' => 'Cuenta verificada exitosamente'
+        ]);
+    }
+
+    #[Route('/api/reset-password', name: 'api_reset_password', methods: ['POST'])]
+    public function resetPassword(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['email']) || !isset($data['verificationCode']) || !isset($data['newPassword'])) {
+            return $this->json([
+                'message' => 'Email, código de verificación y nueva contraseña son requeridos'
+            ], 400);
+        }
+
+        $user = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $data['email']]);
+
+        if (!$user) {
+            return $this->json([
+                'message' => 'Usuario no encontrado'
+            ], 404);
+        }
+
+        if ($user->getTokenVerificacion() !== $data['verificationCode']) {
+            return $this->json([
+                'message' => 'Código de verificación inválido'
+            ], 400);
+        }
+
+        $hashedPassword = $this->passwordHasher->hashPassword($user, $data['newPassword']);
+        $user->setPassword($hashedPassword);
+        $user->setTokenVerificacion(null);
+        $this->entityManager->flush();
+
+        return $this->json([
+            'message' => 'Contraseña actualizada exitosamente'
+        ]);
+    }
+
+    #[Route('/api/send-verification', name: 'api_send_verification', methods: ['POST'])]
+    public function sendVerificationCode(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['email'])) {
+            return $this->json([
+                'message' => 'Email es requerido'
+            ], 400);
+        }
+
+        $user = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $data['email']]);
+
+        if (!$user) {
+            return $this->json([
+                'message' => 'Usuario no encontrado'
+            ], 404);
+        }
+
+        // Generar código de verificación
+        $verificationCode = bin2hex(random_bytes(16));
+        $user->setTokenVerificacion($verificationCode);
+        $this->entityManager->flush();
+
+        // Aquí deberías implementar el envío real del correo electrónico
+        // Por ahora solo simulamos el envío
+        $this->logger->info('Código de verificación generado', [
+            'email' => $user->getEmail(),
+            'code' => $verificationCode
+        ]);
+
+        return $this->json([
+            'message' => 'Código de verificación enviado'
+        ]);
     }
 } 

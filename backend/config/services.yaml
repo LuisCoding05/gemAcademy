@@ -6,6 +6,10 @@
 parameters:
 
 services:
+    App\Service\EmailService:
+        arguments:
+            $mailer: '@mailer'
+            $mailFrom: 'gemacademy@gmail.com'
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.

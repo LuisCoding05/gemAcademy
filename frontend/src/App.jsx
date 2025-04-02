@@ -42,7 +42,6 @@ function App() {
             <Route path="/register" element={
               <div className="wrapper">
                 <MainRegister />
-                <Copy />
               </div>
             } />
             <Route path="/login" element={

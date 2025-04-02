@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
+import axios from '../../utils/axios';
+import { useNavigate } from 'react-router-dom';
 
 const MainRegister = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     nombre: '',
     apellido: '',
@@ -9,6 +12,9 @@ const MainRegister = () => {
     email: '',
     password: ''
   });
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -16,13 +22,63 @@ const MainRegister = () => {
       ...prevState,
       [id]: value
     }));
+    setError('');
+    setSuccess('');
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // Lógica de registro
-    console.log(formData);
-    alert('Registro enviado');
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      // Validar que los campos requeridos no estén vacíos
+      if (!formData.nombre.trim() || !formData.apellido.trim() || !formData.email.trim() || !formData.password.trim()) {
+        throw new Error('Por favor, completa todos los campos requeridos');
+      }
+
+      // Validar formato de email
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email)) {
+        throw new Error('Por favor, ingresa un correo electrónico válido');
+      }
+
+      // Validar longitud de la contraseña
+      if (formData.password.length < 6) {
+        throw new Error('La contraseña debe tener al menos 6 caracteres');
+      }
+
+      const dataToSend = {
+        nombre: formData.nombre.trim(),
+        apellido: formData.apellido.trim(),
+        apellido2: formData.apellido2.trim() || null,
+        username: formData.username.trim() || formData.email.trim(),
+        email: formData.email.trim(),
+        password: formData.password
+      };
+
+      console.log('Enviando datos:', dataToSend);
+      const response = await axios.post('/api/register', dataToSend);
+      
+      if (response.data && response.data.message) {
+        setSuccess(response.data.message);
+        setTimeout(() => navigate('/verify'), 2000);
+      } else {
+        throw new Error('Respuesta del servidor inválida');
+      }
+    } catch (err) {
+      console.error('Error en el registro:', err);
+      if (err.message) {
+        setError(err.message);
+      } else if (err.response?.data?.message) {
+        setError(err.response.data.message);
+      } else {
+        setError('Error al registrar usuario. Por favor, intenta nuevamente.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -70,80 +126,106 @@ const MainRegister = () => {
             style={{position: 'relative', zIndex: 10}}
           >
             <h2 className="text-center mb-4">Registro</h2>
+            {error && (
+              <div className="alert alert-danger" role="alert">
+                {error}
+              </div>
+            )}
+            {success && (
+              <div className="alert alert-success" role="alert">
+                {success}
+              </div>
+            )}
             <form onSubmit={handleSubmit}>
               <div className="row">
                 <div className="col-md-6 mb-3">
                   <label htmlFor="nombre" className="form-label">Nombre:</label>
                   <input  
                     type="text" 
-                    className="form-control bg-secondary bg-gradient" 
+                    className="form-control bg-secondary bg-gradient text-white" 
                     id="nombre" 
                     value={formData.nombre}
                     onChange={handleChange}
                     required 
+                    disabled={loading}
+                    placeholder="Tu nombre"
                   />
                 </div>
                 <div className="col-md-6 mb-3">
                   <label htmlFor="apellido" className="form-label">Primer Apellido:</label>
                   <input 
                     type="text" 
-                    className="form-control bg-secondary bg-gradient" 
+                    className="form-control bg-secondary bg-gradient text-white" 
                     id="apellido" 
                     value={formData.apellido}
                     onChange={handleChange}
                     required 
+                    disabled={loading}
+                    placeholder="Tu primer apellido"
                   />
                 </div>
                 <div className="col-md-12 mb-3">
                   <label htmlFor="apellido2" className="form-label">Segundo Apellido:</label>
                   <input 
                     type="text" 
-                    className="form-control bg-secondary bg-gradient" 
+                    className="form-control bg-secondary bg-gradient text-white" 
                     id="apellido2" 
                     value={formData.apellido2}
                     onChange={handleChange}
+                    disabled={loading}
+                    placeholder="Tu segundo apellido (opcional)"
                   />
                 </div>
                 <div className="col-md-12 mb-3">
                   <label htmlFor="username" className="form-label">Nombre de Usuario:</label>
                   <input 
                     type="text" 
-                    className="form-control bg-secondary bg-gradient" 
+                    className="form-control bg-secondary bg-gradient text-white" 
                     id="username" 
                     value={formData.username}
                     onChange={handleChange}
                     required 
+                    disabled={loading}
+                    placeholder="Elige un nombre de usuario"
                   />
                 </div>
                 <div className="col-md-12 mb-3">
                   <label htmlFor="email" className="form-label">Correo Electrónico:</label>
                   <input 
                     type="email" 
-                    className="form-control bg-secondary bg-gradient" 
+                    className="form-control bg-secondary bg-gradient text-white" 
                     id="email" 
                     value={formData.email}
                     onChange={handleChange}
                     required 
+                    disabled={loading}
+                    placeholder="tu.correo@ejemplo.com"
                   />
                 </div>
                 <div className="col-md-12 mb-3">
                   <label htmlFor="password" className="form-label">Contraseña:</label>
                   <input 
                     type="password" 
-                    className="form-control bg-secondary bg-gradient" 
+                    className="form-control bg-secondary bg-gradient text-white" 
                     id="password" 
                     value={formData.password}
                     onChange={handleChange}
                     required 
+                    disabled={loading}
+                    placeholder="Tu contraseña"
                   />
                 </div>
                 <div className="col-md-12">
-                  <button type="submit" className="btn btn-primary w-100">
-                    Registrarse
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary w-100 py-2"
+                    disabled={loading}
+                  >
+                    {loading ? 'Registrando...' : 'Registrarse'}
                   </button>
                 </div>
                 <div className="col-md-12 text-center mt-3">
-                  <p>¿Tienes cuenta? <a href="/login" className="text-primary">Inicia sesión</a></p>
+                  <p className="mb-0">¿Tienes cuenta? <a href="/login" className="text-primary text-decoration-none">Inicia sesión</a></p>
                 </div>
               </div>
             </form>
@@ -152,13 +234,48 @@ const MainRegister = () => {
       </div>
 
       {/* Estilos adicionales */}
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0% { transform: translateY(0px); }
           100% { transform: translateY(-20px); }
         }
         .floating-object {
           animation: float 3s ease-in-out infinite alternate;
+        }
+        .form-control::placeholder {
+          color: rgba(255, 255, 255, 0.5);
+        }
+        .form-control:focus {
+          background-color: rgba(255, 255, 255, 0.1) !important;
+          color: white;
+          box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.25);
+        }
+        @media (max-width: 768px) {
+          .floating-object {
+            display: none;
+          }
+          .container {
+            padding: 10px;
+          }
+          .col-md-6 {
+            width: 100%;
+            max-width: 100%;
+          }
+          .bg-dark {
+            border-radius: 10px;
+            margin: 10px;
+          }
+          main {
+            min-height: 100vh;
+            padding: 20px 0;
+          }
+          .form-control {
+            height: 30px;
+          }
+          .btn {
+            height: 35px;
+            font-size: 16px;
+          }
         }
       `}</style>
     </main>
