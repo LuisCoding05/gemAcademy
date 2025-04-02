@@ -1,10 +1,10 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom'
 import { Navbar } from './Navbar'
-import { Header } from './Header'
+import { Header } from './index/Header'
 import { Footer } from './Footer'
 import { Copy } from './Copy'
-import { useTheme } from './ThemeContext'
+import { useTheme } from '../context/ThemeContext'
 
 export const Layout = () => {
   const { isDarkMode } = useTheme();

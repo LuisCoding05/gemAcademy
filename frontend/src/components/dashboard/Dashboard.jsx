@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuth } from '../../context/AuthContext';
 
 const Dashboard = () => {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   return (
     <div className="container mt-5">
@@ -11,9 +11,6 @@ const Dashboard = () => {
           <div className="card">
             <div className="card-header d-flex justify-content-between align-items-center">
               <h2>Dashboard</h2>
-              <button className="btn btn-danger" onClick={logout}>
-                Cerrar Sesión
-              </button>
             </div>
             <div className="card-body">
               <h3>Bienvenido, {user.nombre} {user.apellido}</h3>

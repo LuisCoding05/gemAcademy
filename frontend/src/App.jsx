@@ -1,11 +1,11 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Layout } from './components/Layout'
-import { Home } from './components/Home'
-import { MainContent } from './components/MainContent'
-import { Aside } from './components/Aside'
+import { Logs } from './components/admin/Logs'
+import { MainContent } from './components/index/MainContent'
+import { Aside } from './components/index/Aside'
 import { Navbar } from './components/Navbar'
 import { Copy } from './components/Copy'
-import { ThemeProvider } from './components/ThemeContext';
+import { ThemeProvider } from './context/ThemeContext';
 import MainRegister from './components/register/MainRegister'
 import MainLogin from './components/register/MainLogin'
 import VerificationResetPassword from './components/register/VerificationResetPassword'
@@ -30,11 +30,11 @@ function App() {
               } />
             </Route>
             
-            <Route path="/home" element={
+            <Route path="/logs" element={
               <div className="wrapper">
                 <ProtectedRoute requiredRole="ROLE_ADMIN">
                   <Navbar />
-                  <Home />
+                  <Logs />
                   <Copy />
                 </ProtectedRoute>
               </div>

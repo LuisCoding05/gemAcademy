@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { useTheme } from './ThemeContext';
+import { useTheme } from '../../context/ThemeContext';
 
-export const Home = () => {
+export const Logs = () => {
     const { isDarkMode } = useTheme();
     const [logs, setLogs] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -15,7 +15,7 @@ export const Home = () => {
                 throw new Error('Network response was not ok');
             }
             const data = await response.json();
-            setLogs(data.logs);
+            setLogs((data.logs).reverse());
         } catch (error) {
             setError(error.message);
         } finally {
