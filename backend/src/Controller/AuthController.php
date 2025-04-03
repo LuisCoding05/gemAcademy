@@ -13,13 +13,15 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Psr\Log\LoggerInterface;
 use App\Entity\Log;
+use App\Service\EmailService;
 
 class AuthController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly UserPasswordHasherInterface $passwordHasher,
-        private readonly LoggerInterface $logger
+        private readonly LoggerInterface $logger,
+        private readonly EmailService $emailService
     ) {}
 
     #[Route('/api/login', name: 'api_login', methods: ['POST'])]
@@ -37,6 +39,13 @@ class AuthController extends AbstractController
 
         $user = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $data['email']]);
         $this->logger->info('Usuario encontrado:', ['user' => $user ? $user->getId() : null]);
+
+        if ($user && (!$user->isVerificado())) {
+            $this->logger->error('Usuario no verificado');
+            return $this->json([
+                'message' => 'Usuario no verificado. Por favor, verifica tu cuenta con el código enviado a tu correo electrónico.'
+            ], 401);
+        }
 
         if (!$user || !$this->passwordHasher->isPasswordValid($user, $data['password'])) {
             $this->logger->error('Credenciales inválidas');
@@ -120,6 +129,7 @@ class AuthController extends AbstractController
             $user->setApellido2($data['apellido2'] ?? null);
             $user->setUsername($data['username'] ?? $data['email']);
             $user->setBan(false);
+            $user->setRoles(["ROLE_USER"]);
             
             $hashedPassword = $this->passwordHasher->hashPassword($user, $data['password']);
             $user->setPassword($hashedPassword);
@@ -131,6 +141,8 @@ class AuthController extends AbstractController
 
             $this->entityManager->persist($user);
             $this->entityManager->flush();
+
+            $this->emailService->sendVerificationEmail($user);
 
             $this->logger->info('Usuario registrado exitosamente', [
                 'userId' => $user->getId(),
@@ -154,7 +166,7 @@ class AuthController extends AbstractController
             ]);
 
             return $this->json([
-                'message' => 'Error interno del servidor. Por favor, intenta nuevamente más tarde.' . $e->getMessage() .' trace: '. $e->getTraceAsString()
+                'message' => 'Error interno del servidor. Por favor, intenta nuevamente más tarde.'
             ], 500);
         }
     }
@@ -163,6 +175,7 @@ class AuthController extends AbstractController
     public function verifyAccount(Request $request): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
+        $this->logger->info('Datos de verificación recibidos:', $data);
 
         if (!isset($data['email']) || !isset($data['verificationCode'])) {
             return $this->json([
@@ -188,8 +201,18 @@ class AuthController extends AbstractController
         $user->setTokenVerificacion(null);
         $this->entityManager->flush();
 
+        $this->logger->info('Usuario verificado exitosamente', [
+            'userId' => $user->getId(),
+            'email' => $user->getEmail()
+        ]);
+
         return $this->json([
-            'message' => 'Cuenta verificada exitosamente'
+            'message' => 'Cuenta verificada exitosamente',
+            'user' => [
+                'id' => $user->getId(),
+                'email' => $user->getEmail(),
+                'verificado' => true
+            ]
         ]);
     }
 
@@ -253,6 +276,7 @@ class AuthController extends AbstractController
         $this->entityManager->flush();
 
         // Aquí deberías implementar el envío real del correo electrónico
+        $this->emailService->sendVerificationEmail($user);
         // Por ahora solo simulamos el envío
         $this->logger->info('Código de verificación generado', [
             'email' => $user->getEmail(),
@@ -261,6 +285,39 @@ class AuthController extends AbstractController
 
         return $this->json([
             'message' => 'Código de verificación enviado'
+        ]);
+    }
+
+    #[Route('/api/request-password-reset', name: 'api_request_password_reset', methods: ['POST'])]
+    public function requestPasswordReset(Request $request): JsonResponse
+    {
+        $data = json_decode($request->getContent(), true);
+
+        if (!isset($data['email'])) {
+            return $this->json([
+                'message' => 'El email es requerido'
+            ], 400);
+        }
+
+        $user = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $data['email']]);
+
+        if (!$user) {
+            // Por seguridad, siempre devolvemos el mismo mensaje aunque el email no exista
+            return $this->json([
+                'message' => 'Si el email existe en nuestra base de datos, recibirás un código de restablecimiento'
+            ]);
+        }
+
+        // Generar código de verificación
+        $verificationCode = bin2hex(random_bytes(16));
+        $user->setTokenVerificacion($verificationCode);
+        $this->entityManager->flush();
+
+        // Enviar email de restablecimiento
+        $this->emailService->sendPasswordResetEmail($user);
+
+        return $this->json([
+            'message' => 'Si el email existe en nuestra base de datos, recibirás un código de restablecimiento'
         ]);
     }
 } 

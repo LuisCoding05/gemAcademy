@@ -4,12 +4,9 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    app.mailer.sender: 'gemylionacademy@gmail.com'
 
 services:
-    App\Service\EmailService:
-        arguments:
-            $mailer: '@mailer'
-            $mailFrom: 'gemacademy@gmail.com'
     # default configuration for services in *this* file
     _defaults:
         autowire: true      # Automatically injects dependencies in your services.
@@ -23,6 +20,11 @@ services:
             - '../src/DependencyInjection/'
             - '../src/Entity/'
             - '../src/Kernel.php'
+
+    # Configuración específica para EmailService
+    App\Service\EmailService:
+        arguments:
+            $mailFrom: '%app.mailer.sender%'
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

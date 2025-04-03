@@ -33,29 +33,41 @@ const VerificationResetPassword = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
     setSuccess('');
+    setLoading(true);
 
     try {
-      if (formData.showPasswordField) {
-        const response = await axios.post('/api/reset-password', {
-          email: formData.email,
-          verificationCode: formData.verificationCode,
-          newPassword: formData.newPassword
-        });
-        setSuccess(response.data.message);
-        setTimeout(() => navigate('/login'), 2000);
-      } else {
-        const response = await axios.post('/api/verify', {
+      const response = await fetch('http://localhost:8000/api/verify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           email: formData.email,
           verificationCode: formData.verificationCode
-        });
-        setSuccess(response.data.message);
-        setTimeout(() => navigate('/login'), 2000);
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Error al verificar la cuenta');
       }
-    } catch (err) {
-      setError(err.response?.data?.message || 'Ha ocurrido un error');
+
+      setSuccess(data.message);
+      // Esperar 3 segundos antes de redirigir para que el usuario pueda ver el mensaje
+      setTimeout(() => {
+        navigate('/login', { 
+          state: { 
+            message: 'Cuenta verificada exitosamente. Por favor, inicia sesión.',
+            verified: true
+          }
+        });
+      }, 3000);
+
+    } catch (error) {
+      setError(error.message);
     } finally {
       setLoading(false);
     }
@@ -71,6 +83,27 @@ const VerificationResetPassword = () => {
         email: formData.email
       });
       setSuccess(response.data.message);
+    } catch (err) {
+      setError(err.response?.data?.message || 'Ha ocurrido un error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRequestPasswordReset = async () => {
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await axios.post('/api/request-password-reset', {
+        email: formData.email
+      });
+      setSuccess(response.data.message);
+      setFormData(prevState => ({
+        ...prevState,
+        showPasswordField: true
+      }));
     } catch (err) {
       setError(err.response?.data?.message || 'Ha ocurrido un error');
     } finally {
@@ -205,14 +238,27 @@ const VerificationResetPassword = () => {
                     {loading ? 'Procesando...' : (formData.showPasswordField ? 'Restablecer Contraseña' : 'Verificar Cuenta')}
                   </button>
                 
-                  <button 
-                    type="button" 
-                    className="btn btn-outline-light py-2" 
-                    onClick={handleResendCode}
-                    disabled={loading}
-                  >
-                    Reenviar Código
-                  </button>
+                  {!formData.showPasswordField && (
+                    <button 
+                      type="button" 
+                      className="btn btn-outline-light py-2" 
+                      onClick={handleResendCode}
+                      disabled={loading}
+                    >
+                      Reenviar Código
+                    </button>
+                  )}
+
+                  {!formData.showPasswordField && (
+                    <button 
+                      type="button" 
+                      className="btn btn-outline-warning py-2" 
+                      onClick={handleRequestPasswordReset}
+                      disabled={loading}
+                    >
+                      ¿Olvidaste tu contraseña?
+                    </button>
+                  )}
                 </div>
                 
                 <div className="col-md-12 text-center">

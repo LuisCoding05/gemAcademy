@@ -453,7 +453,7 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function setApellido2(string $apellido2): static
+    public function setApellido2(?string $apellido2): static
     {
         $this->apellido2 = $apellido2;
 
