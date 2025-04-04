@@ -28,9 +28,11 @@ const MainLogin = () => {
     setError('');
 
     try {
-      console.log('Enviando datos:', loginData); // Para debug
+      if (!loginData.email || !loginData.password) {
+        throw new Error('Por favor, completa todos los campos');
+      }
+
       const response = await axios.post('/api/login', loginData);
-      console.log('Respuesta:', response.data); // Para debug
       
       // Verificar si la cuenta está verificada
       if (!response.data.user.verificado) {
@@ -47,13 +49,23 @@ const MainLogin = () => {
       // Redirigir al dashboard
       navigate('/dashboard');
     } catch (err) {
-      console.error('Error completo:', err); // Para debug
-      if (err.response?.status === 401) {
-        setError('Credenciales inválidas. Por favor, verifica tu email y contraseña.');
+      console.error('Error en el login:', err);
+      
+      // Manejar diferentes tipos de errores
+      if (err.message === 'Por favor, completa todos los campos') {
+        setError(err.message);
+      } else if (err.response?.status === 401) {
+        if (err.response.data.message.includes('no verificado')) {
+          setError('Tu cuenta no está verificada. Por favor, verifica tu cuenta con el código enviado a tu correo electrónico.');
+        } else {
+          setError('El correo electrónico o la contraseña son incorrectos');
+        }
       } else if (err.response?.status === 400) {
-        setError(err.response.data.message || 'Por favor, completa todos los campos requeridos.');
+        setError('Por favor, ingresa un correo electrónico y contraseña válidos');
+      } else if (!navigator.onLine) {
+        setError('No hay conexión a internet. Por favor, verifica tu conexión e intenta nuevamente.');
       } else {
-        setError('Error al iniciar sesión. Por favor, intenta de nuevo más tarde.');
+        setError('Ha ocurrido un error al intentar iniciar sesión. Por favor, intenta nuevamente más tarde.');
       }
     } finally {
       setLoading(false);

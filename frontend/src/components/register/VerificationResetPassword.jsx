@@ -38,36 +38,62 @@ const VerificationResetPassword = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('http://localhost:8000/api/verify', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          verificationCode: formData.verificationCode
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Error al verificar la cuenta');
+      // Validaciones del lado del cliente
+      if (!formData.email) {
+        throw new Error('El correo electrónico es requerido');
+      }
+      if (!formData.verificationCode) {
+        throw new Error('El código de verificación es requerido');
+      }
+      if (formData.showPasswordField && !formData.newPassword) {
+        throw new Error('La nueva contraseña es requerida');
+      }
+      if (formData.showPasswordField && formData.newPassword.length < 6) {
+        throw new Error('La nueva contraseña debe tener al menos 6 caracteres');
       }
 
-      setSuccess(data.message);
-      // Esperar 3 segundos antes de redirigir para que el usuario pueda ver el mensaje
+      const endpoint = formData.showPasswordField ? '/api/reset-password' : '/api/verify';
+      const requestData = formData.showPasswordField ? {
+        email: formData.email,
+        verificationCode: formData.verificationCode,
+        newPassword: formData.newPassword
+      } : {
+        email: formData.email,
+        verificationCode: formData.verificationCode
+      };
+
+      const response = await axios.post(endpoint, requestData);
+
+      // En caso de éxito
+      const successMessage = formData.showPasswordField ? 
+        'Contraseña actualizada exitosamente. Serás redirigido al inicio de sesión en 5 segundos...' :
+        'Cuenta verificada exitosamente. Serás redirigido al inicio de sesión en 5 segundos...';
+      
+      setSuccess(successMessage);
+      
+      // Solo redirigir si la operación fue exitosa y después de un tiempo considerable
       setTimeout(() => {
         navigate('/login', { 
           state: { 
-            message: 'Cuenta verificada exitosamente. Por favor, inicia sesión.',
+            message: formData.showPasswordField ? 
+              'Contraseña actualizada exitosamente. Por favor, inicia sesión.' :
+              'Cuenta verificada exitosamente. Por favor, inicia sesión.',
             verified: true
           }
         });
-      }, 3000);
+      }, 5000);
 
     } catch (error) {
-      setError(error.message);
+      console.error('Error en la operación:', error);
+      if (error.message) {
+        setError(error.message);
+      } else if (error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else if (!navigator.onLine) {
+        setError('No hay conexión a internet. Por favor, verifica tu conexión e intenta nuevamente.');
+      } else {
+        setError('Ha ocurrido un error. Por favor, intenta nuevamente más tarde.');
+      }
     } finally {
       setLoading(false);
     }
@@ -91,6 +117,11 @@ const VerificationResetPassword = () => {
   };
 
   const handleRequestPasswordReset = async () => {
+    if (!formData.email) {
+      setError('Por favor, ingresa tu correo electrónico antes de solicitar el restablecimiento de contraseña');
+      return;
+    }
+
     setLoading(true);
     setError('');
     setSuccess('');
@@ -99,13 +130,34 @@ const VerificationResetPassword = () => {
       const response = await axios.post('/api/request-password-reset', {
         email: formData.email
       });
-      setSuccess(response.data.message);
+
+      // Mostrar mensaje de éxito con instrucciones claras
+      setSuccess(
+        'Se ha enviado un código de verificación a tu correo electrónico. ' +
+        'Para restablecer tu contraseña, por favor:' +
+        '\n1. Revisa tu bandeja de entrada y copia el código de verificación' +
+        '\n2. Pégalo en el campo "Código de Verificación"' +
+        '\n3. Escribe tu nueva contraseña en el campo que aparecerá a continuación' +
+        '\n4. Haz clic en "Restablecer Contraseña"'
+      );
+
+      // Activar el campo de contraseña y limpiar campos
       setFormData(prevState => ({
         ...prevState,
-        showPasswordField: true
+        showPasswordField: true,
+        verificationCode: '', // Limpiar el código de verificación si había uno
+        newPassword: '' // Limpiar la contraseña si había una
       }));
+
     } catch (err) {
-      setError(err.response?.data?.message || 'Ha ocurrido un error');
+      console.error('Error al solicitar restablecimiento:', err);
+      if (!navigator.onLine) {
+        setError('No hay conexión a internet. Por favor, verifica tu conexión e intenta nuevamente.');
+      } else if (err.response?.status === 404) {
+        setError('No se encontró ninguna cuenta asociada a este correo electrónico.');
+      } else {
+        setError(err.response?.data?.message || 'Ha ocurrido un error al solicitar el restablecimiento de contraseña. Por favor, intenta nuevamente más tarde.');
+      }
     } finally {
       setLoading(false);
     }
@@ -159,12 +211,12 @@ const VerificationResetPassword = () => {
               {formData.showPasswordField ? 'Restablecer Contraseña' : 'Verificar Cuenta'}
             </h2>
             {error && (
-              <div className="alert alert-danger" role="alert">
+              <div className="alert alert-danger" role="alert" style={{whiteSpace: 'pre-line'}}>
                 {error}
               </div>
             )}
             {success && (
-              <div className="alert alert-success" role="alert">
+              <div className="alert alert-success" role="alert" style={{whiteSpace: 'pre-line'}}>
                 {success}
               </div>
             )}

@@ -29,6 +29,8 @@ security:
         - { path: ^/api/register, roles: PUBLIC_ACCESS }
         - { path: ^/api/verify, roles: PUBLIC_ACCESS }
         - { path: ^/api/send-verification, roles: PUBLIC_ACCESS }
+        - { path: ^/api/reset-password, roles: PUBLIC_ACCESS }
+        - { path: ^/api/request-password-reset, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

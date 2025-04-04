@@ -33,20 +33,35 @@ const MainRegister = () => {
     setSuccess('');
 
     try {
-      // Validar que los campos requeridos no estén vacíos
-      if (!formData.nombre.trim() || !formData.apellido.trim() || !formData.email.trim() || !formData.password.trim()) {
-        throw new Error('Por favor, completa todos los campos requeridos');
-      }
+      // Validaciones del lado del cliente
+      const validationErrors = [];
+
+      if (!formData.nombre.trim()) validationErrors.push('El nombre es requerido');
+      if (!formData.apellido.trim()) validationErrors.push('El primer apellido es requerido');
+      if (!formData.email.trim()) validationErrors.push('El correo electrónico es requerido');
+      if (!formData.password) validationErrors.push('La contraseña es requerida');
 
       // Validar formato de email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(formData.email)) {
-        throw new Error('Por favor, ingresa un correo electrónico válido');
+      if (formData.email.trim() && !emailRegex.test(formData.email)) {
+        validationErrors.push('El formato del correo electrónico no es válido');
       }
 
-      // Validar longitud de la contraseña
-      if (formData.password.length < 6) {
-        throw new Error('La contraseña debe tener al menos 6 caracteres');
+      // Validar longitud y complejidad de la contraseña
+      if (formData.password) {
+        if (formData.password.length < 6) {
+          validationErrors.push('La contraseña debe tener al menos 6 caracteres');
+        }
+        if (!/\d/.test(formData.password)) {
+          validationErrors.push('La contraseña debe contener al menos un número');
+        }
+        if (!/[A-Z]/.test(formData.password)) {
+          validationErrors.push('La contraseña debe contener al menos una letra mayúscula');
+        }
+      }
+
+      if (validationErrors.length > 0) {
+        throw new Error(validationErrors.join('\\n'));
       }
 
       const dataToSend = {
@@ -58,23 +73,32 @@ const MainRegister = () => {
         password: formData.password
       };
 
-      console.log('Enviando datos:', dataToSend);
       const response = await axios.post('/api/register', dataToSend);
       
-      if (response.data && response.data.message) {
-        setSuccess(response.data.message);
-        setTimeout(() => navigate('/verify'), 2000);
-      } else {
-        throw new Error('Respuesta del servidor inválida');
-      }
+      setSuccess(response.data.message);
+      setTimeout(() => navigate('/verify'), 2000);
+
     } catch (err) {
       console.error('Error en el registro:', err);
-      if (err.message) {
-        setError(err.message);
-      } else if (err.response?.data?.message) {
-        setError(err.response.data.message);
+      
+      if (err.message.includes('\\n')) {
+        // Errores de validación del cliente
+        setError(err.message.split('\\n').map((error, index) => (
+          <div key={index}>{error}</div>
+        )));
+      } else if (err.response?.status === 400) {
+        // Errores específicos del servidor
+        if (err.response.data.message.includes('email ya está registrado')) {
+          setError('Este correo electrónico ya está registrado. Por favor, utiliza otro o inicia sesión.');
+        } else if (err.response.data.message.includes('nombre de usuario ya está en uso')) {
+          setError('Este nombre de usuario ya está en uso. Por favor, elige otro.');
+        } else {
+          setError(err.response.data.message);
+        }
+      } else if (!navigator.onLine) {
+        setError('No hay conexión a internet. Por favor, verifica tu conexión e intenta nuevamente.');
       } else {
-        setError('Error al registrar usuario. Por favor, intenta nuevamente.');
+        setError('Ha ocurrido un error al intentar registrarte. Por favor, intenta nuevamente más tarde.');
       }
     } finally {
       setLoading(false);
