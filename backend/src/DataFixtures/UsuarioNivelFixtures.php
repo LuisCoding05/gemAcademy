@@ -15,8 +15,8 @@ class UsuarioNivelFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $usuarioNivel = new UsuarioNivel();
-        $usuarioNivel->setIdUsuario($this->getReference(UsuarioFixtures::STUDENT_USER_REFERENCE, Usuario::class))
-            ->setIdNivel($this->getReference(NivelFixtures::NIVEL_PRINCIPIANTE, Nivel::class))
+        $usuarioNivel->setIdUsuario($this->getReference('usuario-estudiante1', Usuario::class))
+            ->setIdNivel($this->getReference('nivel-inicial', Nivel::class))
             ->setPuntosSiguienteNivel(1000)
             ->setPuntosActuales(250);
         

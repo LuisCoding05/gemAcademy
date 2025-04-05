@@ -16,8 +16,8 @@ class IntentoQuizzFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $intento = new IntentoQuizz();
-        $intento->setIdQuizz($this->getReference(QuizzFixtures::QUIZZ_REFERENCE, Quizz::class))
-            ->setIdUsuario($this->getReference(UsuarioFixtures::STUDENT_USER_REFERENCE, Usuario::class))
+        $intento->setIdQuizz($this->getReference('quizz-fundamentos-de-programación', Quizz::class))
+            ->setIdUsuario($this->getReference('usuario-estudiante1', Usuario::class))
             ->setFechaInicio(new \DateTime('-1 hour'))
             ->setFechaFin(new \DateTime())
             ->setPuntuacionTotal(85)

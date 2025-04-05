@@ -14,16 +14,9 @@ class LogFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $usuarios = [
-            $this->getReference(UsuarioFixtures::ADMIN_USER_REFERENCE, Usuario::class),
-            $this->getReference(UsuarioFixtures::TEACHER_USER_REFERENCE, Usuario::class),
-            $this->getReference(UsuarioFixtures::STUDENT_USER_REFERENCE, Usuario::class)
-        ];
-
-        $acciones = [
-            'Inicio de sesión exitoso',
-            'Actualización de perfil',
-            'Entrega de tarea',
-            'Completado de quizz'
+            $this->getReference('usuario-admin', Usuario::class),
+            $this->getReference('usuario-profesor1', Usuario::class),
+            $this->getReference('usuario-estudiante1', Usuario::class)
         ];
 
         foreach ($usuarios as $usuario) {

@@ -6,96 +6,109 @@ namespace App\DataFixtures;
 use App\Entity\Curso;
 use App\Entity\Usuario;
 use App\Entity\Imagen;
-use DateTime;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
 class CursoFixtures extends Fixture implements DependentFixtureInterface
 {
-    public const CURSO_REFERENCE = "main-curso";
+    public const CURSOS = [
+        [
+            'titulo' => 'Introducción a la Programación',
+            'descripcion' => 'Aprende los fundamentos de la programación desde cero',
+            'imagen' => 'tecnologia',
+            'profesor' => 'profesor1',
+            'duracion' => 40,
+            'nivel' => 'Principiante'
+        ],
+        [
+            'titulo' => 'Desarrollo Web con React',
+            'descripcion' => 'Aprende a crear aplicaciones web modernas con React',
+            'imagen' => 'ui',
+            'profesor' => 'profesor1',
+            'duracion' => 60,
+            'nivel' => 'Intermedio'
+        ],
+        [
+            'titulo' => 'Backend con Symfony',
+            'descripcion' => 'Desarrollo de APIs y servicios backend con Symfony',
+            'imagen' => 'estudios',
+            'profesor' => 'profesor2',
+            'duracion' => 50,
+            'nivel' => 'Intermedio'
+        ],
+        [
+            'titulo' => 'Bases de Datos SQL',
+            'descripcion' => 'Aprende a diseñar y gestionar bases de datos relacionales',
+            'imagen' => 'tecnologia',
+            'profesor' => 'profesor2',
+            'duracion' => 45,
+            'nivel' => 'Principiante'
+        ],
+        [
+            'titulo' => 'Desarrollo de Videojuegos con Unity',
+            'descripcion' => 'Crea tus propios videojuegos usando el motor Unity',
+            'imagen' => 'tecnologia',
+            'profesor' => 'profesor1',
+            'duracion' => 80,
+            'nivel' => 'Avanzado'
+        ],
+        [
+            'titulo' => 'Inteligencia Artificial Básica',
+            'descripcion' => 'Introducción a los conceptos fundamentales de IA',
+            'imagen' => 'estudios',
+            'profesor' => 'profesor2',
+            'duracion' => 55,
+            'nivel' => 'Intermedio'
+        ],
+        [
+            'titulo' => 'Seguridad Informática',
+            'descripcion' => 'Aprende a proteger tus sistemas y datos',
+            'imagen' => 'tecnologia',
+            'profesor' => 'profesor1',
+            'duracion' => 65,
+            'nivel' => 'Avanzado'
+        ],
+        [
+            'titulo' => 'Diseño de Interfaces de Usuario',
+            'descripcion' => 'Principios y técnicas de diseño UI/UX',
+            'imagen' => 'ui',
+            'profesor' => 'profesor2',
+            'duracion' => 40,
+            'nivel' => 'Intermedio'
+        ],
+        [
+            'titulo' => 'Programación Móvil con Flutter',
+            'descripcion' => 'Desarrollo de aplicaciones móviles multiplataforma',
+            'imagen' => 'tecnologia',
+            'profesor' => 'profesor1',
+            'duracion' => 70,
+            'nivel' => 'Intermedio'
+        ],
+        [
+            'titulo' => 'DevOps y CI/CD',
+            'descripcion' => 'Automatización de procesos de desarrollo y despliegue',
+            'imagen' => 'estudios',
+            'profesor' => 'profesor2',
+            'duracion' => 60,
+            'nivel' => 'Avanzado'
+        ]
+    ];
 
     public function load(ObjectManager $manager): void
     {
-        $cursos = [
-            [
-                'nombre' => 'Desarrollo Web con PHP',
-                'descripcion' => 'Curso completo sobre desarrollo backend con PHP, frameworks modernos y mejores prácticas.',
-                'profesor' => 'teacher-user-1',
-                'referencia' => self::CURSO_REFERENCE
-            ],
-            [
-                'nombre' => 'JavaScript Avanzado',
-                'descripcion' => 'Domina JavaScript moderno, ES6+, promesas, async/await y patrones de diseño.',
-                'profesor' => 'teacher-user-2',
-                'referencia' => 'curso-javascript'
-            ],
-            [
-                'nombre' => 'Introducción a Python',
-                'descripcion' => 'Aprende los fundamentos de Python, desde variables hasta programación orientada a objetos.',
-                'profesor' => 'teacher-user-3',
-                'referencia' => 'curso-python'
-            ],
-            [
-                'nombre' => 'React desde Cero',
-                'descripcion' => 'Desarrollo de aplicaciones web modernas con React, hooks y gestión de estado.',
-                'profesor' => 'teacher-user-4',
-                'referencia' => 'curso-react'
-            ],
-            [
-                'nombre' => 'Bases de Datos SQL',
-                'descripcion' => 'Diseño y optimización de bases de datos relacionales con MySQL y PostgreSQL.',
-                'profesor' => 'teacher-user-5',
-                'referencia' => 'curso-sql'
-            ],
-            [
-                'nombre' => 'DevOps Fundamentals',
-                'descripcion' => 'Introducción a DevOps, CI/CD, Docker y despliegue en la nube.',
-                'profesor' => 'teacher-user-1',
-                'referencia' => 'curso-devops'
-            ],
-            [
-                'nombre' => 'Desarrollo de APIs RESTful',
-                'descripcion' => 'Diseño y desarrollo de APIs REST siguiendo las mejores prácticas y estándares.',
-                'profesor' => 'teacher-user-2',
-                'referencia' => 'curso-api'
-            ],
-            [
-                'nombre' => 'Testing y QA',
-                'descripcion' => 'Metodologías y herramientas para testing de software y control de calidad.',
-                'profesor' => 'teacher-user-3',
-                'referencia' => 'curso-testing'
-            ],
-            [
-                'nombre' => 'Seguridad Web',
-                'descripcion' => 'Aprende a proteger aplicaciones web contra vulnerabilidades comunes.',
-                'profesor' => 'teacher-user-4',
-                'referencia' => 'curso-security'
-            ],
-            [
-                'nombre' => 'Machine Learning Básico',
-                'descripcion' => 'Introducción al aprendizaje automático con Python y scikit-learn.',
-                'profesor' => 'teacher-user-5',
-                'referencia' => 'curso-ml'
-            ]
-        ];
-
-        foreach ($cursos as $cursoData) {
+        foreach (self::CURSOS as $cursoData) {
             $curso = new Curso();
-            $curso->setImagen($this->getReference(ImagenFixtures::DEFAULT_IMAGE_REFERENCE, Imagen::class));
-            $curso->setProfesor($this->getReference($cursoData['profesor'], Usuario::class));
-            $curso->setNombre($cursoData['nombre']);
+            $curso->setNombre($cursoData['titulo']);
             $curso->setDescripcion($cursoData['descripcion']);
-            $curso->setFechaCreacion(new DateTime());
+            $curso->setImagen($this->getReference('imagen-' . $cursoData['imagen'], Imagen::class));
+            $curso->setProfesor($this->getReference('usuario-' . $cursoData['profesor'], Usuario::class));
             
-            // Algunos cursos tendrán fechas diferentes para simular cursos más antiguos y más nuevos
-            if (rand(0, 1)) {
-                $randomDays = rand(-100, -1);
-                $curso->setFechaCreacion((new DateTime())->modify("$randomDays days"));
-            }
+            $curso->setFechaCreacion(new \DateTime());
+            
 
             $manager->persist($curso);
-            $this->addReference($cursoData['referencia'], $curso);
+            $this->addReference('curso-' . strtolower(str_replace(' ', '-', $cursoData['titulo'])), $curso);
         }
 
         $manager->flush();
@@ -104,8 +117,8 @@ class CursoFixtures extends Fixture implements DependentFixtureInterface
     public function getDependencies(): array
     {
         return [
-            UsuarioFixtures::class,
-            ImagenFixtures::class
+            ImagenFixtures::class,
+            UsuarioFixtures::class
         ];
     }
 }

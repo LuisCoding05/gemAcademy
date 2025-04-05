@@ -19,7 +19,7 @@ class MensajeForoFixtures extends Fixture implements DependentFixtureInterface
         $mensajePadre->setContenido('Hola, ¿cómo van con el curso?')
             ->setFechaPublicacion(new \DateTime('-1 day'))
             ->setIdForo($this->getReference(ForoFixtures::FORO_REFERENCE, Foro::class))
-            ->setIdUsuario($this->getReference(UsuarioFixtures::TEACHER_USER_REFERENCE, Usuario::class));
+            ->setIdUsuario($this->getReference('usuario-profesor1', Usuario::class));
         
         // Mensaje hijo
         $mensajeHijo = new MensajeForo();
@@ -27,7 +27,7 @@ class MensajeForoFixtures extends Fixture implements DependentFixtureInterface
             ->setFechaPublicacion(new \DateTime())
             ->setIdMensajePadre($mensajePadre)
             ->setIdForo($this->getReference(ForoFixtures::FORO_REFERENCE, Foro::class))
-            ->setIdUsuario($this->getReference(UsuarioFixtures::STUDENT_USER_REFERENCE, Usuario::class));
+            ->setIdUsuario($this->getReference('usuario-estudiante1', Usuario::class));
 
         $manager->persist($mensajePadre);
         $manager->persist($mensajeHijo);

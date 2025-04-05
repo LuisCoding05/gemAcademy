@@ -15,8 +15,8 @@ class UsuarioCursoFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $usuarioCurso = new UsuarioCurso();
-        $usuarioCurso->setIdUsuario($this->getReference(UsuarioFixtures::STUDENT_USER_REFERENCE, Usuario::class))
-            ->setIdCurso($this->getReference(CursoFixtures::CURSO_REFERENCE, Curso::class))
+        $usuarioCurso->setIdUsuario($this->getReference('usuario-estudiante1', Usuario::class))
+            ->setIdCurso($this->getReference('curso-introducción-a-la-programación', Curso::class))
             ->setMaterialesCompletados(2)
             ->setMaterialesTotales(10)
             ->setTareasCompletadas(1)

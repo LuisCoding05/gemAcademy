@@ -18,9 +18,9 @@ class EntregaTareaFixtures extends Fixture implements DependentFixtureInterface
             ->setFechaEntrega(new \DateTime())
             ->setCalificacion('8.50')
             ->setPuntosObtenidos(85)
-            ->setIdUsuario($this->getReference(UsuarioFixtures::STUDENT_USER_REFERENCE, Usuario::class));
+            ->setIdUsuario($this->getReference('usuario-estudiante1', Usuario::class));
         
-        $entrega->setIdTarea($this->getReference(TareaFixtures::TAREA_REFERENCE, Tarea::class));
+        $entrega->setIdTarea($this->getReference('tarea-introducción-a-la-programación-1', Tarea::class));
         
         $manager->persist($entrega);
         $manager->flush();

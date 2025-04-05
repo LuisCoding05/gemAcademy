@@ -44,11 +44,18 @@ class Curso
     #[ORM\JoinColumn(nullable: false)]
     private ?Usuario $profesor = null;
 
+    /**
+     * @var Collection<int, Foro>
+     */
+    #[ORM\OneToMany(targetEntity: Foro::class, mappedBy: 'curso')]
+    private Collection $foros;
+
     public function __construct()
     {
         $this->usuarioCursos = new ArrayCollection();
         $this->tareas = new ArrayCollection();
         $this->fechaCreacion = new \DateTime();
+        $this->foros = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -172,6 +179,36 @@ class Curso
     public function setProfesor(?Usuario $profesor): static
     {
         $this->profesor = $profesor;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Foro>
+     */
+    public function getForos(): Collection
+    {
+        return $this->foros;
+    }
+
+    public function addForo(Foro $foro): static
+    {
+        if (!$this->foros->contains($foro)) {
+            $this->foros->add($foro);
+            $foro->setCurso($this);
+        }
+
+        return $this;
+    }
+
+    public function removeForo(Foro $foro): static
+    {
+        if ($this->foros->removeElement($foro)) {
+            // set the owning side to null (unless already changed)
+            if ($foro->getCurso() === $this) {
+                $foro->setCurso(null);
+            }
+        }
 
         return $this;
     }

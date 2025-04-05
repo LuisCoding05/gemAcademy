@@ -15,8 +15,8 @@ class UsuarioLogroFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $usuarioLogro = new UsuarioLogro();
-        $usuarioLogro->setIdUsuario($this->getReference(UsuarioFixtures::STUDENT_USER_REFERENCE, Usuario::class))
-            ->setIdLogro($this->getReference(LogroFixtures::LOGRO_REFERENCE, Logro::class));
+        $usuarioLogro->setIdUsuario($this->getReference('usuario-estudiante1', Usuario::class))
+            ->setIdLogro($this->getReference('curso-completado', Logro::class));
         
         $manager->persist($usuarioLogro);
         $manager->flush();

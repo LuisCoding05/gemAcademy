@@ -31,6 +31,10 @@ class Foro
     #[ORM\OneToMany(targetEntity: MensajeForo::class, mappedBy: 'idForo')]
     private Collection $mensajeForos;
 
+    #[ORM\ManyToOne(inversedBy: 'foros')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Curso $curso = null;
+
     public function __construct()
     {
         $this->mensajeForos = new ArrayCollection();
@@ -103,6 +107,18 @@ class Foro
                 $mensajeForo->setIdForo(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCurso(): ?Curso
+    {
+        return $this->curso;
+    }
+
+    public function setCurso(?Curso $curso): static
+    {
+        $this->curso = $curso;
 
         return $this;
     }

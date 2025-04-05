@@ -14,10 +14,10 @@ class LogroFixtures extends Fixture implements DependentFixtureInterface
     public function load(ObjectManager $manager): void
     {
         $logro = new Logro();
-        $logro->setTitulo('Primer logro')
-            ->setMotivo('Completar el primer curso')
+        $logro->setTitulo('Primer Logro')
+            ->setMotivo('Este es el primer logro de prueba')
             ->setPuntosOtorgados(100)
-            ->setImagen($this->getReference(ImagenFixtures::DEFAULT_IMAGE_REFERENCE, Imagen::class));
+            ->setImagen($this->getReference('imagen-default', Imagen::class));
         
         $manager->persist($logro);
         $this->addReference(self::LOGRO_REFERENCE, $logro);
