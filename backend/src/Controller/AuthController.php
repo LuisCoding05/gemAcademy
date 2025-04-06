@@ -69,6 +69,26 @@ class AuthController extends AbstractController
         $this->entityManager->flush();
 
         $token = $JWTManager->create($user);
+
+        // Verificar el token generado
+    try {
+        $decodedToken = $JWTManager->parse($token);
+        $this->logger->info('Token decodificado:', [
+            'payload' => $decodedToken
+        ]);
+    } catch (\Exception $e) {
+        $this->logger->error('Error al verificar token:', [
+            'error' => $e->getMessage()
+        ]);
+    }
+    // Verificar que el token sea válido
+    if (!$token) {
+        $this->logger->error('Error al generar el token');
+        return $this->json([
+            'message' => 'Error al generar el token de autenticación'
+        ], 500);
+    }
+
         $this->logger->info('Token generado correctamente');
 
         return $this->json([

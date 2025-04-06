@@ -10,21 +10,24 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-
-#[Route('/api')]
 class DashboardController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager
     ) {}
 
-    #[Route('/dashboard', name: 'api_dashboard', methods: ['GET'])]
+    #[Route('/api/dashboard', name: 'api_dashboard', methods: ['GET'])]
     #[IsGranted('ROLE_USER')]
     public function index(): JsonResponse
     {
+        
         /** @var Usuario $user */
         $user = $this->getUser();
 
+        return $this->json([
+            'user' => $user
+        ]);
+        /*
         // Obtener cursos del usuario
         $usuarioCursos = $this->entityManager->getRepository(UsuarioCurso::class)
             ->findBy(['idUsuario' => $user]);
@@ -107,5 +110,6 @@ class DashboardController extends AbstractController
             'cursos' => $cursos,
             'logros' => $logros
         ]);
+        */
     }
 } 

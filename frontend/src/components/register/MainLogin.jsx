@@ -37,7 +37,7 @@ const MainLogin = () => {
       // Si llegamos aquí, el login fue exitoso
       const { token, user } = response.data;
       localStorage.setItem('token', token);
-      login(user);
+      login(user, token);
       navigate('/dashboard');
 
     } catch (err) {

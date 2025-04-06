@@ -15,6 +15,7 @@ const Dashboard = () => {
       try {
         const response = await axios.get('/api/dashboard');
         setDashboardData(response.data);
+        console.log(response.data);
         setLoading(false);
       } catch (err) {
         setError('Error al cargar el dashboard');

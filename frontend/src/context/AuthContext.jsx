@@ -4,34 +4,40 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
+  const [token, setToken] = useState(localStorage.getItem('token'));
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Verificar si hay un usuario guardado al cargar la aplicación
+    // Verificar si hay un usuario y token guardados al cargar la aplicación
     const storedUser = localStorage.getItem('user');
-    if (storedUser) {
+    const storedToken = localStorage.getItem('token');
+    
+    if (storedUser && storedToken) {
       const parsedUser = JSON.parse(storedUser);
       // Asegurarnos de que roles sea un array
       if (parsedUser && !Array.isArray(parsedUser.roles)) {
         parsedUser.roles = [parsedUser.roles];
       }
       setUser(parsedUser);
+      setToken(storedToken);
     }
     setLoading(false);
   }, []);
 
-  const login = (userData) => {
+  const login = (userData, authToken) => {
     // Asegurarnos de que roles sea un array
     if (userData && !Array.isArray(userData.roles)) {
       userData.roles = [userData.roles];
     }
-    console.log('Usuario con roles:', userData); // Para debug
     setUser(userData);
+    setToken(authToken);
     localStorage.setItem('user', JSON.stringify(userData));
+    localStorage.setItem('token', authToken);
   };
 
   const logout = () => {
     setUser(null);
+    setToken(null);
     localStorage.removeItem('user');
     localStorage.removeItem('token');
     window.location.href = '/login';
@@ -39,10 +45,11 @@ export const AuthProvider = ({ children }) => {
 
   const value = {
     user,
+    token,
     login,
     logout,
     loading,
-    isAuthenticated: !!user
+    isAuthenticated: !!user && !!token
   };
 
   return (
