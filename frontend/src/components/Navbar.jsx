@@ -6,6 +6,7 @@ import { useAuth } from '../context/AuthContext';
 export const Navbar = () => {
     const { isDarkMode, toggleDarkMode } = useTheme();
     const { user, logout } = useAuth();
+    console.log(user);
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark absolute-top">
             <div className="container">
@@ -62,10 +63,10 @@ export const Navbar = () => {
                             </svg>
                         </button>
                         {user && (
-                            <button className="btn btn-danger" onClick={logout}>
-                                Cerrar Sesión
-                            </button>
+                            <button className="btn btn-danger" onClick={logout}>Cerrar Sesión</button>
+                            
                         )}
+                        {user && (<img src={user.imagen.url} className="pfp-static-icon"></img>)}
                     </div>
                 </div>
             </div>

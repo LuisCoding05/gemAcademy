@@ -152,6 +152,15 @@ hr {
     transition: transform 0.3s ease-in-out;
 }
 
+.pfp-static-icon{
+    clip-path: circle(50.0% at 50% 50%);
+    max-width: 35px;
+    max-height: 35px;
+    display: block;
+    object-fit: cover;
+    margin-left: 20px;
+}
+
 /* Transición de la figura */
 .card figure {
     transition: transform 0.3s ease-in-out;

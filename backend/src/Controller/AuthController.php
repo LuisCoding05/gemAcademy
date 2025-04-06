@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Imagen;
 use App\Entity\Usuario;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -47,6 +48,13 @@ class AuthController extends AbstractController
             ], 401);
         }
 
+        if ($user && ($user->isBanned())) {
+            $this->logger->error('Usuario no verificado');
+            return $this->json([
+                'message' => 'No tienes acceso.'
+            ], 401);
+        }
+
         if (!$user || !$this->passwordHasher->isPasswordValid($user, $data['password'])) {
             $this->logger->error('Credenciales inválidas');
             return $this->json([
@@ -71,7 +79,10 @@ class AuthController extends AbstractController
                 'nombre' => $user->getNombre(),
                 'apellido' => $user->getApellido(),
                 'roles' => $user->getRoles(),
-                'verificado' => $user->isVerificado()
+                'verificado' => $user->isVerificado(),
+                'imagen' => [
+                    'url' => $user->getImagen() ? $user->getImagen()->getUrl() : './images/pfpgemacademy/default.webp'
+                ]
             ]
         ]);
     }
@@ -128,6 +139,10 @@ class AuthController extends AbstractController
             $user->setApellido($data['apellido'] ?? "");
             $user->setApellido2($data['apellido2'] ?? null);
             $user->setUsername($data['username'] ?? $data['email']);
+            // Asignamos la imagen por defecto
+            $imagen = $this->entityManager->getRepository(Imagen::class)->findOneBy(['url' => './images/pfpgemacademy/default.webp']);
+            $user->setImagen($imagen);
+
             $user->setBan(false);
             $user->setRoles(["ROLE_USER"]);
             

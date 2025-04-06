@@ -422,6 +422,11 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->verificado;
     }
 
+    public function isBanned(): ?bool
+    {
+        return $this->ban;
+    }
+
     public function setVerificado(bool $verificado): static
     {
         $this->verificado = $verificado;

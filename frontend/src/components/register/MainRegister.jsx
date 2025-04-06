@@ -98,7 +98,7 @@ const MainRegister = () => {
       } else if (!navigator.onLine) {
         setError('No hay conexión a internet. Por favor, verifica tu conexión e intenta nuevamente.');
       } else {
-        setError('Ha ocurrido un error al intentar registrarte. Por favor, intenta nuevamente más tarde.');
+        setError('Ha ocurrido un error al intentar registrarte. Por favor, intenta nuevamente más tarde.\n asegurate de que la contraseña tenga mayuscula, números y +6 carácteres');
       }
     } finally {
       setLoading(false);
