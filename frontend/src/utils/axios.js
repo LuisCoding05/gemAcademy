@@ -25,9 +25,7 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Solo redirigir si hay un token y es un error 401
-    // Esto significa que el token es inválido o expiró
-    if (error.response?.status === 401 && localStorage.getItem('token')) {
+    if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       window.location.href = '/login';
