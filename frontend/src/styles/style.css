@@ -17,6 +17,9 @@
     --light-text: #212529;
     --dark-bg: #212529;
     --dark-text: #ffffff;
+    --dark-text-muted: #adb5bd;
+    --dark-card-bg: #2c3034;
+    --dark-card-border: #495057;
 }
 /*Quita el estilo outline del input de búsqueda(no queda del todo bien con outline)*/
 #inputSearch{
@@ -328,41 +331,159 @@ aside.footer-widget ul li a {
 .dark-mode {
     background-color: var(--dark-bg);
     color: var(--dark-text);
-  }
+}
   
-  .dark-mode .navbar {
+.dark-mode .navbar {
     background-color: #000 !important;
-  }
+}
   
-  .dark-mode .card {
-    background-color: #2c3034;
+.dark-mode .card {
+    background-color: var(--dark-card-bg);
     color: var(--dark-text);
-  }
+    border-color: var(--dark-card-border);
+}
   
-  .dark-mode .accordion-item {
-    background-color: #2c3034;
+.dark-mode .accordion-item {
+    background-color: var(--dark-card-bg);
     color: var(--dark-text);
-  }
+    border-color: var(--dark-card-border);
+}
   
-  .dark-mode .accordion-button {
-    background-color: #2c3034;
+.dark-mode .accordion-button {
+    background-color: var(--dark-card-bg);
     color: var(--dark-text);
-  }
+}
   
-  .dark-mode .accordion-button:not(.collapsed) {
-    background-color: #212529;
+.dark-mode .accordion-button:not(.collapsed) {
+    background-color: var(--dark-bg);
     color: var(--dark-text);
-  }
+}
   
-  .dark-mode .dropdown-menu {
-    background-color: #2c3034;
+.dark-mode .dropdown-menu {
+    background-color: var(--dark-card-bg);
     color: var(--dark-text);
-  }
+    border-color: var(--dark-card-border);
+}
   
-  .dark-mode .dropdown-item {
+.dark-mode .dropdown-item {
     color: var(--dark-text);
-  }
+}
   
-  .dark-mode .dropdown-item:hover {
-    background-color: #212529;
-  }
+.dark-mode .dropdown-item:hover {
+    background-color: var(--dark-bg);
+}
+
+/* Estilos adicionales para el modo oscuro */
+.dark-mode .text-muted {
+    color: var(--dark-text-muted) !important;
+}
+
+.dark-mode .form-control,
+.dark-mode .form-select {
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
+    border-color: var(--dark-card-border);
+}
+
+.dark-mode .form-control:focus,
+.dark-mode .form-select:focus {
+    background-color: var(--dark-bg);
+    color: var(--dark-text);
+    border-color: var(--color-resaltado);
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.dark-mode .table {
+    color: var(--dark-text);
+}
+
+.dark-mode .table-striped > tbody > tr:nth-of-type(odd) {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.dark-mode .table-hover > tbody > tr:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dark-mode .alert-info {
+    background-color: rgba(13, 202, 240, 0.2);
+    color: #a6e8f5;
+    border-color: rgba(13, 202, 240, 0.3);
+}
+
+.dark-mode .alert-danger {
+    background-color: rgba(220, 53, 69, 0.2);
+    color: #f5a6a6;
+    border-color: rgba(220, 53, 69, 0.3);
+}
+
+.dark-mode .alert-success {
+    background-color: rgba(25, 135, 84, 0.2);
+    color: #a6f5c3;
+    border-color: rgba(25, 135, 84, 0.3);
+}
+
+.dark-mode .alert-warning {
+    background-color: rgba(255, 193, 7, 0.2);
+    color: #f5e6a6;
+    border-color: rgba(255, 193, 7, 0.3);
+}
+
+.dark-mode .pagination .page-link {
+    background-color: var(--dark-card-bg);
+    color: var(--dark-text);
+    border-color: var(--dark-card-border);
+}
+
+.dark-mode .pagination .page-item.active .page-link {
+    background-color: var(--color-resaltado);
+    border-color: var(--color-resaltado);
+}
+
+.dark-mode .pagination .page-item.disabled .page-link {
+    background-color: var(--dark-card-bg);
+    color: var(--dark-text-muted);
+    border-color: var(--dark-card-border);
+}
+
+.dark-mode .badge {
+    border: 1px solid var(--dark-card-border);
+}
+
+.dark-mode .progress {
+    background-color: var(--dark-bg);
+}
+
+.dark-mode .progress-bar {
+    background-color: var(--color-resaltado);
+}
+
+.dark-mode .btn-outline-light {
+    color: var(--dark-text);
+    border-color: var(--dark-text);
+}
+
+.dark-mode .btn-outline-light:hover {
+    background-color: var(--dark-text);
+    color: var(--dark-bg);
+}
+
+.dark-mode .btn-outline-dark {
+    color: var(--dark-text-muted);
+    border-color: var(--dark-text-muted);
+}
+
+.dark-mode .btn-outline-dark:hover {
+    background-color: var(--dark-text-muted);
+    color: var(--dark-bg);
+}
+
+/* Estilo para títulos en modo oscuro */
+.dark-mode .feature-holder h3,
+.dark-mode .card h3,
+.dark-mode h2,
+.dark-mode h4,
+.dark-mode h5,
+.dark-mode h6 {
+    color: var(--color-texto-primario);
+}
