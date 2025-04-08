@@ -62,6 +62,8 @@ class AuthController extends AbstractController
             ], 401);
         }
 
+        $user->setUltimaConexion(new \DateTime());
+        $user->setTokenVerificacion(null);
         // Registrar el log de inicio de sesión
         $log = new Log();
         $log->setUsuario($user);

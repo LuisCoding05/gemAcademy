@@ -94,6 +94,11 @@ body.dark-mode {
     background-color: #c9c1c1;
 }
 
+/* Para que en modo oscuro siga visible el placeholder */
+.dark-mode input::placeholder{
+    color: white;
+}
+
 /* Estilo de las tarjetas */
 .card {
     background-color: var(--color-fondo-tarjeta);
@@ -105,6 +110,19 @@ body.dark-mode {
 #figure1, #figure2 {
     background-color: rgb(171, 163, 163);
 }
+
+.rounded-4 {
+    border-radius: 1rem !important;
+  }
+  
+  .rounded-top-4 {
+    border-top-left-radius: 1rem !important;
+    border-top-right-radius: 1rem !important;
+  }
+  
+  .bg-dark-subtle {
+    background-color: #2d3748 !important;
+  }
 
 /* Colores y estilos para el encabezado */
 header {

@@ -12,6 +12,7 @@ import VerificationResetPassword from './components/register/VerificationResetPa
 import Dashboard from './components/dashboard/Dashboard'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
+import { SearchCourse } from './components/course/SearchCourse'
 
 function App() {
   return (
@@ -65,6 +66,14 @@ function App() {
                   <Dashboard />
                   <Copy />
                 </ProtectedRoute>
+              </div>
+            } />
+
+            <Route path="/cursos" element={
+              <div className="wrapper">
+                  <Navbar />
+                  <SearchCourse />
+                  <Copy />
               </div>
             } />
           </Routes>
