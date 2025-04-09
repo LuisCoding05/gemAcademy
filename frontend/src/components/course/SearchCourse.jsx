@@ -3,6 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import { motion } from 'framer-motion';
 import axios from '../../utils/axios';
+import Icon from '../Icon';
 
 export const SearchCourse = () => {
   const { user } = useAuth();
@@ -171,8 +172,7 @@ export const SearchCourse = () => {
             <div className='card-header border-0 bg-gradient-primary text-white py-4 rounded-top-4'>
               <div className='d-flex justify-content-between align-items-center'>
                 <h4 className='mb-0 fw-bold'>
-                  <i className='bi bi-rocket-takeoff me-2'></i>
-                  Explora tu próxima aventura
+                  Explora tu próxima aventura <Icon name="pacman1" color="gold" size={34} />
                 </h4>
                 {user && (
                   <motion.button 
@@ -180,8 +180,7 @@ export const SearchCourse = () => {
                     whileTap={{ scale: 0.95 }}
                     className='btn btn-success btn-lg rounded-pill'
                   >
-                    <i className='bi bi-plus-circle me-2'></i>
-                    Crear curso
+                    Crear curso <Icon name="cloud-add" color="white" size={34} />
                   </motion.button>
                 )}
               </div>

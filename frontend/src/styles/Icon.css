@@ -1,0 +1,25 @@
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+  fill: currentColor;
+}
+
+/* Estilos para fondos oscuros */
+.dark-bg .icon {
+  fill: #ffffff;
+}
+
+/* Estilos para fondos claros */
+.light-bg .icon {
+  fill: #000000;
+}
+
+/* Estilos para hover */
+.icon:hover {
+  opacity: 0.8;
+}
+
+/* Aseguramos que el SVG se renderice correctamente */
+.icon use {
+  pointer-events: none;
+} 

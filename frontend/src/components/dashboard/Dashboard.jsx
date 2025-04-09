@@ -3,6 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import axios from '../../utils/axios';
 import ImageGallery from './ImageGallery';
+import Icon from '../Icon';
+
 
 const Dashboard = () => {
   const { user, login } = useAuth();
@@ -173,7 +175,7 @@ const Dashboard = () => {
                         border: '3px solid #0d6efd'
                       }}
                     />
-                    <h4 className="mb-3">Editar Perfil</h4>
+                    <h4 className="mb-3"> Editar Perfil <Icon name="pencil" color="#1337ea" size={20} /></h4>
                   </div>
                   <div className="row justify-content-center">
                     <div className="col-md-6 mb-4">
@@ -256,7 +258,7 @@ const Dashboard = () => {
                     className="btn btn-outline-primary btn-sm mt-3" 
                     onClick={handleEditProfile}
                   >
-                    Editar perfil
+                    Editar perfil <Icon name="pencil" color="#1337ea" size={16} />
                   </button>
                 </>
               )}
@@ -297,7 +299,7 @@ const Dashboard = () => {
 
           {/* Cursos */}
           <div className="mb-4">
-            <h2 className="mb-3">Mis Cursos</h2>
+            <h2 className="mb-3">Mis Cursos <Icon name="books" color="green" size={34} /></h2>
             {cursos.length > 0 ? (
               <div className="row">
                 {cursos.map(curso => (
@@ -337,7 +339,7 @@ const Dashboard = () => {
 
           {/* Logros */}
           <div>
-            <h2 className="mb-3">Mis Logros</h2>
+            <h2 className="mb-3">Mis Logros <Icon name="award" color="yellow" size={34} /></h2>
             {logros.length > 0 ? (
               <div className="row">
                 {logros.map(logro => (
