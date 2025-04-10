@@ -13,6 +13,7 @@ import Dashboard from './components/dashboard/Dashboard'
 import ProtectedRoute from './components/auth/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import { SearchCourse } from './components/course/SearchCourse'
+import { CourseDetail } from './components/course/CourseDetail'
 
 function App() {
   return (
@@ -73,6 +74,14 @@ function App() {
               <div className="wrapper">
                   <Navbar />
                   <SearchCourse />
+                  <Copy />
+              </div>
+            } />
+
+            <Route path="/cursos/:id" element={
+              <div className="wrapper">
+                  <Navbar />
+                  <CourseDetail />
                   <Copy />
               </div>
             } />

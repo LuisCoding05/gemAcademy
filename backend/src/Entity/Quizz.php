@@ -47,6 +47,10 @@ class Quizz
     #[ORM\OneToMany(targetEntity: IntentoQuizz::class, mappedBy: 'idQuizz')]
     private Collection $intentoQuizzs;
 
+    #[ORM\ManyToOne(inversedBy: 'quizzs')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Curso $idCurso = null;
+
     public function __construct()
     {
         $this->preguntaQuizzs = new ArrayCollection();
@@ -187,6 +191,18 @@ class Quizz
                 $intentoQuizz->setIdQuizz(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getIdCurso(): ?Curso
+    {
+        return $this->idCurso;
+    }
+
+    public function setIdCurso(?Curso $idCurso): static
+    {
+        $this->idCurso = $idCurso;
 
         return $this;
     }

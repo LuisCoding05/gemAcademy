@@ -50,12 +50,26 @@ class Curso
     #[ORM\OneToMany(targetEntity: Foro::class, mappedBy: 'curso')]
     private Collection $foros;
 
+    /**
+     * @var Collection<int, Material>
+     */
+    #[ORM\OneToMany(targetEntity: Material::class, mappedBy: 'idCurso')]
+    private Collection $materials;
+
+    /**
+     * @var Collection<int, Quizz>
+     */
+    #[ORM\OneToMany(targetEntity: Quizz::class, mappedBy: 'idCurso')]
+    private Collection $quizzs;
+
     public function __construct()
     {
         $this->usuarioCursos = new ArrayCollection();
         $this->tareas = new ArrayCollection();
         $this->fechaCreacion = new \DateTime();
         $this->foros = new ArrayCollection();
+        $this->materials = new ArrayCollection();
+        $this->quizzs = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -207,6 +221,66 @@ class Curso
             // set the owning side to null (unless already changed)
             if ($foro->getCurso() === $this) {
                 $foro->setCurso(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Material>
+     */
+    public function getMaterials(): Collection
+    {
+        return $this->materials;
+    }
+
+    public function addMaterial(Material $material): static
+    {
+        if (!$this->materials->contains($material)) {
+            $this->materials->add($material);
+            $material->setIdCurso($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMaterial(Material $material): static
+    {
+        if ($this->materials->removeElement($material)) {
+            // set the owning side to null (unless already changed)
+            if ($material->getIdCurso() === $this) {
+                $material->setIdCurso(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Quizz>
+     */
+    public function getQuizzs(): Collection
+    {
+        return $this->quizzs;
+    }
+
+    public function addQuizz(Quizz $quizz): static
+    {
+        if (!$this->quizzs->contains($quizz)) {
+            $this->quizzs->add($quizz);
+            $quizz->setIdCurso($this);
+        }
+
+        return $this;
+    }
+
+    public function removeQuizz(Quizz $quizz): static
+    {
+        if ($this->quizzs->removeElement($quizz)) {
+            // set the owning side to null (unless already changed)
+            if ($quizz->getIdCurso() === $this) {
+                $quizz->setIdCurso(null);
             }
         }
 

@@ -23,19 +23,29 @@ export const Navbar = () => {
                                 Rutas
                             </a>
                             <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
+                                {/* Rutas para administradores */}
                                 {user?.roles?.includes('ROLE_ADMIN') && (
-                                <li>
-                                    <Link className="dropdown-item" to="/logs">Logs</Link>
-                                </li>)}
-                                {user?.roles?.includes('ROLE_ADMIN') && (<li><hr className="dropdown-divider"></hr></li>)}
+                                    <>
+                                        <li>
+                                            <Link className="dropdown-item" to="/logs">Logs</Link>
+                                        </li>
+                                        <li><hr className="dropdown-divider"></hr></li>
+                                    </>
+                                )}
+
+                                {/* Rutas globales */}
                                 <li>
                                     <Link className="dropdown-item" to="/">Índice</Link>
                                 </li>
                                 <li><hr className="dropdown-divider"></hr></li>
+                                <li><Link className="dropdown-item" to="/cursos">cursos</Link></li>
+                                <li><hr className="dropdown-divider"></hr></li>
+                                {/* Rutas para usuarios autenticados */}
                                 {user && (
                                     <li>
-                                    <Link className="dropdown-item" to="/dashboard">Dashboard</Link>
-                                    </li>)}
+                                        <Link className="dropdown-item" to="/dashboard">Dashboard</Link>
+                                    </li>    
+                                )}
                             </ul>
                         </li>
                         

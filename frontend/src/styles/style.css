@@ -182,6 +182,14 @@ hr {
     margin-left: 20px;
 }
 
+.icon-show{
+    clip-path: circle(50.0% at 50% 50%);
+    max-width: 55px;
+    max-height: 55px;
+    display: block;
+    object-fit: cover;
+}
+
 /* Transición de la figura */
 .card figure {
     transition: transform 0.3s ease-in-out;

@@ -4,6 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { motion } from 'framer-motion';
 import axios from '../../utils/axios';
 import Icon from '../Icon';
+import { Link } from 'react-router-dom';
 
 export const SearchCourse = () => {
   const { user } = useAuth();
@@ -70,6 +71,12 @@ export const SearchCourse = () => {
   // Función para cambiar de página
   const handlePageChange = (newPage) => {
     setPagination(prev => ({ ...prev, page: newPage }));
+  };
+
+  const getImageUrl = (url) => {
+    if (!url) return 'https://via.placeholder.com/300x200';
+    if (url.startsWith('http')) return url;
+    return url.replace('./images/', '/images/');
   };
 
   if (loading && courses.length === 0) {
@@ -238,21 +245,21 @@ export const SearchCourse = () => {
                 <>
                   <div className="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 g-4">
                     {courses.map((course, index) => (
-                      <div className="col" key={index}>
+                      <div className="col" key={course.id}>
                         <motion.div 
                           className={`card course-card h-100 ${isDarkMode ? 'bg-dark text-light' : ''}`}
                           whileHover={{ y: -5 }}
                         >
                           <div className="position-relative">
                             <img 
-                              src={course.imagen || 'https://via.placeholder.com/300x200'} 
+                              src={getImageUrl(course.imagen)} 
                               className="card-img-top" 
                               alt={course.nombre}
                               style={{ height: '140px', objectFit: 'cover' }}
                             />
                             <div className="position-absolute top-0 end-0 p-2">
                               <button className="btn btn-sm btn-light rounded-circle">
-                                <i className="bi bi-bookmark"></i>
+                                <Icon color="green" size={24} name="lab"></Icon>
                               </button>
                             </div>
                           </div>
@@ -271,7 +278,7 @@ export const SearchCourse = () => {
 
                             <div className="d-flex align-items-center mb-2">
                               <img 
-                                src={course.profesor?.imagen || 'https://via.placeholder.com/50x50'} 
+                                src={getImageUrl(course.profesor?.imagen)} 
                                 className="rounded-circle me-2" 
                                 alt="Teacher" 
                                 width="30" 
@@ -284,8 +291,8 @@ export const SearchCourse = () => {
                             </div>
 
                             <div className="d-flex justify-content-end mt-2">
-                              <button className="btn btn-sm btn-primary rounded-pill">
-                                Ver Curso
+                              <button className="btn btn-sm btn-primary rounded-pill p-2">
+                                <Link to={`/cursos/${course.id}`}><span className='text-white'>Ver Curso</span> <Icon color="white" size={24} name="eye"></Icon></Link>
                               </button>
                             </div>
                           </div>

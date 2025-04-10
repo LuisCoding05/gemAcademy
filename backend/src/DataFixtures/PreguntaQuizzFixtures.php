@@ -19,7 +19,7 @@ class PreguntaQuizzFixtures extends Fixture implements DependentFixtureInterface
         $pregunta->setPregunta('¿Qué es Symfony?')
             ->setPuntos(10)
             ->setOrden(1)
-            ->setIdQuizz($this->getReference('quizz-fundamentos-de-programación', Quizz::class));
+            ->setIdQuizz($this->getReference('quizz-introducción-a-la-programación-1', Quizz::class));
         
         $manager->persist($pregunta);
         $this->addReference(self::PREGUNTA_REFERENCE, $pregunta);

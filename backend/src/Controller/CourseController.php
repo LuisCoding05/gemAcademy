@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Curso;
+use App\Entity\UsuarioCurso;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -60,6 +61,10 @@ final class CourseController extends AbstractController
         $cursos = [];
         
         foreach ($cursosRaw as $curso) {
+            // Obtener el número de estudiantes inscritos
+            $estudiantesInscritos = $this->entityManager->getRepository(UsuarioCurso::class)
+                ->count(['idCurso' => $curso]);
+                
             $cursos[] = [
                 "id" => $curso->getId(),
                 "nombre" => $curso->getNombre(),
@@ -71,7 +76,8 @@ final class CourseController extends AbstractController
                 ],
                 "imagen" => $curso->getImagen() ? $curso->getImagen()->getUrl() : null,
                 "descripcion" => $curso->getDescripcion(),
-                "fechaCreacion" => $curso->getFechaCreacion()->format('Y/m/d')
+                "fechaCreacion" => $curso->getFechaCreacion()->format('Y/m/d'),
+                "estudiantes" => $estudiantesInscritos
             ];
         }
         
@@ -86,4 +92,92 @@ final class CourseController extends AbstractController
             ]
         ]);
     }
+
+    #[Route('/api/course/{id}', name: 'app_course_detail')]
+    public function detail(Request $request, $id): JsonResponse
+    {
+        $curso = $this->entityManager->getRepository(Curso::class)->find($id);
+        
+        // Obtener el número de estudiantes inscritos
+        $estudiantesInscritos = $this->entityManager->getRepository(UsuarioCurso::class)
+            ->count(['idCurso' => $curso]);
+
+        $cursoData = [
+            "id" => $curso->getId(),
+            "nombre" => $curso->getNombre(),
+            "descripcion" => $curso->getDescripcion(),
+            "imagen" => $curso->getImagen() ? $curso->getImagen()->getUrl() : null,
+            "fechaCreacion" => $curso->getFechaCreacion()->format('Y/m/d H:i:s'),
+            "estudiantes" => $estudiantesInscritos,
+            "profesor" => [
+                "id" => $curso->getProfesor()->getId(),
+                "imagen" => $curso->getProfesor()->getImagen() ? $curso->getProfesor()->getImagen()->getUrl() : null,
+                "nombre" => $curso->getProfesor()->getNombre() . " " . $curso->getProfesor()->getApellido(),
+                "username" => $curso->getProfesor()->getUsername()
+            ],
+        ];
+
+        $cursoTareas = $curso->getTareas();
+        $cursoTareasData = [];
+        foreach ($cursoTareas as $tarea) {
+            $cursoTareasData[] = [
+                "id" => $tarea->getId(),
+                "titulo" => $tarea->getTitulo(),
+                "fechaPublicacion" => $tarea->getFechaPublicacion()->format('Y/m/d H:i:s'),
+                "fechaLimite" => $tarea->getFechaLimite()->format('Y/m/d H:i:s'),
+            ];
+        }
+
+        $cursoQuizz = $curso->getQuizzs();
+        $cursoMateriales = $curso->getMaterials();
+        $cursoForos = $curso->getForos();
+        $cursoTareas = $curso->getTareas();
+
+        $cursoQuizzData = [];
+        foreach ($cursoQuizz as $quizz) {
+            $cursoQuizzData[] = [
+                "id" => $quizz->getId(),
+                "titulo" => $quizz->getTitulo(),
+                "fechaPublicacion" => $quizz->getFechaPublicacion()->format('Y/m/d H:i:s'),
+                "fechaLimite" => $quizz->getFechaLimite()->format('Y/m/d H:i:s'),
+            ];
+        }
+
+        $cursoMaterialesData = [];
+        foreach ($cursoMateriales as $material) {
+            $cursoMaterialesData[] = [
+                "id" => $material->getId(),
+                "titulo" => $material->getTitulo(),
+                "descripcion" => $material->getDescripcion(),
+                "fechaPublicacion" => $material->getFechaPublicacion()->format('Y/m/d H:i:s'),
+            ];
+        }
+
+        $cursoForosData = [];
+        foreach ($cursoForos as $foro) {
+            $cursoForosData[] = [
+                "id" => $foro->getId(),
+                "titulo" => $foro->getTitulo(),
+                "descripcion" => $foro->getDescripcion(),
+                "mensajes" => $foro->getMensajeForos(),
+
+            ];
+        }
+
+        return $this->json([
+            "id" => $cursoData["id"],
+            "nombre" => $cursoData["nombre"],
+            "descripcion" => $cursoData["descripcion"],
+            "imagen" => $cursoData["imagen"],
+            "fechaCreacion" => $cursoData["fechaCreacion"],
+            "estudiantes" => $cursoData["estudiantes"],
+            "profesor" => $cursoData["profesor"],
+            "tareas" => $cursoTareasData,
+            "quizzes" => $cursoQuizzData,
+            "materiales" => $cursoMaterialesData,
+            "foros" => $cursoForosData,
+        ]);
+    }
+
+
 }

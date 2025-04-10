@@ -6,52 +6,117 @@ namespace App\DataFixtures;
 use App\Entity\Quizz;
 use App\Entity\Curso;
 use Doctrine\Bundle\FixturesBundle\Fixture;
+use Doctrine\Common\DataFixtures\DependentFixtureInterface;
 use Doctrine\Persistence\ObjectManager;
 
-class QuizzFixtures extends Fixture
+class QuizzFixtures extends Fixture implements DependentFixtureInterface
 {
     public const QUIZZES = [
-        [
-            'titulo' => 'Fundamentos de Programación',
-            'descripcion' => 'Quiz sobre conceptos básicos de programación',
-            'curso' => 'introducción-a-la-programación',
-            'tiempoLimite' => 30,
-            'puntosTotales' => 100,
-            'diasLimite' => 7
+        'introducción-a-la-programación' => [
+            [
+                'titulo' => 'Quiz de Introducción',
+                'descripcion' => 'Evaluación de conceptos básicos de programación',
+                'tiempoLimite' => 30,
+                'puntosTotales' => 100,
+                'diasLimite' => 7
+            ],
+            [
+                'titulo' => 'Quiz de Variables',
+                'descripcion' => 'Evaluación sobre variables y tipos de datos',
+                'tiempoLimite' => 20,
+                'puntosTotales' => 50,
+                'diasLimite' => 5
+            ]
         ],
-        [
-            'titulo' => 'React Básico',
-            'descripcion' => 'Quiz sobre conceptos fundamentales de React',
-            'curso' => 'desarrollo-web-con-react',
-            'tiempoLimite' => 45,
-            'puntosTotales' => 100,
-            'diasLimite' => 7
+        'desarrollo-web-con-react' => [
+            [
+                'titulo' => 'Quiz de React Básico',
+                'descripcion' => 'Evaluación de conceptos fundamentales de React',
+                'tiempoLimite' => 45,
+                'puntosTotales' => 100,
+                'diasLimite' => 7
+            ],
+            [
+                'titulo' => 'Quiz de Componentes',
+                'descripcion' => 'Evaluación sobre componentes y props',
+                'tiempoLimite' => 30,
+                'puntosTotales' => 75,
+                'diasLimite' => 5
+            ]
         ],
-        [
-            'titulo' => 'Bases de Datos SQL',
-            'descripcion' => 'Quiz sobre conceptos básicos de SQL',
-            'curso' => 'bases-de-datos-sql',
-            'tiempoLimite' => 40,
-            'puntosTotales' => 100,
-            'diasLimite' => 7
+        'backend-con-symfony' => [
+            [
+                'titulo' => 'Quiz de Symfony',
+                'descripcion' => 'Evaluación de conceptos básicos de Symfony',
+                'tiempoLimite' => 40,
+                'puntosTotales' => 100,
+                'diasLimite' => 7
+            ],
+            [
+                'titulo' => 'Quiz de Doctrine',
+                'descripcion' => 'Evaluación sobre entidades y consultas',
+                'tiempoLimite' => 35,
+                'puntosTotales' => 80,
+                'diasLimite' => 5
+            ]
+        ],
+        'bases-de-datos-sql' => [
+            [
+                'titulo' => 'Quiz de SQL Básico',
+                'descripcion' => 'Evaluación de conceptos básicos de SQL',
+                'tiempoLimite' => 30,
+                'puntosTotales' => 100,
+                'diasLimite' => 7
+            ],
+            [
+                'titulo' => 'Quiz de Consultas Avanzadas',
+                'descripcion' => 'Evaluación de técnicas avanzadas de SQL',
+                'tiempoLimite' => 45,
+                'puntosTotales' => 120,
+                'diasLimite' => 7
+            ]
+        ],
+        'desarrollo-de-videojuegos-con-unity' => [
+            [
+                'titulo' => 'Quiz de Unity',
+                'descripcion' => 'Evaluación de conceptos básicos de Unity',
+                'tiempoLimite' => 30,
+                'puntosTotales' => 100,
+                'diasLimite' => 7
+            ],
+            [
+                'titulo' => 'Quiz de C# en Unity',
+                'descripcion' => 'Evaluación de scripting en C# para Unity',
+                'tiempoLimite' => 40,
+                'puntosTotales' => 100,
+                'diasLimite' => 7
+            ]
         ]
     ];
 
     public function load(ObjectManager $manager): void
     {
-        foreach (self::QUIZZES as $quizzData) {
-            $quizz = new Quizz();
-            $quizz->setTitulo($quizzData['titulo']);
-            $quizz->setDescripcion($quizzData['descripcion']);
-            $quizz->setFechaPublicacion(new \DateTime());
-            $quizz->setFechaLimite(new \DateTime('+' . $quizzData['diasLimite'] . ' days'));
-            $quizz->setTiempoLimite($quizzData['tiempoLimite']);
-            $quizz->setPuntosTotales($quizzData['puntosTotales']);
-
-            $manager->persist($quizz);
-            $this->addReference('quizz-' . strtolower(str_replace(' ', '-', $quizzData['titulo'])), $quizz);
+        foreach (self::QUIZZES as $cursoSlug => $quizzesList) {
+            foreach ($quizzesList as $index => $quizzData) {
+                $quizz = new Quizz();
+                $quizz->setTitulo($quizzData['titulo']);
+                $quizz->setDescripcion($quizzData['descripcion']);
+                $quizz->setFechaPublicacion(new \DateTime());
+                $quizz->setFechaLimite(new \DateTime('+' . $quizzData['diasLimite'] . ' days'));
+                $quizz->setTiempoLimite($quizzData['tiempoLimite']);
+                $quizz->setPuntosTotales($quizzData['puntosTotales']);
+                $quizz->setIdCurso($this->getReference('curso-' . $cursoSlug, Curso::class));
+                
+                $manager->persist($quizz);
+                $this->addReference('quizz-' . $cursoSlug . '-' . ($index + 1), $quizz);
+            }
         }
 
         $manager->flush();
+    }
+
+    public function getDependencies(): array
+    {
+        return [CursoFixtures::class];
     }
 }
