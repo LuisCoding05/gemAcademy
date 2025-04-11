@@ -275,6 +275,9 @@ export const SearchCourse = () => {
                             }}>
                               {course.descripcion}
                             </p>
+                            <p className='card-text small text-muted mb-2'>
+                              {course.estudiantes} estudiantes inscritos
+                            </p>
 
                             <div className="d-flex align-items-center mb-2">
                               <img 

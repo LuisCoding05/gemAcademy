@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext';
 export const Navbar = () => {
     const { isDarkMode, toggleDarkMode } = useTheme();
     const { user, logout } = useAuth();
-    console.log(user);
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-dark absolute-top">
             <div className="container">

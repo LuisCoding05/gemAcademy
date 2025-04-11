@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Curso;
 use App\Entity\UsuarioCurso;
+use App\Entity\Usuario;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -63,7 +64,7 @@ final class CourseController extends AbstractController
         foreach ($cursosRaw as $curso) {
             // Obtener el número de estudiantes inscritos
             $estudiantesInscritos = $this->entityManager->getRepository(UsuarioCurso::class)
-                ->count(['idCurso' => $curso]);
+            ->countUsuariosByCurso($curso->getId());
                 
             $cursos[] = [
                 "id" => $curso->getId(),
@@ -100,7 +101,37 @@ final class CourseController extends AbstractController
         
         // Obtener el número de estudiantes inscritos
         $estudiantesInscritos = $this->entityManager->getRepository(UsuarioCurso::class)
-            ->count(['idCurso' => $curso]);
+            ->countUsuariosByCurso($curso->getId());
+
+        // Obtener el usuario actual
+        $user = $this->getUser();
+        $userRole = null;
+        $isEnrolled = false;
+
+        if ($user) {
+            // Obtener la entidad Usuario
+            $usuario = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $user->getUserIdentifier()]);
+            
+            if ($usuario) {
+                // Verificar si es el profesor
+                if ($curso->getProfesor()->getId() === $usuario->getId()) {
+                    $userRole = 'profesor';
+                    $isEnrolled = true;
+                } else {
+                    // Verificar si está inscrito como estudiante
+                    $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)
+                        ->findOneBy([
+                            'idUsuario' => $usuario,
+                            'idCurso' => $curso
+                        ]);
+                    
+                    if ($usuarioCurso) {
+                        $userRole = 'estudiante';
+                        $isEnrolled = true;
+                    }
+                }
+            }
+        }
 
         $cursoData = [
             "id" => $curso->getId(),
@@ -115,6 +146,8 @@ final class CourseController extends AbstractController
                 "nombre" => $curso->getProfesor()->getNombre() . " " . $curso->getProfesor()->getApellido(),
                 "username" => $curso->getProfesor()->getUsername()
             ],
+            "userRole" => $userRole,
+            "isEnrolled" => $isEnrolled
         ];
 
         $cursoTareas = $curso->getTareas();
@@ -155,12 +188,34 @@ final class CourseController extends AbstractController
 
         $cursoForosData = [];
         foreach ($cursoForos as $foro) {
+            $mensajesData = [];
+            foreach ($foro->getMensajeForos() as $mensaje) {
+                $usuario = $mensaje->getIdUsuario();
+                $mensajesData[] = [
+                    "id" => $mensaje->getId(),
+                    "contenido" => $mensaje->getContenido(),
+                    "fechaPublicacion" => $mensaje->getFechaPublicacion()->format('Y/m/d H:i:s'),
+                    "usuario" => [
+                        "id" => $usuario->getId(),
+                        "nombre" => $usuario->getNombre() . " " . $usuario->getApellido(),
+                        "username" => $usuario->getUsername(),
+                        "imagen" => $usuario->getImagen() ? $usuario->getImagen()->getUrl() : null
+                    ],
+                    "mensajePadre" => $mensaje->getIdMensajePadre() ? [
+                        "id" => $mensaje->getIdMensajePadre()->getId(),
+                        "contenido" => $mensaje->getIdMensajePadre()->getContenido(),
+                        "usuario" => [
+                            "nombre" => $mensaje->getIdMensajePadre()->getIdUsuario()->getNombre() . " " . $mensaje->getIdMensajePadre()->getIdUsuario()->getApellido()
+                        ]
+                    ] : null
+                ];
+            }
+            
             $cursoForosData[] = [
                 "id" => $foro->getId(),
                 "titulo" => $foro->getTitulo(),
                 "descripcion" => $foro->getDescripcion(),
-                "mensajes" => $foro->getMensajeForos(),
-
+                "mensajes" => $mensajesData
             ];
         }
 
@@ -172,6 +227,8 @@ final class CourseController extends AbstractController
             "fechaCreacion" => $cursoData["fechaCreacion"],
             "estudiantes" => $cursoData["estudiantes"],
             "profesor" => $cursoData["profesor"],
+            "userRole" => $cursoData["userRole"],
+            "isEnrolled" => $cursoData["isEnrolled"],
             "tareas" => $cursoTareasData,
             "quizzes" => $cursoQuizzData,
             "materiales" => $cursoMaterialesData,

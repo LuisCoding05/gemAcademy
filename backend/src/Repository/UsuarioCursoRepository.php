@@ -16,6 +16,16 @@ class UsuarioCursoRepository extends ServiceEntityRepository
         parent::__construct($registry, UsuarioCurso::class);
     }
 
+    public function countUsuariosByCurso(int $cursoId): int
+    {
+        return $this->createQueryBuilder('uc')
+            ->select('COUNT(uc.id)')
+            ->where('uc.idCurso = :cursoId')
+            ->setParameter('cursoId', $cursoId)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     //    /**
     //     * @return UsuarioCurso[] Returns an array of UsuarioCurso objects
     //     */
