@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -216,9 +216,13 @@ const CourseDetail = () => {
                                                             {new Date(material.fechaPublicacion).toLocaleDateString()}
                                                         </small>
                                                         {course.isEnrolled && (
-                                                            <button className="btn btn-link btn-sm p-0" title="Ver material">
+                                                            <Link 
+                                                                to={`/cursos/${id}/material/${material.id}`}
+                                                                className="btn btn-link btn-sm p-0" 
+                                                                title="Ver material"
+                                                            >
                                                                 <Icon name="eye" size={20} color="#0d6efd" />
-                                                            </button>
+                                                            </Link>
                                                         )}
                                                     </div>
                                                 </li>
@@ -267,9 +271,13 @@ const CourseDetail = () => {
                                                                 Fecha límite: {new Date(tarea.fechaLimite).toLocaleDateString()}
                                                             </small>
                                                             {course.isEnrolled && (
-                                                                <button className="btn btn-link btn-sm p-0" title="Ver tarea">
+                                                                <Link 
+                                                                    to={`/cursos/${id}/tarea/${tarea.id}`}
+                                                                    className="btn btn-link btn-sm p-0" 
+                                                                    title="Ver tarea"
+                                                                >
                                                                     <Icon name="eye" size={20} color="#0d6efd" />
-                                                                </button>
+                                                                </Link>
                                                             )}
                                                         </div>
                                                     </div>
@@ -319,9 +327,13 @@ const CourseDetail = () => {
                                                                 Fecha límite: {new Date(quiz.fechaLimite).toLocaleDateString()}
                                                             </small>
                                                             {course.isEnrolled && (
-                                                                <button className="btn btn-link btn-sm p-0" title="Ver quiz">
+                                                                <Link 
+                                                                    to={`/cursos/${id}/quiz/${quiz.id}`}
+                                                                    className="btn btn-link btn-sm p-0" 
+                                                                    title="Ver quiz"
+                                                                >
                                                                     <Icon name="eye" size={20} color="#0d6efd" />
-                                                                </button>
+                                                                </Link>
                                                             )}
                                                         </div>
                                                     </div>

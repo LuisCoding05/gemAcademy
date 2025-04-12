@@ -14,6 +14,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import { SearchCourse } from './components/course/SearchCourse'
 import { CourseDetail } from './components/course/CourseDetail'
+import ItemDetails from './components/course/ItemDetails'
 
 function App() {
   return (
@@ -83,6 +84,17 @@ function App() {
                   <Navbar />
                   <CourseDetail />
                   <Copy />
+              </div>
+            } />
+
+            {/* Ruta para ver detalles de materiales, tareas y quizzes */}
+            <Route path="/cursos/:courseId/:itemType/:itemId" element={
+              <div className="wrapper">
+                <ProtectedRoute>
+                  <Navbar />
+                  <ItemDetails />
+                  <Copy />
+                </ProtectedRoute>
               </div>
             } />
           </Routes>

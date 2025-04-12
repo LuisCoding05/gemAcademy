@@ -5,6 +5,9 @@ namespace App\Controller;
 use App\Entity\Curso;
 use App\Entity\UsuarioCurso;
 use App\Entity\Usuario;
+use App\Entity\Material;
+use App\Entity\Tarea;
+use App\Entity\Quizz;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -292,6 +295,205 @@ final class CourseController extends AbstractController
                 'porcentajeCompletado' => $usuarioCurso->getPorcentajeCompletado()
             ]
         ]);
+    }
+
+    #[Route('/api/course/{id}/material/{materialId}', name: 'app_course_material_detail', methods: ['GET'])]
+    public function materialDetail($id, $materialId): JsonResponse
+    {
+        // Obtener el curso
+        $curso = $this->entityManager->getRepository(Curso::class)->find($id);
+        if (!$curso) {
+            return $this->json([
+                'message' => 'Curso no encontrado'
+            ], 404);
+        }
+
+        // Obtener el material
+        $material = $this->entityManager->getRepository(Material::class)->find($materialId);
+        if (!$material || $material->getIdCurso()->getId() != $id) {
+            return $this->json([
+                'message' => 'Material no encontrado'
+            ], 404);
+        }
+
+        // Obtener el usuario actual
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json([
+                'message' => 'Debes iniciar sesión para ver este material'
+            ], 401);
+        }
+
+        // Verificar si el usuario tiene acceso al curso
+        $usuario = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $user->getUserIdentifier()]);
+        if (!$usuario) {
+            return $this->json([
+                'message' => 'Usuario no encontrado'
+            ], 404);
+        }
+
+        // Verificar si es el profesor
+        $isProfesor = $curso->getProfesor()->getId() === $usuario->getId();
+        
+        // Verificar si está inscrito como estudiante
+        $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)
+            ->findOneBy([
+                'idUsuario' => $usuario,
+                'idCurso' => $curso
+            ]);
+        
+        $isEstudiante = $usuarioCurso !== null;
+
+        if (!$isProfesor && !$isEstudiante) {
+            return $this->json([
+                'message' => 'No tienes acceso a este material'
+            ], 403);
+        }
+
+        // Formatear la respuesta
+        $materialData = [
+            "id" => $material->getId(),
+            "titulo" => $material->getTitulo(),
+            "descripcion" => $material->getDescripcion(),
+            "contenido" => $material->getUrl(),
+            "fechaPublicacion" => $material->getFechaPublicacion()->format('Y/m/d H:i:s'),
+            "url" => $material->getUrl()
+        ];
+
+        return $this->json($materialData);
+    }
+
+    #[Route('/api/course/{id}/tarea/{tareaId}', name: 'app_course_tarea_detail', methods: ['GET'])]
+    public function tareaDetail($id, $tareaId): JsonResponse
+    {
+        // Obtener el curso
+        $curso = $this->entityManager->getRepository(Curso::class)->find($id);
+        if (!$curso) {
+            return $this->json([
+                'message' => 'Curso no encontrado'
+            ], 404);
+        }
+
+        // Obtener la tarea
+        $tarea = $this->entityManager->getRepository(Tarea::class)->find($tareaId);
+        if (!$tarea || $tarea->getIdCurso()->getId() != $id) {
+            return $this->json([
+                'message' => 'Tarea no encontrada'
+            ], 404);
+        }
+
+        // Obtener el usuario actual
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json([
+                'message' => 'Debes iniciar sesión para ver esta tarea'
+            ], 401);
+        }
+
+        // Verificar si el usuario tiene acceso al curso
+        $usuario = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $user->getUserIdentifier()]);
+        if (!$usuario) {
+            return $this->json([
+                'message' => 'Usuario no encontrado'
+            ], 404);
+        }
+
+        // Verificar si es el profesor
+        $isProfesor = $curso->getProfesor()->getId() === $usuario->getId();
+        
+        // Verificar si está inscrito como estudiante
+        $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)
+            ->findOneBy([
+                'idUsuario' => $usuario,
+                'idCurso' => $curso
+            ]);
+        
+        $isEstudiante = $usuarioCurso !== null;
+
+        if (!$isProfesor && !$isEstudiante) {
+            return $this->json([
+                'message' => 'No tienes acceso a esta tarea'
+            ], 403);
+        }
+
+        // Formatear la respuesta
+        $tareaData = [
+            "id" => $tarea->getId(),
+            "titulo" => $tarea->getTitulo(),
+            "descripcion" => $tarea->getDescripcion(),
+            "fechaPublicacion" => $tarea->getFechaPublicacion()->format('Y/m/d H:i:s'),
+            "fechaLimite" => $tarea->getFechaLimite()->format('Y/m/d H:i:s'),
+            "puntos" => $tarea->getPuntosMaximos()
+        ];
+
+        return $this->json($tareaData);
+    }
+
+    #[Route('/api/course/{id}/quiz/{quizId}', name: 'app_course_quiz_detail', methods: ['GET'])]
+    public function quizDetail($id, $quizId): JsonResponse
+    {
+        // Obtener el curso
+        $curso = $this->entityManager->getRepository(Curso::class)->find($id);
+        if (!$curso) {
+            return $this->json([
+                'message' => 'Curso no encontrado'
+            ], 404);
+        }
+
+        // Obtener el quiz
+        $quiz = $this->entityManager->getRepository(Quizz::class)->find($quizId);
+        if (!$quiz || $quiz->getIdCurso()->getId() != $id) {
+            return $this->json([
+                'message' => 'Quiz no encontrado'
+            ], 404);
+        }
+
+        // Obtener el usuario actual
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json([
+                'message' => 'Debes iniciar sesión para ver este quiz'
+            ], 401);
+        }
+
+        // Verificar si el usuario tiene acceso al curso
+        $usuario = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $user->getUserIdentifier()]);
+        if (!$usuario) {
+            return $this->json([
+                'message' => 'Usuario no encontrado'
+            ], 404);
+        }
+
+        // Verificar si es el profesor
+        $isProfesor = $curso->getProfesor()->getId() === $usuario->getId();
+        
+        // Verificar si está inscrito como estudiante
+        $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)
+            ->findOneBy([
+                'idUsuario' => $usuario,
+                'idCurso' => $curso
+            ]);
+        
+        $isEstudiante = $usuarioCurso !== null;
+
+        if (!$isProfesor && !$isEstudiante) {
+            return $this->json([
+                'message' => 'No tienes acceso a este quiz'
+            ], 403);
+        }
+
+        // Formatear la respuesta
+        $quizData = [
+            "id" => $quiz->getId(),
+            "titulo" => $quiz->getTitulo(),
+            "descripcion" => $quiz->getDescripcion(),
+            "fechaPublicacion" => $quiz->getFechaPublicacion()->format('Y/m/d H:i:s'),
+            "fechaLimite" => $quiz->getFechaLimite()->format('Y/m/d H:i:s'),
+            "puntos" => $quiz->getPuntosTotales(),
+            "tiempoLimite" => $quiz->getTiempoLimite()
+        ];
+
+        return $this->json($quizData);
     }
 
 }
