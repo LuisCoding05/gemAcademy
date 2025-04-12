@@ -36,12 +36,6 @@ const CourseDetail = () => {
         fetchCourse();
     }, [id]);
 
-    const getImageUrl = (url) => {
-        if (!url) return 'https://via.placeholder.com/400x250';
-        if (url.startsWith('http')) return url;
-        return url.replace('./images/', '/images/');
-    };
-
     const handleEnroll = async () => {
         try {
             setEnrolling(true);
@@ -115,7 +109,7 @@ const CourseDetail = () => {
                 <div className="col-md-4">
                     <div className="card">
                         <img 
-                            src={getImageUrl(course.imagen)} 
+                            src={course.imagen || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp'} 
                             className="card-img-top" 
                             alt={course.nombre}
                         />
@@ -386,7 +380,7 @@ const CourseDetail = () => {
                                                             <div key={mensaje.id} className="border-start border-primary border-3 ps-3 mb-3">
                                                                 <div className="d-flex gap-3">
                                                                     <img 
-                                                                        src={getImageUrl(mensaje.usuario.imagen)} 
+                                                                        src={mensaje.usuario.imagen || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp'} 
                                                                         alt={mensaje.usuario.nombre}
                                                                         className="rounded-circle"
                                                                         width="40"
@@ -469,7 +463,7 @@ const CourseDetail = () => {
                         <h4>Instructor</h4>
                         <div className="d-flex align-items-center">
                             <img 
-                                src={getImageUrl(course.profesor?.imagen)} 
+                                src={course.profesor?.imagen || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp'} 
                                 className="rounded-circle me-3" 
                                 alt={course.profesor?.nombre || "Instructor"}
                                 width="50"

@@ -103,7 +103,7 @@ class AuthController extends AbstractController
                 'roles' => $user->getRoles(),
                 'verificado' => $user->isVerificado(),
                 'imagen' => [
-                    'url' => $user->getImagen() ? $user->getImagen()->getUrl() : './images/pfpgemacademy/default.webp'
+                    'url' => $user->getImagen() ? $user->getImagen()->getUrl() : 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp'
                 ]
             ]
         ]);
@@ -162,7 +162,7 @@ class AuthController extends AbstractController
             $user->setApellido2($data['apellido2'] ?? null);
             $user->setUsername($data['username'] ?? $data['email']);
             // Asignamos la imagen por defecto
-            $imagen = $this->entityManager->getRepository(Imagen::class)->findOneBy(['url' => './images/pfpgemacademy/default.webp']);
+            $imagen = $this->entityManager->getRepository(Imagen::class)->findOneBy(['url' => 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp']);
             $user->setImagen($imagen);
 
             $user->setBan(false);

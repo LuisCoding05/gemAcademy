@@ -31,7 +31,7 @@ const Dashboard = () => {
         setNewUsername(response.data.user.username || '');
         setNewNombre(response.data.user.nombre || '');
         setNewApellido(response.data.user.apellido || '');
-        setSelectedImageUrl(response.data.user.imagen?.url || './images/pfpgemacademy/default.webp');
+        setSelectedImageUrl(response.data.user.imagen?.url || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp');
         setLoading(false);
       } catch (err) {
         console.error('Error completo:', err);
@@ -52,7 +52,7 @@ const Dashboard = () => {
     setNewUsername(dashboardData.user.username || '');
     setNewNombre(dashboardData.user.nombre || '');
     setNewApellido(dashboardData.user.apellido || '');
-    setSelectedImageUrl(dashboardData.user.imagen?.url || './images/pfpgemacademy/default.webp');
+    setSelectedImageUrl(dashboardData.user.imagen?.url || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp');
     setUpdateError('');
     setUpdateSuccess('');
   };
@@ -241,7 +241,7 @@ const Dashboard = () => {
               ) : (
                 <>
                   <img 
-                    src={userData.imagen?.url || './images/pfpgemacademy/default.webp'} 
+                    src={userData.imagen?.url || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp'} 
                     alt="Foto de perfil" 
                     className="rounded-circle mb-3 shadow"
                     style={{ 
@@ -455,7 +455,7 @@ const Dashboard = () => {
                           <div className={`card ${isDarkMode ? 'bg-dark text-light' : ''} h-100 shadow-sm`}>
                             <div className="card-body text-center">
                               <img 
-                                src={logro.imagen?.url || './images/pfpgemacademy/default.webp'} 
+                                src={logro.imagen?.url || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp'} 
                                 alt={logro.titulo}
                                 className="img-fluid mb-2"
                                 style={{ width: '80px', height: '80px', objectFit: 'cover' }}
