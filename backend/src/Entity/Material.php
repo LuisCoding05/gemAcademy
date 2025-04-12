@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\MaterialRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -33,6 +35,17 @@ class Material
     #[ORM\ManyToOne(inversedBy: 'materials')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Curso $idCurso = null;
+
+    /**
+     * @var Collection<int, MaterialCompletado>
+     */
+    #[ORM\OneToMany(targetEntity: MaterialCompletado::class, mappedBy: 'material')]
+    private Collection $materialCompletados;
+
+    public function __construct()
+    {
+        $this->materialCompletados = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -108,6 +121,36 @@ class Material
     public function setIdCurso(?Curso $idCurso): static
     {
         $this->idCurso = $idCurso;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MaterialCompletado>
+     */
+    public function getMaterialCompletados(): Collection
+    {
+        return $this->materialCompletados;
+    }
+
+    public function addMaterialCompletado(MaterialCompletado $materialCompletado): static
+    {
+        if (!$this->materialCompletados->contains($materialCompletado)) {
+            $this->materialCompletados->add($materialCompletado);
+            $materialCompletado->setMaterial($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMaterialCompletado(MaterialCompletado $materialCompletado): static
+    {
+        if ($this->materialCompletados->removeElement($materialCompletado)) {
+            // set the owning side to null (unless already changed)
+            if ($materialCompletado->getMaterial() === $this) {
+                $materialCompletado->setMaterial(null);
+            }
+        }
 
         return $this;
     }

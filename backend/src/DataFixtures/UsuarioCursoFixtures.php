@@ -18,16 +18,15 @@ class UsuarioCursoFixtures extends Fixture implements DependentFixtureInterface
         $usuarioCurso->setIdUsuario($this->getReference('usuario-estudiante1', Usuario::class))
             ->setIdCurso($this->getReference('curso-introducción-a-la-programación', Curso::class))
             ->setMaterialesCompletados(2)
-            ->setMaterialesTotales(10)
             ->setTareasCompletadas(1)
-            ->setTareasTotales(5)
             ->setQuizzesCompletados(0)
-            ->setQuizzesTotales(3)
             ->setPorcentajeCompletado('20.00')
             ->setUltimaActualizacion(new \DateTime());
         
         $manager->persist($usuarioCurso);
         $manager->flush();
+        
+        $this->addReference('usuario-curso-estudiante1', $usuarioCurso);
     }
 
     public function getDependencies(): array

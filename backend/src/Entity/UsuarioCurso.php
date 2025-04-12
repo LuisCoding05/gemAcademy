@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UsuarioCursoRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -25,23 +27,14 @@ class UsuarioCurso
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $fechaInscripcion = null;
 
-    #[ORM\Column]
+    #[ORM\Column(options: ['default' => 0])]
     private ?int $materialesCompletados = null;
-
-    #[ORM\Column]
-    private ?int $materialesTotales = null;
 
     #[ORM\Column(options: ['default' => 0])]
     private ?int $tareasCompletadas = null;
 
     #[ORM\Column(options: ['default' => 0])]
-    private ?int $tareasTotales = null;
-
-    #[ORM\Column(options: ['default' => 0])]
     private ?int $quizzesCompletados = null;
-
-    #[ORM\Column(options: ['default' => 0])]
-    private ?int $quizzesTotales = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 5, scale: 2, options: ['default' => 0])]
     private ?string $porcentajeCompletado = null;
@@ -49,9 +42,23 @@ class UsuarioCurso
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $ultimaActualizacion = null;
 
+    /**
+     * @var Collection<int, MaterialCompletado>
+     */
+    #[ORM\OneToMany(targetEntity: MaterialCompletado::class, mappedBy: 'usuarioCurso')]
+    private Collection $materialCompletados;
+
+    /**
+     * @var Collection<int, EntregaTarea>
+     */
+    #[ORM\OneToMany(targetEntity: EntregaTarea::class, mappedBy: 'usuarioCurso')]
+    private Collection $entregaTareas;
+
     public function __construct()
     {
         $this->fechaInscripcion = new \DateTime();
+        $this->materialCompletados = new ArrayCollection();
+        $this->entregaTareas = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -107,18 +114,6 @@ class UsuarioCurso
         return $this;
     }
 
-    public function getMaterialesTotales(): ?int
-    {
-        return $this->materialesTotales;
-    }
-
-    public function setMaterialesTotales(int $materialesTotales): static
-    {
-        $this->materialesTotales = $materialesTotales;
-
-        return $this;
-    }
-
     public function getTareasCompletadas(): ?int
     {
         return $this->tareasCompletadas;
@@ -131,17 +126,6 @@ class UsuarioCurso
         return $this;
     }
 
-    public function getTareasTotales(): ?int
-    {
-        return $this->tareasTotales;
-    }
-
-    public function setTareasTotales(int $tareasTotales): static
-    {
-        $this->tareasTotales = $tareasTotales;
-
-        return $this;
-    }
 
     public function getQuizzesCompletados(): ?int
     {
@@ -151,18 +135,6 @@ class UsuarioCurso
     public function setQuizzesCompletados(int $quizzesCompletados): static
     {
         $this->quizzesCompletados = $quizzesCompletados;
-
-        return $this;
-    }
-
-    public function getQuizzesTotales(): ?int
-    {
-        return $this->quizzesTotales;
-    }
-
-    public function setQuizzesTotales(int $quizzesTotales): static
-    {
-        $this->quizzesTotales = $quizzesTotales;
 
         return $this;
     }
@@ -187,6 +159,66 @@ class UsuarioCurso
     public function setUltimaActualizacion(\DateTimeInterface $ultimaActualizacion): static
     {
         $this->ultimaActualizacion = $ultimaActualizacion;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, MaterialCompletado>
+     */
+    public function getMaterialCompletados(): Collection
+    {
+        return $this->materialCompletados;
+    }
+
+    public function addMaterialCompletado(MaterialCompletado $materialCompletado): static
+    {
+        if (!$this->materialCompletados->contains($materialCompletado)) {
+            $this->materialCompletados->add($materialCompletado);
+            $materialCompletado->setUsuarioCurso($this);
+        }
+
+        return $this;
+    }
+
+    public function removeMaterialCompletado(MaterialCompletado $materialCompletado): static
+    {
+        if ($this->materialCompletados->removeElement($materialCompletado)) {
+            // set the owning side to null (unless already changed)
+            if ($materialCompletado->getUsuarioCurso() === $this) {
+                $materialCompletado->setUsuarioCurso(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EntregaTarea>
+     */
+    public function getEntregaTareas(): Collection
+    {
+        return $this->entregaTareas;
+    }
+
+    public function addEntregaTarea(EntregaTarea $entregaTarea): static
+    {
+        if (!$this->entregaTareas->contains($entregaTarea)) {
+            $this->entregaTareas->add($entregaTarea);
+            $entregaTarea->setUsuarioCurso($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEntregaTarea(EntregaTarea $entregaTarea): static
+    {
+        if ($this->entregaTareas->removeElement($entregaTarea)) {
+            // set the owning side to null (unless already changed)
+            if ($entregaTarea->getUsuarioCurso() === $this) {
+                $entregaTarea->setUsuarioCurso(null);
+            }
+        }
 
         return $this;
     }

@@ -47,6 +47,8 @@ class Tarea
     #[ORM\JoinColumn(nullable: false)]
     private ?Curso $idCurso = null;
 
+    
+
     public function __construct()
     {
         $this->entregaTareas = new ArrayCollection();
@@ -183,4 +185,5 @@ class Tarea
 
         return $this;
     }
+
 }

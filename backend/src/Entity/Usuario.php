@@ -305,28 +305,6 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         return $this->entregaTareas;
     }
 
-    public function addEntregaTarea(EntregaTarea $entregaTarea): static
-    {
-        if (!$this->entregaTareas->contains($entregaTarea)) {
-            $this->entregaTareas->add($entregaTarea);
-            $entregaTarea->setIdUsuario($this);
-        }
-
-        return $this;
-    }
-
-    public function removeEntregaTarea(EntregaTarea $entregaTarea): static
-    {
-        if ($this->entregaTareas->removeElement($entregaTarea)) {
-            // set the owning side to null (unless already changed)
-            if ($entregaTarea->getIdUsuario() === $this) {
-                $entregaTarea->setIdUsuario(null);
-            }
-        }
-
-        return $this;
-    }
-
     /**
      * @return Collection<int, IntentoQuizz>
      */

@@ -276,11 +276,8 @@ final class CourseController extends AbstractController
         $usuarioCurso->setIdUsuario($user);
         $usuarioCurso->setIdCurso($curso);
         $usuarioCurso->setMaterialesCompletados(0);
-        $usuarioCurso->setMaterialesTotales(count($curso->getMaterials()));
         $usuarioCurso->setTareasCompletadas(0);
-        $usuarioCurso->setTareasTotales(count($curso->getTareas()));
         $usuarioCurso->setQuizzesCompletados(0);
-        $usuarioCurso->setQuizzesTotales(count($curso->getQuizzs()));
         $usuarioCurso->setPorcentajeCompletado('0.00');
         $usuarioCurso->setUltimaActualizacion(new \DateTime());
 

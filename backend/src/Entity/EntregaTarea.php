@@ -34,8 +34,7 @@ class EntregaTarea
     private ?Tarea $idTarea = null;
 
     #[ORM\ManyToOne(inversedBy: 'entregaTareas')]
-    #[ORM\JoinColumn(nullable: false)]
-    private ?Usuario $idUsuario = null;
+    private ?UsuarioCurso $usuarioCurso = null;
 
     public function getId(): ?int
     {
@@ -114,15 +113,16 @@ class EntregaTarea
         return $this;
     }
 
-    public function getIdUsuario(): ?Usuario
+    public function getUsuarioCurso(): ?UsuarioCurso
     {
-        return $this->idUsuario;
+        return $this->usuarioCurso;
     }
 
-    public function setIdUsuario(?Usuario $idUsuario): static
+    public function setUsuarioCurso(?UsuarioCurso $usuarioCurso): static
     {
-        $this->idUsuario = $idUsuario;
+        $this->usuarioCurso = $usuarioCurso;
 
         return $this;
     }
+
 }

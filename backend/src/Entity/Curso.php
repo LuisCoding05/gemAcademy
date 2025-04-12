@@ -286,4 +286,24 @@ class Curso
 
         return $this;
     }
+
+    public function getTotalItems(): int
+    {
+        return $this->materials->count() + $this->tareas->count() + $this->quizzs->count();
+    }
+
+    public function getTotalMateriales(): int
+    {
+        return $this->materials->count();
+    }
+
+    public function getTotalTareas(): int
+    {
+        return $this->tareas->count();
+    }
+
+    public function getTotalQuizzes(): int
+    {
+        return $this->quizzs->count();
+    }
 }

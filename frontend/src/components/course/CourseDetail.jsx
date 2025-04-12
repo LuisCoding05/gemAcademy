@@ -58,9 +58,11 @@ const CourseDetail = () => {
         }
     };
 
-    const handleSendMessage = async (foroId, parentId = null) => {
+    const handleSendMessage = async (parentId = null) => {
         try {
             setIsSearching(true);
+            // Usamos el ID del primer foro del curso
+            const foroId = course.foros[0].id;
             await axios.post(`/api/foro/${foroId}/mensaje`, {
                 contenido: newMessage,
                 mensajePadreId: parentId
@@ -369,92 +371,94 @@ const CourseDetail = () => {
                                 data-bs-parent="#courseAccordion"
                             >
                                 <div className="accordion-body">
-                                    {course.foros && course.foros.length > 0 ? (
-                                        course.foros.map((foro, index) => (
-                                            <div key={index} className="card mb-4">
-                                                <div className="card-header">
-                                                    <h5 className="mb-0">{foro.titulo}</h5>
-                                                    <p className="text-muted small mb-0">{foro.descripcion}</p>
-                                                </div>
-                                                
-                                                {/* Lista de Mensajes */}
-                                                <div className="card-body">
-                                                    {foro.mensajes?.map((mensaje) => (
-                                                        <div key={mensaje.id} className="border-start border-primary border-3 ps-3 mb-3">
-                                                            <div className="d-flex gap-3">
-                                                                <img 
-                                                                    src={getImageUrl(mensaje.usuario.imagen)} 
-                                                                    alt={mensaje.usuario.nombre}
-                                                                    className="rounded-circle"
-                                                                    width="40"
-                                                                    height="40"
-                                                                />
-                                                                <div className="flex-grow-1">
-                                                                    <div className="d-flex justify-content-between align-items-center">
-                                                                        <h6 className="mb-0">{mensaje.usuario.nombre}</h6>
-                                                                        <small className="text-muted">
-                                                                            {new Date(mensaje.fechaPublicacion).toLocaleString()}
-                                                                        </small>
-                                                                    </div>
-                                                                    <p className="mb-2">{mensaje.contenido}</p>
-                                                                    {mensaje.mensajePadre && (
-                                                                        <div className={`p-2 rounded mb-2 small ${isDarkMode ? 'bg-dark text-light border border-secondary' : 'bg-light'}`}>
-                                                                            <strong>Respondiendo a {mensaje.mensajePadre.usuario.nombre}:</strong>
-                                                                            <p className="mb-0">{mensaje.mensajePadre.contenido}</p>
-                                                                        </div>
-                                                                    )}
-                                                                    {course.isEnrolled && (
-                                                                        <button
-                                                                            onClick={() => setReplyTo(mensaje.id)}
-                                                                            className={`btn btn-link btn-sm p-0 ${isDarkMode ? 'text-info' : 'text-primary'}`}
-                                                                        >
-                                                                            <Icon name="forward" size={16} className="me-1" />
-                                                                            Responder
-                                                                        </button>
-                                                                    )}
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    ))}
-
-                                                    {/* Formulario para nuevo mensaje */}
-                                                    {course.isEnrolled && (
-                                                        <div className="mt-3">
-                                                            {replyTo && (
-                                                                <div className={`alert ${isDarkMode ? 'alert-dark' : 'alert-info'} d-flex justify-content-between align-items-center`}>
-                                                                    <span>Respondiendo a un mensaje...</span>
-                                                                    <button
-                                                                        onClick={() => setReplyTo(null)}
-                                                                        className="btn-close"
-                                                                        data-bs-theme={isDarkMode ? 'dark' : 'light'}
-                                                                        aria-label="Cancelar respuesta"
+                                    <div className="foro-container" style={{ maxHeight: '400px', overflowY: 'auto' }}>
+                                        {course.foros && course.foros.length > 0 ? (
+                                            course.foros.map((foro, index) => (
+                                                <div key={index} className="card mb-4">
+                                                    <div className="card-header">
+                                                        <h5 className="mb-0">{foro.titulo}</h5>
+                                                        <p className="text-muted small mb-0">{foro.descripcion}</p>
+                                                    </div>
+                                                    
+                                                    {/* Lista de Mensajes */}
+                                                    <div className="card-body">
+                                                        {foro.mensajes?.map((mensaje) => (
+                                                            <div key={mensaje.id} className="border-start border-primary border-3 ps-3 mb-3">
+                                                                <div className="d-flex gap-3">
+                                                                    <img 
+                                                                        src={getImageUrl(mensaje.usuario.imagen)} 
+                                                                        alt={mensaje.usuario.nombre}
+                                                                        className="rounded-circle"
+                                                                        width="40"
+                                                                        height="40"
                                                                     />
+                                                                    <div className="flex-grow-1">
+                                                                        <div className="d-flex justify-content-between align-items-center">
+                                                                            <h6 className="mb-0">{mensaje.usuario.nombre}</h6>
+                                                                            <small className="text-muted">
+                                                                                {new Date(mensaje.fechaPublicacion).toLocaleString()}
+                                                                            </small>
+                                                                        </div>
+                                                                        <p className="mb-2">{mensaje.contenido}</p>
+                                                                        {mensaje.mensajePadre && (
+                                                                            <div className={`p-2 rounded mb-2 small ${isDarkMode ? 'bg-dark text-light border border-secondary' : 'bg-light'}`}>
+                                                                                <strong>Respondiendo a {mensaje.mensajePadre.usuario.nombre}:</strong>
+                                                                                <p className="mb-0">{mensaje.mensajePadre.contenido}</p>
+                                                                            </div>
+                                                                        )}
+                                                                        {course.isEnrolled && (
+                                                                            <button
+                                                                                onClick={() => setReplyTo(mensaje.id)}
+                                                                                className={`btn btn-link btn-sm p-0 ${isDarkMode ? 'text-info' : 'text-primary'}`}
+                                                                            >
+                                                                                <Icon name="forward" size={16} className="me-1" />
+                                                                                Responder
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
-                                                            )}
-                                                            <div className="d-flex gap-2">
-                                                                <textarea
-                                                                    value={newMessage}
-                                                                    onChange={(e) => setNewMessage(e.target.value)}
-                                                                    placeholder="Escribe tu mensaje..."
-                                                                    className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
-                                                                    rows="3"
-                                                                />
-                                                                <button
-                                                                    onClick={() => handleSendMessage(foro.id, replyTo)}
-                                                                    className="btn btn-primary align-self-start"
-                                                                    disabled={!newMessage.trim()}
-                                                                >
-                                                                    <Icon name="email" size={20} className="me-2" />
-                                                                    Enviar
-                                                                </button>
                                                             </div>
-                                                        </div>
-                                                    )}
+                                                        ))}
+                                                    </div>
                                                 </div>
+                                            ))
+                                        ) : (
+                                            <p className="text-muted">No hay foros disponibles</p>
+                                        )}
+                                    </div>
+
+                                    {/* Formulario para nuevo mensaje */}
+                                    {course.isEnrolled && (
+                                        <div className="mt-3">
+                                            {replyTo && (
+                                                <div className={`alert ${isDarkMode ? 'alert-dark' : 'alert-info'} d-flex justify-content-between align-items-center`}>
+                                                    <span>Respondiendo a un mensaje...</span>
+                                                    <button
+                                                        onClick={() => setReplyTo(null)}
+                                                        className="btn-close"
+                                                        data-bs-theme={isDarkMode ? 'dark' : 'light'}
+                                                        aria-label="Cancelar respuesta"
+                                                    />
+                                                </div>
+                                            )}
+                                            <div className="d-flex gap-2">
+                                                <textarea
+                                                    value={newMessage}
+                                                    onChange={(e) => setNewMessage(e.target.value)}
+                                                    placeholder="Escribe tu mensaje..."
+                                                    className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
+                                                    rows="3"
+                                                />
+                                                <button
+                                                    onClick={() => handleSendMessage(replyTo)}
+                                                    className="btn btn-primary align-self-start"
+                                                    disabled={!newMessage.trim()}
+                                                >
+                                                    <Icon name="email" size={20} className="me-2" />
+                                                    Enviar
+                                                </button>
                                             </div>
-                                        ))
-                                    ) : (
-                                        <p className="text-muted">No hay foros disponibles</p>
+                                        </div>
                                     )}
                                 </div>
                             </div>
