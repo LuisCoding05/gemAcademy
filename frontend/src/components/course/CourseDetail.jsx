@@ -107,7 +107,7 @@ const CourseDetail = () => {
             <div className="row">
                 {/* Imagen del curso */}
                 <div className="col-md-4">
-                    <div className="card">
+                    <div className="card mb-4">
                         <img 
                             src={course.imagen || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp'} 
                             className="card-img-top" 
@@ -354,7 +354,7 @@ const CourseDetail = () => {
                                     aria-expanded="false" 
                                     aria-controls="collapseForos"
                                 >
-                                    <Icon name="earth" color="blue" size={24} className="me-2" />
+                                    <Icon name="earth" color="#3498db" size={24} className="me-2" />
                                     Foros del curso
                                 </button>
                             </h2>
