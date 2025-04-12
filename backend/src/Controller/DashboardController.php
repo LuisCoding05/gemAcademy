@@ -6,6 +6,7 @@ use App\Entity\Usuario;
 use App\Entity\UsuarioCurso;
 use App\Entity\UsuarioLogro;
 use App\Entity\Imagen;
+use App\Entity\Curso;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -27,14 +28,36 @@ class DashboardController extends AbstractController
         /** @var Usuario $user */
         $user = $this->getUser();
 
-        // Obtener cursos del usuario
-        $usuarioCursos = $this->entityManager->getRepository(UsuarioCurso::class)
-            ->findBy(['idUsuario' => $user]);
-
         $cursos = [];
         $totalCursos = 0;
         $cursosCompletados = 0;
         $puntosTotales = 0;
+
+        // Obtener cursos donde el usuario es profesor
+        $cursosDictados = $this->entityManager->getRepository(Curso::class)
+            ->findBy(['profesor' => $user]);
+
+        foreach ($cursosDictados as $curso) {
+            $cursos[] = [
+                'id' => $curso->getId(),
+                'titulo' => $curso->getNombre(),
+                'descripcion' => $curso->getDescripcion(),
+                'porcentajeCompletado' => 100, // El profesor tiene acceso completo
+                'materialesCompletados' => count($curso->getMaterials()),
+                'materialesTotales' => count($curso->getMaterials()),
+                'tareasCompletadas' => count($curso->getTareas()),
+                'tareasTotales' => count($curso->getTareas()),
+                'quizzesCompletados' => count($curso->getQuizzs()),
+                'quizzesTotales' => count($curso->getQuizzs()),
+                'fechaInscripcion' => $curso->getFechaCreacion()->format('Y-m-d H:i:s'),
+                'ultimaActualizacion' => $curso->getFechaCreacion()->format('Y-m-d H:i:s'),
+                'userRole' => 'profesor'
+            ];
+        }
+
+        // Obtener cursos donde el usuario es estudiante
+        $usuarioCursos = $this->entityManager->getRepository(UsuarioCurso::class)
+            ->findBy(['idUsuario' => $user]);
 
         foreach ($usuarioCursos as $usuarioCurso) {
             $curso = $usuarioCurso->getIdCurso();
@@ -56,11 +79,12 @@ class DashboardController extends AbstractController
                 'quizzesCompletados' => $usuarioCurso->getQuizzesCompletados(),
                 'quizzesTotales' => $usuarioCurso->getQuizzesTotales(),
                 'fechaInscripcion' => $usuarioCurso->getFechaInscripcion()->format('Y-m-d H:i:s'),
-                'ultimaActualizacion' => $usuarioCurso->getUltimaActualizacion()->format('Y-m-d H:i:s')
+                'ultimaActualizacion' => $usuarioCurso->getUltimaActualizacion()->format('Y-m-d H:i:s'),
+                'userRole' => 'estudiante'
             ];
         }
 
-        $totalCursos = count($cursos);
+        $totalCursos = count($usuarioCursos);
 
         // Obtener logros del usuario
         $usuarioLogros = $this->entityManager->getRepository(UsuarioLogro::class)

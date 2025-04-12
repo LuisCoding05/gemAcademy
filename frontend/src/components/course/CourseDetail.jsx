@@ -4,6 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import axios from '../../utils/axios';
 import Icon from '../Icon';
+import Loader from '../common/Loader';
 
 const CourseDetail = () => {
     const { user } = useAuth();
@@ -14,6 +15,9 @@ const CourseDetail = () => {
     const [error, setError] = useState(null);
     const [newMessage, setNewMessage] = useState('');
     const [replyTo, setReplyTo] = useState(null);
+    const [enrollError, setEnrollError] = useState(null);
+    const [enrolling, setEnrolling] = useState(false);
+    const [isSearching, setIsSearching] = useState(false);
 
     useEffect(() => {
         const fetchCourse = async () => {
@@ -40,48 +44,44 @@ const CourseDetail = () => {
 
     const handleEnroll = async () => {
         try {
+            setEnrolling(true);
+            setEnrollError(null);
             await axios.post(`/api/course/${id}/enroll`);
             // Recargar el curso para actualizar el estado
             const response = await axios.get(`/api/course/${id}`);
             setCourse(response.data);
         } catch (error) {
             console.error('Error al inscribirse al curso:', error);
+            setEnrollError(error.response?.data?.message || 'Error al inscribirse al curso');
+        } finally {
+            setEnrolling(false);
         }
     };
 
     const handleSendMessage = async (foroId, parentId = null) => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/api/foro/${foroId}/mensaje`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                },
-                body: JSON.stringify({
-                    contenido: newMessage,
-                    mensajePadreId: parentId
-                })
+            setIsSearching(true);
+            await axios.post(`/api/foro/${foroId}/mensaje`, {
+                contenido: newMessage,
+                mensajePadreId: parentId
             });
 
-            if (response.ok) {
-                setNewMessage('');
-                setReplyTo(null);
-                // Recargar los datos del curso
-                fetchCourseData();
-            }
+            // Recargar los datos del curso
+            const response = await axios.get(`/api/course/${id}`);
+            setCourse(response.data);
+            setNewMessage('');
+            setReplyTo(null);
         } catch (error) {
             console.error('Error al enviar mensaje:', error);
+        } finally {
+            setIsSearching(false);
         }
     };
 
     if (loading) {
         return (
             <div className="container mt-5">
-                <div className="text-center">
-                    <div className="spinner-border" role="status">
-                        <span className="visually-hidden">Cargando...</span>
-                    </div>
-                </div>
+                <Loader size="large" />
             </div>
         );
     }
@@ -122,22 +122,39 @@ const CourseDetail = () => {
                             {user ? (
                                 course.isEnrolled ? (
                                     <div className="alert alert-success">
-                                        <Icon name="check-circle" size={20} className="me-2" />
+                                        <Icon name="checkmark" size={20} className="me-2" />
                                         Inscrito como {course.userRole}
                                     </div>
                                 ) : (
-                                    <button 
-                                        className="btn btn-primary w-100"
-                                        onClick={handleEnroll}
-                                    >
-                                        <Icon name="user-plus" size={20} className="me-2" />
-                                        Inscribirse al curso
-                                    </button>
+                                    <>
+                                        <button 
+                                            className="btn btn-primary w-100"
+                                            onClick={handleEnroll}
+                                            disabled={enrolling}
+                                        >
+                                            {enrolling ? (
+                                                <>
+                                                    <Loader size="small" className="me-2" />
+                                                    Inscribiendo...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <Icon name="heart" color="red" size={20} className="me-2" />
+                                                    Inscribirse al curso
+                                                </>
+                                            )}
+                                        </button>
+                                        {enrollError && (
+                                            <div className="alert alert-danger mt-2">
+                                                {enrollError}
+                                            </div>
+                                        )}
+                                    </>
                                 )
                             ) : (
                                 <Link to={`/login`}>
                                     <button className="btn btn-primary w-100">
-                                        <Icon name="login" size={20} className="me-2" />
+                                        <Icon name="user1" size={20} className="me-2" />
                                         ¡Inicia sesión para inscribirte!
                                     </button>
                                 </Link>
@@ -175,7 +192,7 @@ const CourseDetail = () => {
                                     aria-expanded="false" 
                                     aria-controls="collapseMateriales"
                                 >
-                                    <Icon name="book" size={24} className="me-2" />
+                                    <Icon name="book" color="green" size={24} className="me-2" />
                                     Materiales del curso
                                 </button>
                             </h2>
@@ -191,14 +208,19 @@ const CourseDetail = () => {
                                             {course.materiales.map((material, index) => (
                                                 <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
                                                     <div>
-                                                        <Icon name="file-text" size={20} className="me-2" />
-                                                        <a href={material.url} target="_blank" rel="noopener noreferrer">
-                                                            {material.titulo}
-                                                        </a>
+                                                        <Icon name="folder" size={20} className="me-2" />
+                                                        {material.titulo}
                                                     </div>
-                                                    <small className="text-muted">
-                                                        {new Date(material.fechaPublicacion).toLocaleDateString()}
-                                                    </small>
+                                                    <div>
+                                                        <small className="text-muted me-3">
+                                                            {new Date(material.fechaPublicacion).toLocaleDateString()}
+                                                        </small>
+                                                        {course.isEnrolled && (
+                                                            <button className="btn btn-link btn-sm p-0" title="Ver material">
+                                                                <Icon name="eye" size={20} color="#0d6efd" />
+                                                            </button>
+                                                        )}
+                                                    </div>
                                                 </li>
                                             ))}
                                         </ul>
@@ -220,7 +242,7 @@ const CourseDetail = () => {
                                     aria-expanded="false" 
                                     aria-controls="collapseTareas"
                                 >
-                                    <Icon name="clipboard-edit" size={24} className="me-2" />
+                                    <Icon name="clipboard-edit" color="#FFC000" size={24} className="me-2" />
                                     Tareas del curso
                                 </button>
                             </h2>
@@ -237,12 +259,19 @@ const CourseDetail = () => {
                                                 <li key={index} className="list-group-item">
                                                     <div className="d-flex justify-content-between align-items-center">
                                                         <div>
-                                                            <Icon name="journal-text" size={20} className="me-2" />
+                                                            <Icon name="files" size={20} className="me-2" />
                                                             {tarea.titulo}
                                                         </div>
-                                                        <small className="text-muted">
-                                                            Fecha límite: {new Date(tarea.fechaLimite).toLocaleDateString()}
-                                                        </small>
+                                                        <div>
+                                                            <small className="text-muted me-3">
+                                                                Fecha límite: {new Date(tarea.fechaLimite).toLocaleDateString()}
+                                                            </small>
+                                                            {course.isEnrolled && (
+                                                                <button className="btn btn-link btn-sm p-0" title="Ver tarea">
+                                                                    <Icon name="eye" size={20} color="#0d6efd" />
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </li>
                                             ))}
@@ -265,7 +294,7 @@ const CourseDetail = () => {
                                     aria-expanded="false" 
                                     aria-controls="collapseQuizzes"
                                 >
-                                    <Icon name="spaceinvaders" size={24} className="me-2" />
+                                    <Icon name="spaceinvaders" color="purple" size={24} className="me-2" />
                                     Quizzes del curso
                                 </button>
                             </h2>
@@ -282,12 +311,19 @@ const CourseDetail = () => {
                                                 <li key={index} className="list-group-item">
                                                     <div className="d-flex justify-content-between align-items-center">
                                                         <div>
-                                                            <Icon name="quiz" size={20} className="me-2" />
+                                                            <Icon name="gamepad" size={20} className="me-2" />
                                                             {quiz.titulo}
                                                         </div>
-                                                        <small className="text-muted">
-                                                            Fecha límite: {new Date(quiz.fechaLimite).toLocaleDateString()}
-                                                        </small>
+                                                        <div>
+                                                            <small className="text-muted me-3">
+                                                                Fecha límite: {new Date(quiz.fechaLimite).toLocaleDateString()}
+                                                            </small>
+                                                            {course.isEnrolled && (
+                                                                <button className="btn btn-link btn-sm p-0" title="Ver quiz">
+                                                                    <Icon name="eye" size={20} color="#0d6efd" />
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     </div>
                                                 </li>
                                             ))}
@@ -310,7 +346,7 @@ const CourseDetail = () => {
                                     aria-expanded="false" 
                                     aria-controls="collapseForos"
                                 >
-                                    <Icon name="earth" size={24} className="me-2" />
+                                    <Icon name="earth" color="blue" size={24} className="me-2" />
                                     Foros del curso
                                 </button>
                             </h2>

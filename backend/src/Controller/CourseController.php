@@ -236,5 +236,62 @@ final class CourseController extends AbstractController
         ]);
     }
 
+    #[Route('/api/course/{id}/enroll', name: 'app_course_enroll', methods: ['POST'])]
+    public function enroll($id): JsonResponse
+    {
+        // Obtener el usuario actual
+        $user = $this->getUser();
+        if (!$user) {
+            return $this->json([
+                'message' => 'Debes iniciar sesión para inscribirte al curso'
+            ], 401);
+        }
+
+        // Obtener el curso
+        $curso = $this->entityManager->getRepository(Curso::class)->find($id);
+        if (!$curso) {
+            return $this->json([
+                'message' => 'Curso no encontrado'
+            ], 404);
+        }
+
+        // Verificar si el usuario ya está inscrito
+        $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)
+            ->findOneBy([
+                'idUsuario' => $user,
+                'idCurso' => $curso
+            ]);
+
+        if ($usuarioCurso) {
+            return $this->json([
+                'message' => 'Ya estás inscrito en este curso'
+            ], 400);
+        }
+
+        // Crear nueva inscripción
+        $usuarioCurso = new UsuarioCurso();
+        $usuarioCurso->setIdUsuario($user);
+        $usuarioCurso->setIdCurso($curso);
+        $usuarioCurso->setMaterialesCompletados(0);
+        $usuarioCurso->setMaterialesTotales(count($curso->getMaterials()));
+        $usuarioCurso->setTareasCompletadas(0);
+        $usuarioCurso->setTareasTotales(count($curso->getTareas()));
+        $usuarioCurso->setQuizzesCompletados(0);
+        $usuarioCurso->setQuizzesTotales(count($curso->getQuizzs()));
+        $usuarioCurso->setPorcentajeCompletado('0.00');
+        $usuarioCurso->setUltimaActualizacion(new \DateTime());
+
+        $this->entityManager->persist($usuarioCurso);
+        $this->entityManager->flush();
+
+        return $this->json([
+            'message' => 'Inscripción exitosa',
+            'usuarioCurso' => [
+                'id' => $usuarioCurso->getId(),
+                'fechaInscripcion' => $usuarioCurso->getFechaInscripcion()->format('Y-m-d H:i:s'),
+                'porcentajeCompletado' => $usuarioCurso->getPorcentajeCompletado()
+            ]
+        ]);
+    }
 
 }

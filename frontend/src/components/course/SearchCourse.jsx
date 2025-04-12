@@ -4,6 +4,7 @@ import { useTheme } from '../../context/ThemeContext';
 import { motion } from 'framer-motion';
 import axios from '../../utils/axios';
 import Icon from '../Icon';
+import Loader from '../common/Loader';
 import { Link } from 'react-router-dom';
 
 export const SearchCourse = () => {
@@ -82,7 +83,7 @@ export const SearchCourse = () => {
   if (loading && courses.length === 0) {
     return (
       <div className="text-center mt-5">
-        <img src='./images/charging/charging.gif' className='align-center' alt="Cargando..."></img>
+        <Loader size="large" />
       </div>
     );
   }
@@ -229,7 +230,7 @@ export const SearchCourse = () => {
                     >
                       {isSearching ? (
                         <>
-                          <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                          <Loader size="small" className="me-1" />
                           Buscando...
                         </>
                       ) : (

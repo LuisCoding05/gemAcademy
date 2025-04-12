@@ -4,6 +4,8 @@ import { useTheme } from '../../context/ThemeContext';
 import axios from '../../utils/axios';
 import ImageGallery from './ImageGallery';
 import Icon from '../Icon';
+import Loader from '../common/Loader';
+import { Link } from 'react-router-dom';
 
 
 const Dashboard = () => {
@@ -106,10 +108,8 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Cargando...</span>
-        </div>
+      <div className="container mt-5">
+        <Loader size="large" />
       </div>
     );
   }
@@ -300,37 +300,142 @@ const Dashboard = () => {
           {/* Cursos */}
           <div className="mb-4">
             <h2 className="mb-3">Mis Cursos <Icon name="books" color="green" size={34} /></h2>
-            {cursos.length > 0 ? (
-              <div className="row">
-                {cursos.map(curso => (
-                  <div key={curso.id} className="col-md-6 mb-3">
-                    <div className={`card ${isDarkMode ? 'bg-dark text-light' : ''} h-100 shadow-sm`}>
-                      <div className="card-body">
-                        <h5 className="card-title">{curso.titulo}</h5>
-                        <p className="card-text text-muted">{curso.descripcion}</p>
-                        <div className="progress mb-2">
-                          <div 
-                            className="progress-bar bg-success" 
-                            role="progressbar" 
-                            style={{ width: `${curso.porcentajeCompletado || 0}%` }}
-                            aria-valuenow={curso.porcentajeCompletado || 0}
-                            aria-valuemin="0"
-                            aria-valuemax="100"
-                          >
-                            {curso.porcentajeCompletado || 0}%
+            
+            {/* Cursos como Profesor */}
+            {cursos.filter(curso => curso.userRole === 'profesor').length > 0 && (
+              <div className="mb-4">
+                <h4 className="mb-3">Cursos como Profesor <Icon name="teacher" color="blue" size={24} /></h4>
+                <div id="cursosProfesorCarousel" className="carousel slide bg-light bg-opacity-25 rounded p-3" data-bs-ride="carousel">
+                  <div className="carousel-inner">
+                    {cursos.filter(curso => curso.userRole === 'profesor').map((curso, index) => (
+                      <div key={curso.id} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
+                        <div className="row justify-content-center">
+                          <div className="col-md-8">
+                            <div className={`card ${isDarkMode ? 'bg-dark text-light' : ''} h-100 shadow-sm`}>
+                              <div className="card-body">
+                                <h5 className="card-title">{curso.titulo}</h5>
+                                <p className="card-text text-muted">{curso.descripcion}</p>
+                                <div className="progress mb-2">
+                                  <div 
+                                    className="progress-bar bg-success" 
+                                    role="progressbar" 
+                                    style={{ width: `${curso.porcentajeCompletado || 0}%` }}
+                                    aria-valuenow={curso.porcentajeCompletado || 0}
+                                    aria-valuemin="0"
+                                    aria-valuemax="100"
+                                  >
+                                    {curso.porcentajeCompletado || 0}%
+                                  </div>
+                                </div>
+                                <div className="d-flex justify-content-between small text-muted mb-3">
+                                  <span>Materiales: {curso.materialesCompletados || 0}/{curso.materialesTotales || 0}</span>
+                                  <span>Tareas: {curso.tareasCompletadas || 0}/{curso.tareasTotales || 0}</span>
+                                  <span>Quizzes: {curso.quizzesCompletados || 0}/{curso.quizzesTotales || 0}</span>
+                                </div>
+                                <Link to={`/cursos/${curso.id}`} className="btn btn-primary w-100">
+                                  <Icon name="eye" size={20} className="me-2" />
+                                  Ver Curso
+                                </Link>
+                              </div>
+                            </div>
                           </div>
                         </div>
-                        <div className="d-flex justify-content-between small text-muted">
-                          <span>Materiales: {curso.materialesCompletados || 0}/{curso.materialesTotales || 0}</span>
-                          <span>Tareas: {curso.tareasCompletadas || 0}/{curso.tareasTotales || 0}</span>
-                          <span>Quizzes: {curso.quizzesCompletados || 0}/{curso.quizzesTotales || 0}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <button className="carousel-control-prev" type="button" data-bs-target="#cursosProfesorCarousel" data-bs-slide="prev">
+                    <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span className="visually-hidden">Anterior</span>
+                  </button>
+                  <button className="carousel-control-next" type="button" data-bs-target="#cursosProfesorCarousel" data-bs-slide="next">
+                    <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span className="visually-hidden">Siguiente</span>
+                  </button>
+                  <div className="carousel-indicators position-relative mt-3">
+                    {cursos.filter(curso => curso.userRole === 'profesor').map((_, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        data-bs-target="#cursosProfesorCarousel"
+                        data-bs-slide-to={index}
+                        className={index === 0 ? 'active' : ''}
+                        aria-current={index === 0 ? 'true' : 'false'}
+                        aria-label={`Slide ${index + 1}`}
+                      ></button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Cursos como Alumno */}
+            {cursos.filter(curso => curso.userRole === 'estudiante').length > 0 && (
+              <div className="mb-4">
+                <h4 className="mb-3">Cursos como Alumno <Icon name="student" color="purple" size={24} /></h4>
+                <div id="cursosAlumnoCarousel" className="carousel slide bg-light bg-opacity-25 rounded p-3" data-bs-ride="carousel">
+                  <div className="carousel-inner">
+                    {cursos.filter(curso => curso.userRole === 'estudiante').map((curso, index) => (
+                      <div key={curso.id} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
+                        <div className="row justify-content-center">
+                          <div className="col-md-8">
+                            <div className={`card ${isDarkMode ? 'bg-dark text-light' : ''} h-100 shadow-sm`}>
+                              <div className="card-body">
+                                <h5 className="card-title">{curso.titulo}</h5>
+                                <p className="card-text text-muted">{curso.descripcion}</p>
+                                <div className="progress mb-2">
+                                  <div 
+                                    className="progress-bar bg-success" 
+                                    role="progressbar" 
+                                    style={{ width: `${curso.porcentajeCompletado || 0}%` }}
+                                    aria-valuenow={curso.porcentajeCompletado || 0}
+                                    aria-valuemin="0"
+                                    aria-valuemax="100"
+                                  >
+                                    {curso.porcentajeCompletado || 0}%
+                                  </div>
+                                </div>
+                                <div className="d-flex justify-content-between small text-muted mb-3">
+                                  <span>Materiales: {curso.materialesCompletados || 0}/{curso.materialesTotales || 0}</span>
+                                  <span>Tareas: {curso.tareasCompletadas || 0}/{curso.tareasTotales || 0}</span>
+                                  <span>Quizzes: {curso.quizzesCompletados || 0}/{curso.quizzesTotales || 0}</span>
+                                </div>
+                                <Link to={`/cursos/${curso.id}`} className="btn btn-primary w-100">
+                                  <Icon name="eye" size={20} className="me-2" />
+                                  Ver Curso
+                                </Link>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
-                ))}
+                  <button className="carousel-control-prev" type="button" data-bs-target="#cursosAlumnoCarousel" data-bs-slide="prev">
+                    <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span className="visually-hidden">Anterior</span>
+                  </button>
+                  <button className="carousel-control-next" type="button" data-bs-target="#cursosAlumnoCarousel" data-bs-slide="next">
+                    <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span className="visually-hidden">Siguiente</span>
+                  </button>
+                  <div className="carousel-indicators position-relative mt-3">
+                    {cursos.filter(curso => curso.userRole === 'estudiante').map((_, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        data-bs-target="#cursosAlumnoCarousel"
+                        data-bs-slide-to={index}
+                        className={index === 0 ? 'active' : ''}
+                        aria-current={index === 0 ? 'true' : 'false'}
+                        aria-label={`Slide ${index + 1}`}
+                      ></button>
+                    ))}
+                  </div>
+                </div>
               </div>
-            ) : (
+            )}
+            
+            {cursos.length === 0 && (
               <div className="alert alert-info">
                 No estás inscrito en ningún curso todavía.
               </div>
@@ -341,27 +446,54 @@ const Dashboard = () => {
           <div>
             <h2 className="mb-3">Mis Logros <Icon name="award" color="yellow" size={34} /></h2>
             {logros.length > 0 ? (
-              <div className="row">
-                {logros.map(logro => (
-                  <div key={logro.id} className="col-md-4 mb-3">
-                    <div className={`card ${isDarkMode ? 'bg-dark text-light' : ''} h-100 shadow-sm`}>
-                      <div className="card-body text-center">
-                        <img 
-                          src={logro.imagen?.url || './images/pfpgemacademy/default.webp'} 
-                          alt={logro.titulo}
-                          className="img-fluid mb-2"
-                          style={{ width: '80px', height: '80px', objectFit: 'cover' }}
-                        />
-                        <h6 className="card-title">{logro.titulo}</h6>
-                        <p className="card-text small text-muted">{logro.motivo}</p>
-                        <span className="badge bg-primary">{logro.puntos || 0} puntos</span>
-                        <p className="small text-muted mt-2">
-                          Obtenido: {new Date(logro.fechaObtencion).toLocaleDateString()}
-                        </p>
+              <div id="logrosCarousel" className="carousel slide bg-light bg-opacity-25 rounded p-3" data-bs-ride="carousel">
+                <div className="carousel-inner">
+                  {logros.map((logro, index) => (
+                    <div key={logro.id} className={`carousel-item ${index === 0 ? 'active' : ''}`}>
+                      <div className="row justify-content-center">
+                        <div className="col-md-6">
+                          <div className={`card ${isDarkMode ? 'bg-dark text-light' : ''} h-100 shadow-sm`}>
+                            <div className="card-body text-center">
+                              <img 
+                                src={logro.imagen?.url || './images/pfpgemacademy/default.webp'} 
+                                alt={logro.titulo}
+                                className="img-fluid mb-2"
+                                style={{ width: '80px', height: '80px', objectFit: 'cover' }}
+                              />
+                              <h6 className="card-title">{logro.titulo}</h6>
+                              <p className="card-text small text-muted">{logro.motivo}</p>
+                              <span className="badge bg-primary">{logro.puntos || 0} puntos</span>
+                              <p className="small text-muted mt-2">
+                                Obtenido: {new Date(logro.fechaObtencion).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
+                <button className="carousel-control-prev" type="button" data-bs-target="#logrosCarousel" data-bs-slide="prev">
+                  <span className="carousel-control-prev-icon" aria-hidden="true"></span>
+                  <span className="visually-hidden">Anterior</span>
+                </button>
+                <button className="carousel-control-next" type="button" data-bs-target="#logrosCarousel" data-bs-slide="next">
+                  <span className="carousel-control-next-icon" aria-hidden="true"></span>
+                  <span className="visually-hidden">Siguiente</span>
+                </button>
+                <div className="carousel-indicators position-relative mt-3">
+                  {logros.map((_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      data-bs-target="#logrosCarousel"
+                      data-bs-slide-to={index}
+                      className={index === 0 ? 'active' : ''}
+                      aria-current={index === 0 ? 'true' : 'false'}
+                      aria-label={`Slide ${index + 1}`}
+                    ></button>
+                  ))}
+                </div>
               </div>
             ) : (
               <div className="alert alert-info">

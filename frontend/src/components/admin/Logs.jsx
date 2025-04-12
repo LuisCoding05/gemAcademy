@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { useAuth } from '../../context/AuthContext';
 import axios from '../../utils/axios';
+import Loader from '../common/Loader';
 
 export const Logs = () => {
     const { isDarkMode } = useTheme();
@@ -164,10 +165,8 @@ export const Logs = () => {
     
     if (isLoading && logs.length === 0) {
         return (
-            <div className="text-center mt-5">
-                <div className="spinner-border text-primary" role="status">
-                    <span className="visually-hidden">Cargando...</span>
-                </div>
+            <div className="container mt-5">
+                <Loader size="large" />
             </div>
         );
     }
@@ -232,7 +231,7 @@ export const Logs = () => {
                     >
                         {isSearching ? (
                             <>
-                                <span className="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                <Loader size="small" className="me-1" />
                                 Buscando...
                             </>
                         ) : (
