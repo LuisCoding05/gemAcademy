@@ -57,8 +57,13 @@ class UsuarioCurso
     public function __construct()
     {
         $this->fechaInscripcion = new \DateTime();
+        $this->ultimaActualizacion = new \DateTime();
         $this->materialCompletados = new ArrayCollection();
         $this->entregaTareas = new ArrayCollection();
+        $this->materialesCompletados = 0;
+        $this->tareasCompletadas = 0;
+        $this->quizzesCompletados = 0;
+        $this->porcentajeCompletado = '0.00';
     }
 
     public function getId(): ?int

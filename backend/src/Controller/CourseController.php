@@ -8,11 +8,15 @@ use App\Entity\Usuario;
 use App\Entity\Material;
 use App\Entity\Tarea;
 use App\Entity\Quizz;
+use App\Entity\EntregaTarea;
+use App\Entity\IntentoQuizz;
+use App\Entity\MaterialCompletado;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Service\CursoInscripcionService;
 
 final class CourseController extends AbstractController
 {
@@ -240,7 +244,7 @@ final class CourseController extends AbstractController
     }
 
     #[Route('/api/course/{id}/enroll', name: 'app_course_enroll', methods: ['POST'])]
-    public function enroll($id): JsonResponse
+    public function enroll($id, CursoInscripcionService $inscripcionService): JsonResponse
     {
         // Obtener el usuario actual
         $user = $this->getUser();
@@ -258,31 +262,8 @@ final class CourseController extends AbstractController
             ], 404);
         }
 
-        // Verificar si el usuario ya está inscrito
-        $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)
-            ->findOneBy([
-                'idUsuario' => $user,
-                'idCurso' => $curso
-            ]);
-
-        if ($usuarioCurso) {
-            return $this->json([
-                'message' => 'Ya estás inscrito en este curso'
-            ], 400);
-        }
-
-        // Crear nueva inscripción
-        $usuarioCurso = new UsuarioCurso();
-        $usuarioCurso->setIdUsuario($user);
-        $usuarioCurso->setIdCurso($curso);
-        $usuarioCurso->setMaterialesCompletados(0);
-        $usuarioCurso->setTareasCompletadas(0);
-        $usuarioCurso->setQuizzesCompletados(0);
-        $usuarioCurso->setPorcentajeCompletado('0.00');
-        $usuarioCurso->setUltimaActualizacion(new \DateTime());
-
-        $this->entityManager->persist($usuarioCurso);
-        $this->entityManager->flush();
+        // Usar el servicio para inscribir al usuario
+        $usuarioCurso = $inscripcionService->inscribirUsuarioEnCurso($user, $curso);
 
         return $this->json([
             'message' => 'Inscripción exitosa',
@@ -347,6 +328,51 @@ final class CourseController extends AbstractController
             ], 403);
         }
 
+        // Si es estudiante, marcar el material como completado
+        if ($isEstudiante) {
+            // Verificar si el material ya está marcado como completado
+            $materialCompletado = $this->entityManager->getRepository(MaterialCompletado::class)
+                ->findOneBy([
+                    'usuarioCurso' => $usuarioCurso,
+                    'material' => $material
+                ]);
+
+            // Si no está marcado como completado, crearlo
+            if (!$materialCompletado) {
+                try {
+                    $materialCompletado = new MaterialCompletado();
+                    $materialCompletado->setUsuarioCurso($usuarioCurso);
+                    $materialCompletado->setMaterial($material);
+                    $materialCompletado->setFechaCompletado(new \DateTime());
+                    
+                    $this->entityManager->persist($materialCompletado);
+                    
+                    // Actualizar el contador de materiales completados
+                    $materialesCompletadosActual = $usuarioCurso->getMaterialesCompletados() ?? 0;
+                    $usuarioCurso->setMaterialesCompletados($materialesCompletadosActual + 1);
+                    
+                    // Actualizar el porcentaje completado
+                    $totalItems = $curso->getTotalItems();
+                    $itemsCompletados = $usuarioCurso->getMaterialesCompletados() + 
+                                       $usuarioCurso->getTareasCompletadas() + 
+                                       $usuarioCurso->getQuizzesCompletados();
+                    
+                    $porcentajeCompletado = ($totalItems > 0) ? 
+                        round(($itemsCompletados / $totalItems) * 100, 2) : 0;
+                    
+                    $usuarioCurso->setPorcentajeCompletado(strval($porcentajeCompletado));
+                    $usuarioCurso->setUltimaActualizacion(new \DateTime());
+                    
+                    $this->entityManager->flush();
+                } catch (\Exception $e) {
+                    return $this->json([
+                        'message' => 'Error al marcar el material como completado',
+                        'error' => $e->getMessage()
+                    ], 500);
+                }
+            }
+        }
+
         // Formatear la respuesta
         $materialData = [
             "id" => $material->getId(),
@@ -354,7 +380,8 @@ final class CourseController extends AbstractController
             "descripcion" => $material->getDescripcion(),
             "contenido" => $material->getUrl(),
             "fechaPublicacion" => $material->getFechaPublicacion()->format('Y/m/d H:i:s'),
-            "url" => $material->getUrl()
+            "url" => $material->getUrl(),
+            "completado" => $materialCompletado !== null
         ];
 
         return $this->json($materialData);
@@ -413,6 +440,16 @@ final class CourseController extends AbstractController
             ], 403);
         }
 
+        // Obtener la entrega si existe
+        $entrega = null;
+        if ($usuarioCurso) {
+            $entrega = $this->entityManager->getRepository(EntregaTarea::class)
+                ->findOneBy([
+                    'idTarea' => $tarea,
+                    'usuarioCurso' => $usuarioCurso
+                ]);
+        }
+
         // Formatear la respuesta
         $tareaData = [
             "id" => $tarea->getId(),
@@ -420,7 +457,15 @@ final class CourseController extends AbstractController
             "descripcion" => $tarea->getDescripcion(),
             "fechaPublicacion" => $tarea->getFechaPublicacion()->format('Y/m/d H:i:s'),
             "fechaLimite" => $tarea->getFechaLimite()->format('Y/m/d H:i:s'),
-            "puntos" => $tarea->getPuntosMaximos()
+            "puntos" => $tarea->getPuntosMaximos(),
+            "entrega" => $entrega ? [
+                "id" => $entrega->getId(),
+                "archivoUrl" => $entrega->getArchivoUrl(),
+                "fechaEntrega" => $entrega->getFechaEntrega()->format('Y/m/d H:i:s'),
+                "calificacion" => $entrega->getCalificacion(),
+                "puntosObtenidos" => $entrega->getPuntosObtenidos(),
+                "comentarioProfesor" => $entrega->getComentarioProfesor()
+            ] : null
         ];
 
         return $this->json($tareaData);
@@ -479,6 +524,28 @@ final class CourseController extends AbstractController
             ], 403);
         }
 
+        // Obtener los intentos si existen
+        $intentos = [];
+        if ($usuario) {
+            $intentos = $this->entityManager->getRepository(IntentoQuizz::class)
+                ->findBy([
+                    'idQuizz' => $quiz,
+                    'idUsuario' => $usuario
+                ], ['fechaInicio' => 'DESC']);
+        }
+
+        // Formatear los intentos
+        $intentosData = [];
+        foreach ($intentos as $intento) {
+            $intentosData[] = [
+                "id" => $intento->getId(),
+                "fechaInicio" => $intento->getFechaInicio()->format('Y/m/d H:i:s'),
+                "fechaFin" => $intento->getFechaFin()->format('Y/m/d H:i:s'),
+                "puntuacionTotal" => $intento->getPuntuacionTotal(),
+                "completado" => $intento->isCompletado()
+            ];
+        }
+
         // Formatear la respuesta
         $quizData = [
             "id" => $quiz->getId(),
@@ -487,7 +554,8 @@ final class CourseController extends AbstractController
             "fechaPublicacion" => $quiz->getFechaPublicacion()->format('Y/m/d H:i:s'),
             "fechaLimite" => $quiz->getFechaLimite()->format('Y/m/d H:i:s'),
             "puntos" => $quiz->getPuntosTotales(),
-            "tiempoLimite" => $quiz->getTiempoLimite()
+            "tiempoLimite" => $quiz->getTiempoLimite(),
+            "intentos" => $intentosData
         ];
 
         return $this->json($quizData);
