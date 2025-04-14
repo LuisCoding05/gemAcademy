@@ -40,6 +40,7 @@ const ItemDetails = () => {
                 }
                 
                 const response = await axios.get(endpoint);
+                console.log(response.data);
                 setItem(response.data);
             } catch (error) {
                 console.error(`Error al cargar el ${itemType}:`, error);
@@ -135,7 +136,7 @@ const ItemDetails = () => {
                                     </div>
 
                                     {itemType === 'material' && (
-                                        <>
+                                        <div>
                                             <div className="mb-4">
                                                 <h5>Contenido</h5>
                                                 <p>{item.contenido}</p>
@@ -149,20 +150,88 @@ const ItemDetails = () => {
                                                     </a>
                                                 </div>
                                             )}
-                                        </>
+                                        </div>
                                     )}
 
                                     {itemType === 'tarea' && (
-                                        <>
+                                        <div className="tarea-details">
                                             <div className="mb-4">
                                                 <h5>Puntos</h5>
                                                 <p>{item.puntos} puntos</p>
                                             </div>
-                                        </>
+                                            {item.entrega && (
+                                                <div className="mb-4">
+                                                    <h5>Estado de la entrega</h5>
+                                                    <div className={`card ${isDarkMode ? 'bg-secondary text-light' : 'bg-light'}`}>
+                                                        <div className="card-body">
+                                                            <div className="d-flex justify-content-between align-items-center mb-2">
+                                                                <span>
+                                                                    <Icon name="stop-watch" size={20} className="me-2" />
+                                                                    Entregado el {new Date(item.entrega.fechaEntrega).toLocaleString()}
+                                                                </span>
+                                                                {item.entrega.calificacion && (
+                                                                    <span className={`badge ${item.entrega.calificacion  >= 5 ? 'bg-success' : 'bg-danger'}`}>
+                                                                        {item.entrega.calificacion * 10}%
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            {item.entrega.archivoUrl == null ? (
+                                                                <div className="mb-2">
+                                                                    <h6>Archivos:</h6>
+                                                                    <strong>No se ha subido ningún fichero</strong>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="mb-2">
+                                                                    <h6>Archivos:</h6>
+                                                                    <a href={item.entrega.archivoUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-outline-primary">
+                                                                        <Icon name="download" size={20} className="me-2" />
+                                                                        Ver archivo entregado
+                                                                    </a>
+                                                                </div>
+                                                            )}
+                                                            {item.entrega.puntosObtenidos == null ? (
+                                                                <div className="mb-2">
+                                                                    <h6>Puntos:</h6>
+                                                                    <strong>Puntos pendientes de obtención <Icon name="hour-glass" size={20} className="me-2" /></strong>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="mb-2">
+                                                                    <h6>Puntos:</h6>
+                                                                    <strong>Puntos obtenidos:</strong> {item.entrega.puntosObtenidos}/{item.puntos}
+                                                                </div>
+                                                            )}
+                                                            {item.entrega.comentarioProfesor ? (
+                                                                <div className="mt-2">
+                                                                    <h6>Comentario del profesor:</h6>
+                                                                    <p className="mb-0">{item.entrega.comentarioProfesor}</p>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="mt-2">
+                                                                    <h6>Comentario del profesor:</h6>
+                                                                    <p className="mb-0">Sin comentarios</p>
+                                                                </div>
+                                                            )}
+
+                                                            {item.entrega.calificacion === null ? (
+                                                                <div className="mt-2">
+                                                                    <h6>Calificación:</h6>
+                                                                    <p className="mb-0">No calificado <Icon name="shit" color="brown" size={20} className="me-2" /></p>
+                                                                </div>
+                                                            ) : (
+                                                                <div className="mt-2">
+                                                                    <h6>Calificación:</h6>
+                                                                    <p className="mb-0">{item.entrega.calificacion}</p>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
 
                                     {itemType === 'quiz' && (
-                                        <>
+                                        <div className="quiz-details">
                                             <div className="mb-4">
                                                 <h5>Puntos</h5>
                                                 <p>{item.puntos} puntos</p>
@@ -173,7 +242,40 @@ const ItemDetails = () => {
                                                     <p>{item.tiempoLimite} minutos</p>
                                                 </div>
                                             )}
-                                        </>
+                                            {item.intentos && item.intentos.length > 0 && (
+                                                <div className="mb-4">
+                                                    <h5>Intentos realizados</h5>
+                                                    <div className="list-group">
+                                                        {item.intentos.map((intento, index) => (
+                                                            <div key={index} className={`list-group-item ${isDarkMode ? 'bg-secondary text-light' : ''}`}>
+                                                                <div className="d-flex justify-content-between align-items-center">
+                                                                    <div>
+                                                                        <small className="text-muted">
+                                                                            Inicio: {new Date(intento.fechaInicio).toLocaleString()}
+                                                                        </small>
+                                                                        {intento.fechaFin && (
+                                                                            <small className="text-muted d-block">
+                                                                                Fin: {new Date(intento.fechaFin).toLocaleString()}
+                                                                            </small>
+                                                                        )}
+                                                                    </div>
+                                                                    <div>
+                                                                        <span className={`badge ${intento.completado ? 'bg-success' : 'bg-warning'}`}>
+                                                                            {intento.completado ? 'Completado' : 'En progreso'}
+                                                                        </span>
+                                                                        {intento.puntuacionTotal && (
+                                                                            <span className="badge bg-primary ms-2">
+                                                                                {intento.puntuacionTotal} puntos
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
                                     )}
                                 </div>
                                 <div className="col-md-4">
