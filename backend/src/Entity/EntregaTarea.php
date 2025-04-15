@@ -169,7 +169,7 @@ class EntregaTarea
         return $this->comentarioEstudiante;
     }
 
-    public function setComentarioEstudiante(string $comentarioEstudiante): static
+    public function setComentarioEstudiante(?string $comentarioEstudiante): static
     {
         $this->comentarioEstudiante = $comentarioEstudiante;
 

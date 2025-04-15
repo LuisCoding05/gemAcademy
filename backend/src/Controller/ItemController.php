@@ -363,6 +363,16 @@ final class ItemController extends AbstractController
         
         try {
             switch ($accion) {
+                case 'actualizarComentario':
+                    if ($entrega && !$entrega->isCalificado()) {
+                        $entrega->setComentarioEstudiante($comentario);
+                    } else {
+                        return $this->json([
+                            'message' => 'No se puede actualizar el comentario'
+                        ], 400);
+                    }
+                    break;
+
                 case 'entregar':
                     if (!$entrega) {
                         $entrega = new EntregaTarea();
@@ -385,6 +395,21 @@ final class ItemController extends AbstractController
                     }
                     break;
 
+                case 'actualizarArchivo':
+                    if ($entrega && !$entrega->isCalificado()) {
+                        $entrega->setArchivoUrl($archivoUrl);
+                        $entrega->setFechaEntrega(new \DateTime());
+                        // Actualizar el estado si está atrasado
+                        if ($tarea->getFechaLimite() < new \DateTime()) {
+                            $entrega->setEstado(EntregaTarea::ESTADO_ATRASADO);
+                        }
+                    } else {
+                        return $this->json([
+                            'message' => 'No se puede actualizar el archivo de una entrega calificada'
+                        ], 400);
+                    }
+                    break;
+
                 case 'borrar':
                     if ($entrega && !$entrega->isCalificado()) {
                         $entrega->setEstado(EntregaTarea::ESTADO_PENDIENTE);
@@ -392,6 +417,7 @@ final class ItemController extends AbstractController
                         $entrega->setArchivoUrl(null);
                         $entrega->setPuntosObtenidos(null);
                         $entrega->setComentarioProfesor(null);
+                        $entrega->setComentarioEstudiante(null);
                         
                         // Actualizar estadísticas del usuario en el curso
                         $tareasCompletadasActual = $usuarioCurso->getTareasCompletadas();
@@ -405,21 +431,14 @@ final class ItemController extends AbstractController
 
                 case 'solicitarRevision':
                     if ($entrega && ($entrega->getEstado() === EntregaTarea::ESTADO_ENTREGADO || $entrega->getEstado() === EntregaTarea::ESTADO_ATRASADO)) {
-                        // Mantener el estado atrasado si lo estaba
-                        $entrega->setEstado($entrega->getEstado() === EntregaTarea::ESTADO_ATRASADO ? 
-                            EntregaTarea::ESTADO_ATRASADO : 
-                            EntregaTarea::ESTADO_REVISION_SOLICITADA
-                        );
+                        // Si está atrasado, mantener el estado atrasado
+                        $entrega->setEstado(EntregaTarea::ESTADO_REVISION_SOLICITADA);
                     } else {
                         return $this->json([
                             'message' => 'No se puede solicitar revisión de esta entrega'
                         ], 400);
                     }
                     break;
-            }
-
-            if ($comentario !== null) {
-                $entrega->setComentarioEstudiante($comentario);
             }
 
             // Actualizar el porcentaje completado
