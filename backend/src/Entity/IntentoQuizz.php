@@ -24,16 +24,16 @@ class IntentoQuizz
     #[ORM\JoinColumn(nullable: false)]
     private ?Usuario $idUsuario = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $fechaInicio = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $fechaFin = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?int $puntuacionTotal = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?bool $completado = null;
 
     /**

@@ -9,6 +9,13 @@ use Doctrine\ORM\Mapping as ORM;
 #[ORM\Entity(repositoryClass: EntregaTareaRepository::class)]
 class EntregaTarea
 {
+
+    public const ESTADO_PENDIENTE = 'pendiente';
+    public const ESTADO_ENTREGADO = 'entregado';
+    public const ESTADO_CALIFICADO = 'calificado';
+    public const ESTADO_REVISION_SOLICITADA = 'revision_solicitada';
+    public const ESTADO_ATRASADO = 'atrasado';
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
@@ -17,7 +24,7 @@ class EntregaTarea
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $archivoUrl = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $fechaEntrega = null;
 
     #[ORM\Column(type: Types::DECIMAL, precision: 4, scale: 2, nullable: true)]
@@ -35,6 +42,17 @@ class EntregaTarea
 
     #[ORM\ManyToOne(inversedBy: 'entregaTareas')]
     private ?UsuarioCurso $usuarioCurso = null;
+
+    #[ORM\Column(length: 100, options: ['default' => self::ESTADO_PENDIENTE])]
+    private ?string $estado = self::ESTADO_PENDIENTE;
+
+    #[ORM\Column(length: 255, nullable:true)]
+    private ?string $comentarioEstudiante = null;
+
+    public function __construct()
+    {
+        $this->estado = self::ESTADO_PENDIENTE;
+    }
 
     public function getId(): ?int
     {
@@ -123,6 +141,59 @@ class EntregaTarea
         $this->usuarioCurso = $usuarioCurso;
 
         return $this;
+    }
+
+    public function getEstado(): ?string
+    {
+        return $this->estado;
+    }
+
+    public function setEstado(string $estado): static
+    {
+        if (!in_array($estado, [
+            self::ESTADO_PENDIENTE,
+            self::ESTADO_ENTREGADO,
+            self::ESTADO_CALIFICADO,
+            self::ESTADO_REVISION_SOLICITADA,
+            self::ESTADO_ATRASADO
+        ])) {
+            throw new \InvalidArgumentException('Estado no válido');
+        }
+
+        $this->estado = $estado;
+        return $this;
+    }
+
+    public function getComentarioEstudiante(): ?string
+    {
+        return $this->comentarioEstudiante;
+    }
+
+    public function setComentarioEstudiante(string $comentarioEstudiante): static
+    {
+        $this->comentarioEstudiante = $comentarioEstudiante;
+
+        return $this;
+    }
+
+    public function isEntregado(): bool
+    {
+        return $this->estado !== self::ESTADO_PENDIENTE;
+    }
+
+    public function isCalificado(): bool
+    {
+        return $this->estado === self::ESTADO_CALIFICADO;
+    }
+
+    public function isPendiente(): bool
+    {
+        return $this->estado === self::ESTADO_PENDIENTE;
+    }
+
+    public function isRevisionSolicitada(): bool
+    {
+        return $this->estado === self::ESTADO_REVISION_SOLICITADA;
     }
 
 }

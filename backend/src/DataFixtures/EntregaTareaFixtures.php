@@ -17,7 +17,8 @@ class EntregaTareaFixtures extends Fixture implements DependentFixtureInterface
         $entregaTarea->setIdTarea($this->getReference('tarea-introducción-a-la-programación-1', Tarea::class))
             ->setUsuarioCurso($this->getReference('usuario-curso-estudiante1', UsuarioCurso::class))
             ->setFechaEntrega(new \DateTime())
-            ->setComentarioProfesor('Tarea completada con éxito');
+            ->setComentarioProfesor('Tarea completada con éxito')
+            ->setEstado(EntregaTarea::ESTADO_PENDIENTE);
         
         $manager->persist($entregaTarea);
         $manager->flush();

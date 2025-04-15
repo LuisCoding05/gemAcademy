@@ -61,24 +61,13 @@ class CursoInscripcionService
      */
     public function crearRegistrosIniciales(UsuarioCurso $usuarioCurso, Curso $curso): void
     {
-        // Crear registros para materiales
-        $materiales = $curso->getMaterials();
-        foreach ($materiales as $material) {
-            $materialCompletado = new MaterialCompletado();
-            $materialCompletado->setUsuarioCurso($usuarioCurso);
-            $materialCompletado->setMaterial($material);
-            $materialCompletado->setFechaCompletado(new \DateTime());
-            
-            $this->entityManager->persist($materialCompletado);
-        }
-
         // Crear registros para tareas
         $tareas = $curso->getTareas();
         foreach ($tareas as $tarea) {
             $entregaTarea = new EntregaTarea();
             $entregaTarea->setIdTarea($tarea);
             $entregaTarea->setUsuarioCurso($usuarioCurso);
-            $entregaTarea->setFechaEntrega(new \DateTime());
+            $entregaTarea->setEstado(EntregaTarea::ESTADO_PENDIENTE);
             // Los demás campos se dejan como null hasta que el usuario entregue la tarea
             
             $this->entityManager->persist($entregaTarea);
@@ -90,8 +79,6 @@ class CursoInscripcionService
             $intentoQuizz = new IntentoQuizz();
             $intentoQuizz->setIdQuizz($quiz);
             $intentoQuizz->setIdUsuario($usuarioCurso->getIdUsuario());
-            $intentoQuizz->setFechaInicio(new \DateTime());
-            $intentoQuizz->setFechaFin(new \DateTime());
             $intentoQuizz->setPuntuacionTotal(0);
             $intentoQuizz->setCompletado(false);
             

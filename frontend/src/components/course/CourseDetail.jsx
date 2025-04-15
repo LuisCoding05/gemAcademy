@@ -189,7 +189,7 @@ const CourseDetail = () => {
                                     aria-controls="collapseMateriales"
                                 >
                                     <Icon name="book" color="green" size={24} className="me-2" />
-                                    Materiales del curso
+                                    Materiales de estudio y repaso
                                 </button>
                             </h2>
                             <div 
@@ -243,7 +243,7 @@ const CourseDetail = () => {
                                     aria-controls="collapseTareas"
                                 >
                                     <Icon name="clipboard-edit" color="#FFC000" size={24} className="me-2" />
-                                    Tareas del curso
+                                    Tareas y ejercicios
                                 </button>
                             </h2>
                             <div 
@@ -299,7 +299,7 @@ const CourseDetail = () => {
                                     aria-controls="collapseQuizzes"
                                 >
                                     <Icon name="spaceinvaders" color="purple" size={24} className="me-2" />
-                                    Quizzes del curso
+                                    Quizzes y tipo test
                                 </button>
                             </h2>
                             <div 
@@ -355,7 +355,7 @@ const CourseDetail = () => {
                                     aria-controls="collapseForos"
                                 >
                                     <Icon name="earth" color="#3498db" size={24} className="me-2" />
-                                    Foros del curso
+                                    Foro y dudas
                                 </button>
                             </h2>
                             <div 
