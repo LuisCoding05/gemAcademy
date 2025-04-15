@@ -76,7 +76,7 @@ class EntregaTarea
         return $this->fechaEntrega;
     }
 
-    public function setFechaEntrega(\DateTimeInterface $fechaEntrega): static
+    public function setFechaEntrega(?\DateTimeInterface $fechaEntrega): static
     {
         $this->fechaEntrega = $fechaEntrega;
 

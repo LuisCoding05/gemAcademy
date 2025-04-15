@@ -73,18 +73,6 @@ class CursoInscripcionService
             $this->entityManager->persist($entregaTarea);
         }
 
-        // Crear registros para quizzes
-        $quizzes = $curso->getQuizzs();
-        foreach ($quizzes as $quiz) {
-            $intentoQuizz = new IntentoQuizz();
-            $intentoQuizz->setIdQuizz($quiz);
-            $intentoQuizz->setIdUsuario($usuarioCurso->getIdUsuario());
-            $intentoQuizz->setPuntuacionTotal(0);
-            $intentoQuizz->setCompletado(false);
-            
-            $this->entityManager->persist($intentoQuizz);
-        }
-
         $this->entityManager->flush();
     }
 } 

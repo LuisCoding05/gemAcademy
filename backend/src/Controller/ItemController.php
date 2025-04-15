@@ -14,6 +14,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Proxies\__CG__\App\Entity\IntentoQuizz;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -305,6 +306,156 @@ final class ItemController extends AbstractController
         ];
 
         return $this->json($quizData);
+    }
+
+    #[Route('/api/item/{id}/tarea/{tareaId}/entrega', name: 'app_item_tarea_entrega', methods: ['POST'])]
+    public function actualizarEntregaTarea($id, $tareaId, Request $request): JsonResponse
+    {
+        // Obtener el curso
+        $curso = $this->entityManager->getRepository(Curso::class)->find($id);
+        if (!$curso) {
+            return $this->json([
+                'message' => 'Curso no encontrado'
+            ], 404);
+        }
+
+        // Obtener la tarea
+        $tarea = $this->entityManager->getRepository(Tarea::class)->find($tareaId);
+        if (!$tarea || $tarea->getIdCurso()->getId() != $id) {
+            return $this->json([
+                'message' => 'Tarea no encontrada'
+            ], 404);
+        }
+
+        // Obtener el usuario actual
+        $user = $this->getUser();
+        $usuario = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $user->getUserIdentifier()]);
+        if (!$usuario) {
+            return $this->json([
+                'message' => 'Usuario no encontrado'
+            ], 404);
+        }
+
+        // Verificar si está inscrito como estudiante
+        $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)
+            ->findOneBy([
+                'idUsuario' => $usuario,
+                'idCurso' => $curso
+            ]);
+        
+        if (!$usuarioCurso) {
+            return $this->json([
+                'message' => 'No estás inscrito en este curso'
+            ], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+        $accion = $data['accion'] ?? null;
+        $comentario = $data['comentario'] ?? null;
+        $archivoUrl = $data['archivoUrl'] ?? null;
+
+        // Obtener o crear la entrega
+        $entrega = $this->entityManager->getRepository(EntregaTarea::class)
+            ->findOneBy([
+                'idTarea' => $tarea,
+                'usuarioCurso' => $usuarioCurso
+            ]);
+        
+        try {
+            switch ($accion) {
+                case 'entregar':
+                    if (!$entrega) {
+                        $entrega = new EntregaTarea();
+                        $entrega->setIdTarea($tarea);
+                        $entrega->setUsuarioCurso($usuarioCurso);
+                        $this->entityManager->persist($entrega);
+
+                        // Actualizar estadísticas del usuario en el curso
+                        $tareasCompletadasActual = $usuarioCurso->getTareasCompletadas() ?? 0;
+                        $usuarioCurso->setTareasCompletadas($tareasCompletadasActual + 1);
+                    }
+
+                    $entrega->setFechaEntrega(new \DateTime());
+                    $entrega->setEstado($tarea->getFechaLimite() < new \DateTime() ? 
+                        EntregaTarea::ESTADO_ATRASADO : 
+                        EntregaTarea::ESTADO_ENTREGADO
+                    );
+                    if ($archivoUrl) {
+                        $entrega->setArchivoUrl($archivoUrl);
+                    }
+                    break;
+
+                case 'borrar':
+                    if ($entrega && !$entrega->isCalificado()) {
+                        $entrega->setEstado(EntregaTarea::ESTADO_PENDIENTE);
+                        $entrega->setFechaEntrega(null);
+                        $entrega->setArchivoUrl(null);
+                        $entrega->setPuntosObtenidos(null);
+                        $entrega->setComentarioProfesor(null);
+                        
+                        // Actualizar estadísticas del usuario en el curso
+                        $tareasCompletadasActual = $usuarioCurso->getTareasCompletadas();
+                        $usuarioCurso->setTareasCompletadas(max(0, $tareasCompletadasActual - 1));
+                    } else {
+                        return $this->json([
+                            'message' => 'No se puede borrar una entrega calificada'
+                        ], 400);
+                    }
+                    break;
+
+                case 'solicitarRevision':
+                    if ($entrega && ($entrega->getEstado() === EntregaTarea::ESTADO_ENTREGADO || $entrega->getEstado() === EntregaTarea::ESTADO_ATRASADO)) {
+                        // Mantener el estado atrasado si lo estaba
+                        $entrega->setEstado($entrega->getEstado() === EntregaTarea::ESTADO_ATRASADO ? 
+                            EntregaTarea::ESTADO_ATRASADO : 
+                            EntregaTarea::ESTADO_REVISION_SOLICITADA
+                        );
+                    } else {
+                        return $this->json([
+                            'message' => 'No se puede solicitar revisión de esta entrega'
+                        ], 400);
+                    }
+                    break;
+            }
+
+            if ($comentario !== null) {
+                $entrega->setComentarioEstudiante($comentario);
+            }
+
+            // Actualizar el porcentaje completado
+            $totalItems = $curso->getTotalItems();
+            $itemsCompletados = $usuarioCurso->getMaterialesCompletados() + 
+                               $usuarioCurso->getTareasCompletadas() + 
+                               $usuarioCurso->getQuizzesCompletados();
+            
+            $porcentajeCompletado = ($totalItems > 0) ? 
+                round(($itemsCompletados / $totalItems) * 100, 2) : 0;
+            
+            $usuarioCurso->setPorcentajeCompletado(strval($porcentajeCompletado));
+            $usuarioCurso->setUltimaActualizacion(new \DateTime());
+
+            $this->entityManager->flush();
+            
+            return $this->json([
+                'message' => 'Entrega actualizada correctamente',
+                'entrega' => [
+                    'id' => $entrega->getId(),
+                    'estado' => $entrega->getEstado(),
+                    'fechaEntrega' => $entrega->getFechaEntrega() ? $entrega->getFechaEntrega()->format('Y/m/d H:i:s') : null,
+                    'comentarioEstudiante' => $entrega->getComentarioEstudiante(),
+                    'archivoUrl' => $entrega->getArchivoUrl(),
+                    'puntosObtenidos' => $entrega->getPuntosObtenidos(),
+                    'calificacion' => $entrega->getCalificacion(),
+                    'comentarioProfesor' => $entrega->getComentarioProfesor()
+                ]
+            ]);
+
+        } catch (\Exception $e) {
+            return $this->json([
+                'message' => 'Error al actualizar la entrega',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
 }
