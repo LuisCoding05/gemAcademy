@@ -24,7 +24,8 @@
         "symfony/security-bundle": "7.2.*",
         "symfony/security-csrf": "7.2.*",
         "symfony/validator": "7.2.*",
-        "symfony/yaml": "7.2.*"
+        "symfony/yaml": "7.2.*",
+        "vich/uploader-bundle": "^2.6"
     },
     "require-dev": {
         "doctrine/doctrine-fixtures-bundle": "^4.0",

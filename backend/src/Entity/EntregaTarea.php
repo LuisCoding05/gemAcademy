@@ -21,9 +21,6 @@ class EntregaTarea
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $archivoUrl = null;
-
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
     private ?\DateTimeInterface $fechaEntrega = null;
 
@@ -49,6 +46,9 @@ class EntregaTarea
     #[ORM\Column(length: 255, nullable:true)]
     private ?string $comentarioEstudiante = null;
 
+    #[ORM\OneToOne(inversedBy: 'entregaTarea', cascade: ['persist'])]
+    private ?Fichero $fichero = null;
+
     public function __construct()
     {
         $this->estado = self::ESTADO_PENDIENTE;
@@ -57,18 +57,6 @@ class EntregaTarea
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getArchivoUrl(): ?string
-    {
-        return $this->archivoUrl;
-    }
-
-    public function setArchivoUrl(?string $archivoUrl): static
-    {
-        $this->archivoUrl = $archivoUrl;
-
-        return $this;
     }
 
     public function getFechaEntrega(): ?\DateTimeInterface
@@ -194,6 +182,28 @@ class EntregaTarea
     public function isRevisionSolicitada(): bool
     {
         return $this->estado === self::ESTADO_REVISION_SOLICITADA;
+    }
+
+    public function getFichero(): ?Fichero
+    {
+        return $this->fichero;
+    }
+
+    public function setFichero(?Fichero $fichero): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($fichero === null && $this->fichero !== null) {
+            $this->fichero->setEntregaTarea(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($fichero !== null && $fichero->getEntregaTarea() !== $this) {
+            $fichero->setEntregaTarea($this);
+        }
+
+        $this->fichero = $fichero;
+
+        return $this;
     }
 
 }

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import Icon from '../Icon';
-import axios from '../../utils/axios';
+import axios, { API_BASE_URL } from '../../utils/axios';
 
 const TareaItem = ({ item, courseId, onUpdate }) => {
     const { isDarkMode } = useTheme();
@@ -55,7 +55,16 @@ const TareaItem = ({ item, courseId, onUpdate }) => {
             });
             
             if (response.data.entrega) {
-                onUpdate(response.data.entrega);
+                // Actualizar con los datos completos de la entrega
+                const entregaActualizada = {
+                    ...response.data.entrega,
+                    archivo: response.data.entrega.archivo ? {
+                        id: response.data.entrega.archivo.id,
+                        url: response.data.entrega.archivo.url,
+                        nombreOriginal: response.data.entrega.archivo.nombre // Asegurarse de usar el nombre correcto
+                    } : null
+                };
+                onUpdate(entregaActualizada);
             }
             
             // Resetear estados después de la actualización
@@ -75,15 +84,39 @@ const TareaItem = ({ item, courseId, onUpdate }) => {
         setArchivo(file);
     };
 
+    const uploadFile = async (file) => {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await axios.post('/api/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error al subir el archivo:', error);
+            throw error;
+        }
+    };
+
     const handleSubmitFile = async () => {
         try {
             setUploadingFile(true);
-            // Simular subida de archivo - En producción aquí iría la lógica real de subida
-            const archivoUrl = `/uploads/${archivo?.name || 'sin-archivo'}`;
+            let ficheroId = null;
+
+            if (archivo) {
+                const uploadResponse = await uploadFile(archivo);
+                ficheroId = uploadResponse.id;
+            }
+
             await actualizarEntrega('entregar', {
-                archivoUrl: archivo ? archivoUrl : null,
+                ficheroId,
                 comentario: comentario || null
             });
+        } catch (error) {
+            console.error('Error al entregar:', error);
         } finally {
             setUploadingFile(false);
         }
@@ -92,8 +125,17 @@ const TareaItem = ({ item, courseId, onUpdate }) => {
     const handleUpdateFile = async () => {
         try {
             setUploadingFile(true);
-            const archivoUrl = `/uploads/${archivo.name}`;
-            await actualizarEntrega('actualizarArchivo', { archivoUrl });
+            
+            if (!archivo) {
+                throw new Error('No se ha seleccionado ningún archivo');
+            }
+
+            const uploadResponse = await uploadFile(archivo);
+            await actualizarEntrega('actualizarArchivo', { 
+                ficheroId: uploadResponse.id 
+            });
+        } catch (error) {
+            console.error('Error al actualizar el archivo:', error);
         } finally {
             setUploadingFile(false);
         }
@@ -149,18 +191,20 @@ const TareaItem = ({ item, courseId, onUpdate }) => {
                             <div className="mb-3">
                                 <h6><Icon name="documents" size={20} /> Archivos:</h6>
                                 <div className="d-flex flex-wrap gap-2 align-items-start">
-                                    {item.entrega.archivoUrl ? (
+                                    {item.entrega.archivo ? (
                                         <>
-                                            <a href={item.entrega.archivoUrl} 
+                                            <a href={`${API_BASE_URL}${item.entrega.archivo.url}`} 
                                                target="_blank" 
                                                rel="noopener noreferrer" 
-                                               className="btn btn-sm btn-outline-primary">
-                                                <Icon name="download" size={20} className="me-2" />
-                                                Ver archivo entregado
+                                               className="btn btn-sm btn-outline-primary d-flex align-items-center">
+                                                <Icon name="folder-download1" size={20} className="me-2" />
+                                                <span className="text-truncate" style={{maxWidth: '200px'}}>
+                                                    {item.entrega.archivo.nombreOriginal}
+                                                </span>
                                             </a>
                                             {!item.entrega.isCalificado && (
                                                 <button
-                                                    className="btn btn-sm btn-warning"
+                                                    className="btn btn-sm btn-warning d-flex align-items-center"
                                                     onClick={() => setEditandoEntrega(true)}
                                                     disabled={actualizando}
                                                 >
@@ -200,7 +244,7 @@ const TareaItem = ({ item, courseId, onUpdate }) => {
                                                         </>
                                                     ) : (
                                                         <>
-                                                            <Icon name="upload" size={16} className="me-2" />
+                                                            <Icon name="folder-upload" size={16} className="me-2" />
                                                             Guardar cambios
                                                         </>
                                                     )}

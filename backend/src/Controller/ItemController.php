@@ -10,6 +10,8 @@ use App\Entity\Quizz;
 use App\Entity\Tarea;
 use App\Entity\Usuario;
 use App\Entity\UsuarioCurso;
+use App\Entity\Fichero;
+use App\Service\FileService;
 use Doctrine\ORM\EntityManagerInterface;
 use Proxies\__CG__\App\Entity\IntentoQuizz;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -23,7 +25,8 @@ final class ItemController extends AbstractController
 {
 
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly FileService $fileService
     ) {}
 
     #[Route('/item', name: 'app_item')]
@@ -133,9 +136,9 @@ final class ItemController extends AbstractController
             "id" => $material->getId(),
             "titulo" => $material->getTitulo(),
             "descripcion" => $material->getDescripcion(),
-            "contenido" => $material->getUrl(),
+            "contenido" => $material->getFichero() ? $material->getFichero()->getRuta() : null,
             "fechaPublicacion" => $material->getFechaPublicacion()->format('Y/m/d H:i:s'),
-            "url" => $material->getUrl(),
+            "url" => $material->getFichero() ? $material->getFichero()->getRuta() : null,
             "completado" => $materialCompletado !== null
         ];
 
@@ -210,7 +213,11 @@ final class ItemController extends AbstractController
             "puntos" => $tarea->getPuntosMaximos(),
             "entrega" => $entrega ? [
                 "id" => $entrega->getId(),
-                "archivoUrl" => $entrega->getArchivoUrl(),
+                "archivo" => $entrega->getFichero() ? [
+                    "id" => $entrega->getFichero()->getId(),
+                    "url" => $entrega->getFichero()->getRuta(),
+                    "nombreOriginal" => $entrega->getFichero()->getNombreOriginal()
+                ] : null,
                 "fechaEntrega" => $entrega->getFechaEntrega() ? $entrega->getFechaEntrega()->format('Y/m/d H:i:s') : null,
                 "calificacion" => $entrega->getCalificacion(),
                 "puntosObtenidos" => $entrega->getPuntosObtenidos(),
@@ -352,7 +359,7 @@ final class ItemController extends AbstractController
         $data = json_decode($request->getContent(), true);
         $accion = $data['accion'] ?? null;
         $comentario = $data['comentario'] ?? null;
-        $archivoUrl = $data['archivoUrl'] ?? null;
+        $ficheroId = $data['ficheroId'] ?? null;
 
         // Obtener o crear la entrega
         $entrega = $this->entityManager->getRepository(EntregaTarea::class)
@@ -383,6 +390,41 @@ final class ItemController extends AbstractController
                         // Actualizar estadísticas del usuario en el curso
                         $tareasCompletadasActual = $usuarioCurso->getTareasCompletadas() ?? 0;
                         $usuarioCurso->setTareasCompletadas($tareasCompletadasActual + 1);
+                    } else if ($entrega->getEstado() === EntregaTarea::ESTADO_PENDIENTE) {
+                        // Si la tarea estaba pendiente y ahora se está entregando, incrementar contador
+                        $tareasCompletadasActual = $usuarioCurso->getTareasCompletadas() ?? 0;
+                        $usuarioCurso->setTareasCompletadas($tareasCompletadasActual + 1);
+                    }
+
+                    // Establecer el comentario si se proporciona
+                    if ($comentario !== null) {
+                        $entrega->setComentarioEstudiante($comentario);
+                    }
+
+                    // Manejar archivo
+                    if ($ficheroId) {
+                        $fichero = $this->entityManager->getRepository(Fichero::class)->find($ficheroId);
+                        if ($fichero) {
+                            // Si ya hay un fichero anterior, desvincularlo correctamente y eliminar el archivo
+                            if ($entrega->getFichero()) {
+                                $oldFichero = $entrega->getFichero();
+                                $this->fileService->deleteFile($oldFichero->getRuta());
+                                $oldFichero->setEntregaTarea(null);
+                                $entrega->setFichero(null);
+                                $this->entityManager->remove($oldFichero);
+                            }
+
+                            // Asegurarnos de que el fichero no esté ya asociado a otra entrega
+                            if ($fichero->getEntregaTarea()) {
+                                $oldEntrega = $fichero->getEntregaTarea();
+                                $oldEntrega->setFichero(null);
+                                $fichero->setEntregaTarea(null);
+                            }
+
+                            // Establecer la relación bidireccional
+                            $fichero->setEntregaTarea($entrega);
+                            $entrega->setFichero($fichero);
+                        }
                     }
 
                     $entrega->setFechaEntrega(new \DateTime());
@@ -390,16 +432,33 @@ final class ItemController extends AbstractController
                         EntregaTarea::ESTADO_ATRASADO : 
                         EntregaTarea::ESTADO_ENTREGADO
                     );
-                    if ($archivoUrl) {
-                        $entrega->setArchivoUrl($archivoUrl);
-                    }
                     break;
 
                 case 'actualizarArchivo':
                     if ($entrega && !$entrega->isCalificado()) {
-                        $entrega->setArchivoUrl($archivoUrl);
+                        if ($ficheroId) {
+                            $fichero = $this->entityManager->getRepository(Fichero::class)->find($ficheroId);
+                            if ($fichero) {
+                                // Eliminar archivo anterior si existe
+                                if ($entrega->getFichero()) {
+                                    $oldFichero = $entrega->getFichero();
+                                    $this->fileService->deleteFile($oldFichero->getRuta());
+                                    $oldFichero->setEntregaTarea(null);
+                                    $entrega->setFichero(null);
+                                    $this->entityManager->remove($oldFichero);
+                                }
+                                // Asegurarnos de que el fichero no esté ya asociado a otra entrega
+                                if ($fichero->getEntregaTarea()) {
+                                    $oldEntrega = $fichero->getEntregaTarea();
+                                    $oldEntrega->setFichero(null);
+                                    $fichero->setEntregaTarea(null);
+                                }
+                                // Establecer la relación bidireccional
+                                $fichero->setEntregaTarea($entrega);
+                                $entrega->setFichero($fichero);
+                            }
+                        }
                         $entrega->setFechaEntrega(new \DateTime());
-                        // Actualizar el estado si está atrasado
                         if ($tarea->getFechaLimite() < new \DateTime()) {
                             $entrega->setEstado(EntregaTarea::ESTADO_ATRASADO);
                         }
@@ -412,9 +471,17 @@ final class ItemController extends AbstractController
 
                 case 'borrar':
                     if ($entrega && !$entrega->isCalificado()) {
+                        // Eliminar archivo asociado
+                        if ($entrega->getFichero()) {
+                            $oldFichero = $entrega->getFichero();
+                            $this->fileService->deleteFile($oldFichero->getRuta());
+                            $oldFichero->setEntregaTarea(null);
+                            $entrega->setFichero(null);
+                            $this->entityManager->remove($oldFichero);
+                        }
                         $entrega->setEstado(EntregaTarea::ESTADO_PENDIENTE);
                         $entrega->setFechaEntrega(null);
-                        $entrega->setArchivoUrl(null);
+                        $entrega->setFichero(null);
                         $entrega->setPuntosObtenidos(null);
                         $entrega->setComentarioProfesor(null);
                         $entrega->setComentarioEstudiante(null);
@@ -462,7 +529,11 @@ final class ItemController extends AbstractController
                     'estado' => $entrega->getEstado(),
                     'fechaEntrega' => $entrega->getFechaEntrega() ? $entrega->getFechaEntrega()->format('Y/m/d H:i:s') : null,
                     'comentarioEstudiante' => $entrega->getComentarioEstudiante(),
-                    'archivoUrl' => $entrega->getArchivoUrl(),
+                    'archivo' => $entrega->getFichero() ? [
+                        'id' => $entrega->getFichero()->getId(),
+                        'url' => $entrega->getFichero()->getRuta(),
+                        'nombre' => $entrega->getFichero()->getNombreOriginal()
+                    ] : null,
                     'puntosObtenidos' => $entrega->getPuntosObtenidos(),
                     'calificacion' => $entrega->getCalificacion(),
                     'comentarioProfesor' => $entrega->getComentarioProfesor()

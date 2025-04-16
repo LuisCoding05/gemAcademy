@@ -22,9 +22,6 @@ class Material
     #[ORM\Column(length: 255)]
     private ?string $descripcion = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $url = null;
-
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $fechaPublicacion = null;
@@ -41,6 +38,9 @@ class Material
      */
     #[ORM\OneToMany(targetEntity: MaterialCompletado::class, mappedBy: 'material')]
     private Collection $materialCompletados;
+
+    #[ORM\OneToOne(mappedBy: 'material', cascade: ['persist', 'remove'])]
+    private ?Fichero $fichero = null;
 
     public function __construct()
     {
@@ -151,6 +151,28 @@ class Material
                 $materialCompletado->setMaterial(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getFichero(): ?Fichero
+    {
+        return $this->fichero;
+    }
+
+    public function setFichero(?Fichero $fichero): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($fichero === null && $this->fichero !== null) {
+            $this->fichero->setMaterial(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($fichero !== null && $fichero->getMaterial() !== $this) {
+            $fichero->setMaterial($this);
+        }
+
+        $this->fichero = $fichero;
 
         return $this;
     }

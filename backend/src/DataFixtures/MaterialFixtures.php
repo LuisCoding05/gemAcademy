@@ -102,7 +102,6 @@ class MaterialFixtures extends Fixture implements DependentFixtureInterface
                 $material = new Material();
                 $material->setTitulo($materialData['titulo']);
                 $material->setDescripcion($materialData['descripcion']);
-                $material->setUrl($materialData['url']);
                 $material->setOrden($materialData['orden']);
                 $material->setFechaPublicacion(new \DateTime());
                 $material->setIdCurso($this->getReference('curso-' . $cursoSlug, Curso::class));

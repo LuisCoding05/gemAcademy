@@ -105,6 +105,12 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $tokenVerificacion = null;
 
+    /**
+     * @var Collection<int, Fichero>
+     */
+    #[ORM\OneToMany(targetEntity: Fichero::class, mappedBy: 'usuario')]
+    private Collection $ficheros;
+
     public function __construct()
     {
         $this->usuarioCursos = new ArrayCollection();
@@ -116,6 +122,7 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         $this->cursos = new ArrayCollection();
         $this->fechaRegistro = new \DateTime();
         $this->log = new ArrayCollection();
+        $this->ficheros = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -513,6 +520,36 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     public function setTokenVerificacion(?string $tokenVerificacion): static
     {
         $this->tokenVerificacion = $tokenVerificacion;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Fichero>
+     */
+    public function getFicheros(): Collection
+    {
+        return $this->ficheros;
+    }
+
+    public function addFichero(Fichero $fichero): static
+    {
+        if (!$this->ficheros->contains($fichero)) {
+            $this->ficheros->add($fichero);
+            $fichero->setUsuario($this);
+        }
+
+        return $this;
+    }
+
+    public function removeFichero(Fichero $fichero): static
+    {
+        if ($this->ficheros->removeElement($fichero)) {
+            // set the owning side to null (unless already changed)
+            if ($fichero->getUsuario() === $this) {
+                $fichero->setUsuario(null);
+            }
+        }
 
         return $this;
     }
