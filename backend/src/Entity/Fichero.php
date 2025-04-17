@@ -30,7 +30,7 @@ class Fichero
     #[ORM\JoinColumn(nullable: false)]
     private ?Usuario $usuario = null;
 
-    #[ORM\OneToOne(inversedBy: 'fichero', cascade: ['persist', 'remove'])]
+    #[ORM\OneToOne(mappedBy: 'fichero', cascade: ['persist'])]
     private ?Material $material = null;
 
     #[ORM\OneToOne(mappedBy: 'fichero', cascade: ['persist'])]

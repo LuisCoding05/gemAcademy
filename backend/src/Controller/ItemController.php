@@ -136,9 +136,13 @@ final class ItemController extends AbstractController
             "id" => $material->getId(),
             "titulo" => $material->getTitulo(),
             "descripcion" => $material->getDescripcion(),
-            "contenido" => $material->getFichero() ? $material->getFichero()->getRuta() : null,
+            "contenido" => $material->getDescripcion(),
             "fechaPublicacion" => $material->getFechaPublicacion()->format('Y/m/d H:i:s'),
-            "url" => $material->getFichero() ? $material->getFichero()->getRuta() : null,
+            "fichero" => $material->getFichero() ? [
+                "id" => $material->getFichero()->getId(),
+                "url" => $material->getFichero()->getRuta(),
+                "nombreOriginal" => $material->getFichero()->getNombreOriginal()
+            ] : null,
             "completado" => $materialCompletado !== null
         ];
 

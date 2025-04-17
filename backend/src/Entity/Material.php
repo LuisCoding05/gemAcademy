@@ -38,8 +38,8 @@ class Material
      */
     #[ORM\OneToMany(targetEntity: MaterialCompletado::class, mappedBy: 'material')]
     private Collection $materialCompletados;
-
-    #[ORM\OneToOne(mappedBy: 'material', cascade: ['persist', 'remove'])]
+    
+    #[ORM\OneToOne(inversedBy: 'material', cascade: ['persist'])]
     private ?Fichero $fichero = null;
 
     public function __construct()

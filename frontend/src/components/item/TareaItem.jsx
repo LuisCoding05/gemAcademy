@@ -193,15 +193,32 @@ const TareaItem = ({ item, courseId, onUpdate }) => {
                                 <div className="d-flex flex-wrap gap-2 align-items-start">
                                     {item.entrega.archivo ? (
                                         <>
-                                            <a href={`${API_BASE_URL}${item.entrega.archivo.url}`} 
-                                               target="_blank" 
-                                               rel="noopener noreferrer" 
+                                            <button 
+                                               onClick={async () => {
+                                                   try {
+                                                       const response = await axios.get(
+                                                           `/api/download/${item.entrega.archivo.id}`,
+                                                           { responseType: 'blob' }
+                                                       );
+                                                       
+                                                       const url = window.URL.createObjectURL(new Blob([response.data]));
+                                                       const link = document.createElement('a');
+                                                       link.href = url;
+                                                       link.setAttribute('download', item.entrega.archivo.nombreOriginal);
+                                                       document.body.appendChild(link);
+                                                       link.click();
+                                                       document.body.removeChild(link);
+                                                       window.URL.revokeObjectURL(url);
+                                                   } catch (error) {
+                                                       console.error('Error al descargar el archivo:', error);
+                                                   }
+                                               }}
                                                className="btn btn-sm btn-outline-primary d-flex align-items-center">
                                                 <Icon name="folder-download1" size={20} className="me-2" />
                                                 <span className="text-truncate" style={{maxWidth: '200px'}}>
                                                     {item.entrega.archivo.nombreOriginal}
                                                 </span>
-                                            </a>
+                                            </button>
                                             {!item.entrega.isCalificado && (
                                                 <button
                                                     className="btn btn-sm btn-warning d-flex align-items-center"
@@ -258,7 +275,7 @@ const TareaItem = ({ item, courseId, onUpdate }) => {
                                                 }}
                                                 disabled={uploadingFile}
                                             >
-                                                <Icon name="cross" size={16} className="me-2" />
+                                                <Icon name="circle-with-cross" size={16} className="me-2" />
                                                 Cancelar
                                             </button>
                                         </div>
@@ -303,7 +320,7 @@ const TareaItem = ({ item, courseId, onUpdate }) => {
                                                 }}
                                                 disabled={actualizando}
                                             >
-                                                <Icon name="cross" size={16} className="me-2" />
+                                                <Icon name="circle-with-cross" size={16} className="me-2" />
                                                 Cancelar
                                             </button>
                                         </div>
@@ -390,7 +407,7 @@ const TareaItem = ({ item, courseId, onUpdate }) => {
                                         </>
                                     ) : (
                                         <>
-                                            <Icon name="upload" size={16} className="me-2" />
+                                            <Icon name="folder-upload1" size={16} className="me-2" />
                                             {archivo ? 'Entregar con archivo' : 'Entregar sin archivo'}
                                         </>
                                     )}
