@@ -35,6 +35,9 @@ class Quizz
     #[ORM\Column]
     private ?int $puntosTotales = null;
 
+    #[ORM\Column(options: ['default' => 1], nullable:true)]
+    private ?int $intentosPermitidos = 1;
+
     /**
      * @var Collection<int, PreguntaQuizz>
      */
@@ -131,6 +134,18 @@ class Quizz
     public function setPuntosTotales(int $puntosTotales): static
     {
         $this->puntosTotales = $puntosTotales;
+
+        return $this;
+    }
+
+    public function getIntentosPermitidos(): ?int
+    {
+        return $this->intentosPermitidos;
+    }
+
+    public function setIntentosPermitidos(int $intentosPermitidos): static
+    {
+        $this->intentosPermitidos = $intentosPermitidos;
 
         return $this;
     }

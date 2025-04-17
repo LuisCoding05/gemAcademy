@@ -26,6 +26,26 @@
     outline: none;
     box-shadow: none;
 }
+
+.image-gallery-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 10px; /* opcional, para que no corte el scroll */
+}
+
+.image-gallery-scroll::-webkit-scrollbar,
+.image-gallery-scroll-horizontal::-webkit-scrollbar {
+  height: 8px;
+  width: 8px;
+}
+
+.image-gallery-scroll::-webkit-scrollbar-thumb,
+.image-gallery-scroll-horizontal::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+
 /*Hover del botón del tema claro/oscuro*/
 #darkModeToggle:hover{
     background-color: var(--color-texto-primario);

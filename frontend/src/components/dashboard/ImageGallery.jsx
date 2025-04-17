@@ -10,7 +10,7 @@ const ImageGallery = ({ images, onSelectImage, selectedImageUrl }) => {
         <h5 className="mb-0">Selecciona una imagen de perfil</h5>
       </div>
       <div className="card-body">
-        <div className="row justify-content-center g-3">
+        <div className="row justify-content-center g-3 image-gallery-scroll">
           {images.map((image) => (
             <div key={image.id} className="col-4 col-md-3 col-lg-2">
               <div 

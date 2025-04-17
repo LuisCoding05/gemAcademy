@@ -157,7 +157,7 @@ const ItemDetails = () => {
                                     )}
 
                                     {itemType === 'quiz' && (
-                                        <QuizItem item={item} />
+                                        <QuizItem item={item} courseId={courseId} />
                                     )}
                                 </div>
                                 <div className="col-md-4">

@@ -18,14 +18,16 @@ class QuizzFixtures extends Fixture implements DependentFixtureInterface
                 'descripcion' => 'Evaluación de conceptos básicos de programación',
                 'tiempoLimite' => 30,
                 'puntosTotales' => 100,
-                'diasLimite' => 7
+                'diasLimite' => 7,
+                "intentos" => 5
             ],
             [
                 'titulo' => 'Quiz de Variables',
                 'descripcion' => 'Evaluación sobre variables y tipos de datos',
                 'tiempoLimite' => 20,
                 'puntosTotales' => 50,
-                'diasLimite' => 5
+                'diasLimite' => 5,
+                "intentos" => 5
             ]
         ],
         'desarrollo-web-con-react' => [
@@ -34,14 +36,16 @@ class QuizzFixtures extends Fixture implements DependentFixtureInterface
                 'descripcion' => 'Evaluación de conceptos fundamentales de React',
                 'tiempoLimite' => 45,
                 'puntosTotales' => 100,
-                'diasLimite' => 7
+                'diasLimite' => 7,
+                "intentos" => 5
             ],
             [
                 'titulo' => 'Quiz de Componentes',
                 'descripcion' => 'Evaluación sobre componentes y props',
                 'tiempoLimite' => 30,
                 'puntosTotales' => 75,
-                'diasLimite' => 5
+                'diasLimite' => 5,
+                "intentos" => 5
             ]
         ],
         'backend-con-symfony' => [
@@ -50,14 +54,16 @@ class QuizzFixtures extends Fixture implements DependentFixtureInterface
                 'descripcion' => 'Evaluación de conceptos básicos de Symfony',
                 'tiempoLimite' => 40,
                 'puntosTotales' => 100,
-                'diasLimite' => 7
+                'diasLimite' => 7,
+                "intentos" => 5
             ],
             [
                 'titulo' => 'Quiz de Doctrine',
                 'descripcion' => 'Evaluación sobre entidades y consultas',
                 'tiempoLimite' => 35,
                 'puntosTotales' => 80,
-                'diasLimite' => 5
+                'diasLimite' => 5,
+                "intentos" => 5
             ]
         ],
         'bases-de-datos-sql' => [
@@ -66,14 +72,16 @@ class QuizzFixtures extends Fixture implements DependentFixtureInterface
                 'descripcion' => 'Evaluación de conceptos básicos de SQL',
                 'tiempoLimite' => 30,
                 'puntosTotales' => 100,
-                'diasLimite' => 7
+                'diasLimite' => 7,
+                "intentos" => 5
             ],
             [
                 'titulo' => 'Quiz de Consultas Avanzadas',
                 'descripcion' => 'Evaluación de técnicas avanzadas de SQL',
                 'tiempoLimite' => 45,
                 'puntosTotales' => 120,
-                'diasLimite' => 7
+                'diasLimite' => 7,
+                "intentos" => 5
             ]
         ],
         'desarrollo-de-videojuegos-con-unity' => [
@@ -82,14 +90,16 @@ class QuizzFixtures extends Fixture implements DependentFixtureInterface
                 'descripcion' => 'Evaluación de conceptos básicos de Unity',
                 'tiempoLimite' => 30,
                 'puntosTotales' => 100,
-                'diasLimite' => 7
+                'diasLimite' => 7,
+                "intentos" => 5
             ],
             [
                 'titulo' => 'Quiz de C# en Unity',
                 'descripcion' => 'Evaluación de scripting en C# para Unity',
                 'tiempoLimite' => 40,
                 'puntosTotales' => 100,
-                'diasLimite' => 7
+                'diasLimite' => 7,
+                "intentos" => 5
             ]
         ]
     ];
@@ -105,6 +115,7 @@ class QuizzFixtures extends Fixture implements DependentFixtureInterface
                 $quizz->setFechaLimite(new \DateTime('+' . $quizzData['diasLimite'] . ' days'));
                 $quizz->setTiempoLimite($quizzData['tiempoLimite']);
                 $quizz->setPuntosTotales($quizzData['puntosTotales']);
+                $quizz->setIntentosPermitidos($quizzData["intentos"]);
                 $quizz->setIdCurso($this->getReference('curso-' . $cursoSlug, Curso::class));
                 
                 $manager->persist($quizz);
