@@ -42,7 +42,7 @@ export const Navbar = () => {
                                 {/* Rutas para usuarios autenticados */}
                                 {user && (
                                     <li>
-                                        <Link className="dropdown-item" to="/dashboard">Dashboard</Link>
+                                        <Link className="dropdown-item" to="/dashboard">Perfil</Link>
                                     </li>    
                                 )}
                             </ul>
@@ -92,7 +92,7 @@ export const Navbar = () => {
                           </svg></button>
                             
                         )}
-                        {user && (<img src={user.imagen.url} className="pfp-static-icon"></img>)}
+                        {user && (<Link to={"/dashboard"}><img src={user.imagen.url} className="pfp-static-icon"></img></Link>)}
                     </div>
                 </div>
             </div>

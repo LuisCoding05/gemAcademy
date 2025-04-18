@@ -6,6 +6,7 @@ import axios from '../../utils/axios';
 import Icon from '../Icon';
 import Loader from '../common/Loader';
 import { Link } from 'react-router-dom';
+import { CreateCourse } from './CreateCourse';
 
 export const SearchCourse = () => {
   const { user } = useAuth();
@@ -183,13 +184,15 @@ export const SearchCourse = () => {
                   Explora tu próxima aventura <Icon name="pacman1" color="gold" size={34} />
                 </h4>
                 {user && (
-                  <motion.button 
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className='btn btn-success btn-lg rounded-pill'
-                  >
-                    Crear curso <Icon name="cloud-add" color="white" size={34} />
-                  </motion.button>
+                  <Link to="/cursos/crear">
+                    <motion.button 
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      className='btn btn-success btn-lg rounded-pill'
+                    >
+                      Crear curso <Icon name="cloud-add" color="white" size={34} />
+                    </motion.button>
+                  </Link>
                 )}
               </div>
             </div>
