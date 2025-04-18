@@ -5,6 +5,7 @@ import { useTheme } from '../../context/ThemeContext';
 import axios from '../../utils/axios';
 import Icon from '../Icon';
 import Loader from '../common/Loader';
+import CreateMaterial from '../item/CreateMaterial';
 
 const CourseDetail = () => {
     const { user } = useAuth();
@@ -18,6 +19,22 @@ const CourseDetail = () => {
     const [enrollError, setEnrollError] = useState(null);
     const [enrolling, setEnrolling] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
+    const [showCreateMaterial, setShowCreateMaterial] = useState(false);
+
+    const handleDeleteMaterial = async (materialId) => {
+        if (window.confirm('¿Estás seguro de que quieres eliminar este material?')) {
+            try {
+                await axios.delete(`/api/item/${id}/material/${materialId}/delete`);
+                setCourse(prev => ({
+                    ...prev,
+                    materiales: prev.materiales.filter(material => material.id !== materialId)
+                }));
+            } catch (error) {
+                console.error('Error al eliminar el material:', error);
+                alert(error.response?.data?.message || 'Error al eliminar el material');
+            }
+        }
+    };
 
     useEffect(() => {
         const fetchCourse = async () => {
@@ -199,6 +216,30 @@ const CourseDetail = () => {
                                 data-bs-parent="#courseAccordion"
                             >
                                 <div className="accordion-body">
+                                    {course.userRole === 'profesor' && (
+                                        <button 
+                                            className="btn btn-success mb-3"
+                                            onClick={() => setShowCreateMaterial(true)}
+                                        >
+                                            <Icon name="plus" size={20} className="me-2" />
+                                            Crear nuevo material
+                                        </button>
+                                    )}
+
+                                    {showCreateMaterial && (
+                                        <CreateMaterial 
+                                            courseId={id}
+                                            onCreated={(newMaterial) => {
+                                                setCourse(prev => ({
+                                                    ...prev,
+                                                    materiales: [...prev.materiales, newMaterial]
+                                                }));
+                                                setShowCreateMaterial(false);
+                                            }}
+                                            onCancel={() => setShowCreateMaterial(false)}
+                                        />
+                                    )}
+
                                     {course.materiales && course.materiales.length > 0 ? (
                                         <ul className="list-group">
                                             {course.materiales.map((material, index) => (
@@ -206,8 +247,14 @@ const CourseDetail = () => {
                                                     <div>
                                                         <Icon name="folder" size={20} className="me-2" />
                                                         {material.titulo}
+                                                        {material.fichero && (
+                                                            <span className="ms-2 text-muted small">
+                                                                <Icon name="file" size={16} className="me-1" />
+                                                                {material.fichero.nombreOriginal}
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                    <div>
+                                                    <div className="d-flex align-items-center gap-2">
                                                         <small className="text-muted me-3">
                                                             {new Date(material.fechaPublicacion).toLocaleDateString()}
                                                         </small>
@@ -219,6 +266,24 @@ const CourseDetail = () => {
                                                             >
                                                                 <Icon name="eye" size={20} color="#0d6efd" />
                                                             </Link>
+                                                        )}
+                                                        {course.userRole === 'profesor' && (
+                                                            <div className="ms-2">
+                                                                <Link 
+                                                                    to={`/cursos/${id}/material/${material.id}`}
+                                                                    className="btn btn-link btn-sm text-warning p-0 me-2" 
+                                                                    title="Editar material"
+                                                                >
+                                                                    <Icon name="pen" size={20} />
+                                                                </Link>
+                                                                <button 
+                                                                    className="btn btn-link btn-sm text-danger p-0" 
+                                                                    title="Eliminar material"
+                                                                    onClick={() => handleDeleteMaterial(material.id)}
+                                                                >
+                                                                    <Icon name="trash-can" size={20} />
+                                                                </button>
+                                                            </div>
                                                         )}
                                                     </div>
                                                 </li>

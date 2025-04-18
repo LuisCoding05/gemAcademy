@@ -66,6 +66,15 @@ const ItemDetails = () => {
         }));
     };
 
+    const handleMaterialUpdate = (updatedMaterial) => {
+        setItem(prev => ({
+            ...prev,
+            titulo: updatedMaterial.titulo,
+            descripcion: updatedMaterial.descripcion,
+            fichero: updatedMaterial.fichero
+        }));
+    };
+
     const getItemTitle = () => {
         switch (itemType) {
             case 'material':
@@ -145,7 +154,11 @@ const ItemDetails = () => {
                                     </div>
 
                                     {itemType === 'material' && (
-                                        <MaterialItem item={item} />
+                                        <MaterialItem 
+                                            item={item} 
+                                            courseId={courseId}
+                                            onUpdate={handleMaterialUpdate}
+                                        />
                                     )}
 
                                     {itemType === 'tarea' && (
@@ -173,6 +186,14 @@ const ItemDetails = () => {
                                                     <li className={`list-group-item ${isDarkMode ? 'bg-dark text-light' : ''}`}>
                                                         <strong>Fecha límite:</strong><br />
                                                         {new Date(item.fechaLimite).toLocaleString()}
+                                                    </li>
+                                                )}
+                                                {itemType === 'material' && item.completado && (
+                                                    <li className={`list-group-item ${isDarkMode ? 'bg-dark text-light' : ''}`}>
+                                                        <div className="text-success">
+                                                            <Icon name="checkmark" size={20} className="me-2" />
+                                                            Material completado
+                                                        </div>
                                                     </li>
                                                 )}
                                             </ul>
