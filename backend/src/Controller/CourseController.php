@@ -3,20 +3,18 @@
 namespace App\Controller;
 
 use App\Entity\Curso;
+use App\Entity\Foro;
 use App\Entity\UsuarioCurso;
 use App\Entity\Usuario;
-use App\Entity\Material;
-use App\Entity\Tarea;
-use App\Entity\Quizz;
-use App\Entity\EntregaTarea;
-use App\Entity\IntentoQuizz;
-use App\Entity\MaterialCompletado;
+use App\Entity\Imagen;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 use App\Service\CursoInscripcionService;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class CourseController extends AbstractController
 {
@@ -101,7 +99,108 @@ final class CourseController extends AbstractController
         ]);
     }
 
-    #[Route('/api/course/{id}', name: 'app_course_detail')]
+    #[Route('/api/createcourse/images', name: 'app_course_available_images', methods: ['GET'])]
+    public function getAvailableImages(): JsonResponse
+    {
+        try {
+            /** @var Usuario $user */
+            $user = $this->getUser();
+            if (!$user) {
+                return $this->json([
+                    'message' => 'Debes iniciar sesión para acceder a las imágenes'
+                ], 401);
+            }
+
+            $imagenes = $this->entityManager->getRepository(Imagen::class)->findAll();
+            $imagenesDisponibles = [];
+
+            foreach ($imagenes as $imagen) {
+                if ($imagen !== null) {
+                    $imagenesDisponibles[] = [
+                        'id' => $imagen->getId(),
+                        'url' => $imagen->getUrl()
+                    ];
+                }
+            }
+
+            return $this->json([
+                'images' => $imagenesDisponibles
+            ]);
+        } catch (\Exception $e) {
+            return $this->json([
+                'message' => 'Error al cargar las imágenes: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    #[Route('/api/createcourse/create', name: 'app_course_create', methods: ['POST'])]
+    public function createCourse(Request $request): JsonResponse
+    {
+        $user = $this->getUser();
+
+        // Obtener datos del request
+        $data = json_decode($request->getContent(), true);
+        
+        // Validar datos requeridos
+        if (!isset($data['nombre']) || !isset($data['descripcion'])) {
+            return $this->json([
+                'message' => 'El nombre y la descripción son requeridos'
+            ], 400);
+        }
+
+        // Obtener el usuario actual
+        $usuario = $this->entityManager->getRepository(Usuario::class)
+            ->findOneBy(['email' => $user->getUserIdentifier()]);
+
+        // Crear nuevo curso
+        $curso = new Curso();
+        $curso->setNombre($data['nombre']);
+        $curso->setDescripcion($data['descripcion']);
+        $curso->setProfesor($usuario);
+        $curso->setFechaCreacion(new DateTime());
+        
+        // Crear el foro del curso
+        $foro = new Foro();
+        $foro->setCurso($curso);
+        $foro->setTitulo("Foro");
+        $foro->setDescripcion("Chatea y consulta tus dudas aquí");
+        $foro->setFechaCreacion(new DateTime());
+
+
+        // Procesar imagen si se proporciona
+        if (isset($data['imagen'])) {
+            $imagen = $this->entityManager->getRepository(Imagen::class)
+                ->findOneBy(['url' => $data['imagen']]);
+            
+            if ($imagen) {
+                $curso->setImagen($imagen);
+            }
+        }
+
+        // Guardar en la base de datos
+        $this->entityManager->persist($curso);
+        $this->entityManager->persist($foro);
+        $this->entityManager->flush();
+
+        return $this->json([
+            'message' => 'Curso creado exitosamente',
+            'curso' => [
+                'id' => $curso->getId(),
+                'nombre' => $curso->getNombre(),
+                'descripcion' => $curso->getDescripcion(),
+                'imagen' => $curso->getImagen() ? $curso->getImagen()->getUrl() : null,
+                'fechaCreacion' => $curso->getFechaCreacion()->format('Y-m-d H:i:s'),
+                'profesor' => [
+                    'id' => $usuario->getId(),
+                    'nombre' => $usuario->getNombre() . ' ' . $usuario->getApellido(),
+                    'username' => $usuario->getUsername(),
+                    'imagen' => $usuario->getImagen() ? $usuario->getImagen()->getUrl() : null
+                ]
+            ]
+        ], 201);
+    }
+
+    #[Route('/api/course/{id}', name: 'app_course_detail', methods: ['GET'])]
     public function detail(Request $request, $id): JsonResponse
     {
         $curso = $this->entityManager->getRepository(Curso::class)->find($id);
@@ -274,5 +373,4 @@ final class CourseController extends AbstractController
             ]
         ]);
     }
-
 }

@@ -14,6 +14,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute'
 import { AuthProvider } from './context/AuthContext'
 import { SearchCourse } from './components/course/SearchCourse'
 import { CourseDetail } from './components/course/CourseDetail'
+import { CreateCourse } from './components/course/CreateCourse'
 import ItemDetails from './components/course/ItemDetails'
 
 function App() {
@@ -59,7 +60,7 @@ function App() {
                 <Copy />
               </div>
             } />
-            
+
             {/* Ruta protegida */}
             <Route path="/dashboard" element={
               <div className="wrapper">
@@ -76,6 +77,16 @@ function App() {
                   <Navbar />
                   <SearchCourse />
                   <Copy />
+              </div>
+            } />
+
+            <Route path="/cursos/crear" element={
+              <div className="wrapper">
+                <ProtectedRoute>
+                  <Navbar />
+                  <CreateCourse />
+                  <Copy />
+                </ProtectedRoute>
               </div>
             } />
 
