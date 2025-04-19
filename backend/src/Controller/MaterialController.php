@@ -113,7 +113,7 @@ final class MaterialController extends AbstractController
                     $usuarioCurso->setUltimaActualizacion(new DateTime());
                     
                     $this->entityManager->flush();
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     return $this->json([
                         'message' => 'Error al marcar el material como completado',
                         'error' => $e->getMessage()
@@ -200,7 +200,7 @@ final class MaterialController extends AbstractController
                 ]
             ], 201);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->json([
                 'message' => 'Error al crear el material: ' . $e->getMessage()
             ], 500);

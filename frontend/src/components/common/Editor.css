@@ -1,0 +1,135 @@
+.ckeditor-wrapper {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+/* Contenedor del editor */
+.ck-editor__editable {
+    min-height: 300px;
+    padding: 1rem;
+    color: #000 !important;
+    background-color: #fff !important;
+}
+
+/* Modo oscuro */
+.dark .ck.ck-editor__main > .ck-editor__editable {
+    background-color: #fff !important;
+    color: #000 !important;
+}
+
+.dark .ck.ck-editor__main > .ck-editor__editable p,
+.dark .ck.ck-editor__main > .ck-editor__editable h1,
+.dark .ck.ck-editor__main > .ck-editor__editable h2,
+.dark .ck.ck-editor__main > .ck-editor__editable h3,
+.dark .ck.ck-editor__main > .ck-editor__editable h4,
+.dark .ck.ck-editor__main > .ck-editor__editable h5,
+.dark .ck.ck-editor__main > .ck-editor__editable h6,
+.dark .ck.ck-editor__main > .ck-editor__editable span,
+.dark .ck.ck-editor__main > .ck-editor__editable li {
+    color: #000 !important;
+}
+
+/* Barra de herramientas en modo oscuro */
+.dark .ck.ck-toolbar {
+    background: #2d2d2d !important;
+    border-color: #444;
+}
+
+.dark .ck.ck-toolbar .ck-button {
+    color: #fff !important;
+}
+
+.dark .ck.ck-toolbar .ck-button:hover {
+    background-color: #444 !important;
+}
+
+.dark .ck.ck-toolbar .ck-button.ck-on {
+    background-color: #666 !important;
+    color: #fff !important;
+}
+
+/* Estilos para el contenido renderizado */
+.ck-content {
+    font-family: inherit;
+    line-height: 1.6;
+}
+
+/* Contenedor de video responsivo */
+.video-wrapper {
+    position: relative;
+    padding-bottom: 56.25%; /* Aspecto 16:9 */
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+    margin: 1rem 0;
+}
+
+.video-wrapper iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* Estilos para las tablas */
+.ck-content table {
+    border-collapse: collapse;
+    margin: 1rem 0;
+    width: 100%;
+}
+
+.ck-content table td,
+.ck-content table th {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+/* Listas */
+.ck-content ul,
+.ck-content ol {
+    margin: 1rem 0;
+    padding-left: 2rem;
+}
+
+.ck-content li {
+    margin-bottom: 0.5rem;
+}
+
+/* Estilos para las imágenes */
+.ck-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 1rem 0;
+}
+
+/* Citas */
+.ck-content blockquote {
+    border-left: 5px solid #ccc;
+    margin: 1rem 0;
+    padding: 0.5rem 1rem;
+    font-style: italic;
+}
+
+/* Estilos para los títulos */
+.ck-content h1, 
+.ck-content h2, 
+.ck-content h3, 
+.ck-content h4, 
+.ck-content h5, 
+.ck-content h6 {
+    margin: 1rem 0;
+    color: inherit;
+}
+
+/* Estilos para los enlaces */
+.ck-content a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.ck-content a:hover {
+    text-decoration: underline;
+}

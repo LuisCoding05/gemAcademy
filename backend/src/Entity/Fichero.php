@@ -39,6 +39,9 @@ class Fichero
     #[ORM\Column]
     private ?int $tamanio = null;
 
+    #[ORM\OneToOne(mappedBy: 'fichero', cascade: ['persist'])]
+    private ?Tarea $tarea = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -136,6 +139,18 @@ class Fichero
     public function setTamanio(int $tamanio): static
     {
         $this->tamanio = $tamanio;
+
+        return $this;
+    }
+
+    public function getTarea(): ?Tarea
+    {
+        return $this->tarea;
+    }
+
+    public function setTarea(?Tarea $tarea): static
+    {
+        $this->tarea = $tarea;
 
         return $this;
     }

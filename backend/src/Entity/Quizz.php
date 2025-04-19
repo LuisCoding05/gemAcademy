@@ -20,7 +20,7 @@ class Quizz
     #[ORM\Column(length: 100)]
     private ?string $titulo = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(nullable: true, type:'text')]
     private ?string $descripcion = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]

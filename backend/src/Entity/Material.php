@@ -19,7 +19,7 @@ class Material
     #[ORM\Column(length: 100)]
     private ?string $titulo = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(type:'text', nullable:true)]
     private ?string $descripcion = null;
 
 

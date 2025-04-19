@@ -1,14 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
-import { useNavigate } from 'react-router-dom';
 import Icon from '../Icon';
 import axios from '../../utils/axios';
 import Loader from '../common/Loader';
+import Editor from '../common/Editor';
 
 const MaterialItem = ({ item, courseId, onUpdate }) => {
     const { isDarkMode } = useTheme();
-    const navigate = useNavigate();
-    // Inicializar isEditing como false para permitir alternar entre vistas
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -19,7 +17,6 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
     const [file, setFile] = useState(null);
     const [uploadProgress, setUploadProgress] = useState(0);
 
-    // Actualizar el formulario cuando cambia el item
     useEffect(() => {
         setFormData({
             titulo: item.titulo,
@@ -41,6 +38,14 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
             link.click();
             document.body.removeChild(link);
             window.URL.revokeObjectURL(url);
+
+            // Marcar como completado si es necesario
+            if (!item.completado) {
+                await axios.post(`/api/item/${courseId}/material/${item.id}/complete`);
+                if (onUpdate) {
+                    onUpdate({ ...item, completado: true });
+                }
+            }
         } catch (error) {
             console.error('Error al descargar el archivo:', error);
             setError('Error al descargar el archivo');
@@ -56,7 +61,6 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
         try {
             let ficheroId = null;
 
-            // Primero subir el archivo si existe
             if (file) {
                 const uploadFormData = new FormData();
                 uploadFormData.append('file', file);
@@ -74,7 +78,6 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
                 ficheroId = uploadResponse.data.id;
             }
 
-            // Luego actualizar el material con la referencia al archivo
             const updateData = new FormData();
             updateData.append('data', JSON.stringify({
                 ...formData,
@@ -112,7 +115,9 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
 
         try {
             await axios.delete(`/api/item/${courseId}/material/${item.id}/delete`);
-            navigate(`/cursos/${courseId}`);
+            if (onUpdate) {
+                onUpdate(null);
+            }
         } catch (error) {
             setError(error.response?.data?.message || 'Error al eliminar el material');
             setLoading(false);
@@ -127,14 +132,67 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
         }));
     };
 
+    const handleDescriptionChange = (content) => {
+        setFormData(prev => ({
+            ...prev,
+            descripcion: content
+        }));
+    };
+
     const handleFileChange = (e) => {
-        if (e.target.files[0]) {
-            setFile(e.target.files[0]);
+        const selectedFile = e.target.files[0];
+        if (selectedFile) {
+            if (selectedFile.size > 20 * 1024 * 1024) {
+                setError('El archivo no puede superar los 20MB');
+                e.target.value = '';
+                return;
+            }
+            
+            const allowedTypes = [
+                'application/pdf', 
+                'image/jpeg', 
+                'image/png', 
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'video/mp4',
+                'video/webm',
+                'audio/mpeg',
+                'audio/wav'
+            ];
+            
+            if (!allowedTypes.includes(selectedFile.type)) {
+                setError('Tipo de archivo no permitido. Solo se permiten PDF, imágenes, documentos Word, videos (MP4, WebM) y audio (MP3, WAV).');
+                e.target.value = '';
+                return;
+            }
+
+            setFile(selectedFile);
+            setError(null);
         }
     };
 
     if (loading) {
-        return <Loader size="medium" />;
+        return (
+            <div className="text-center">
+                <Loader size="medium" />
+                {uploadProgress > 0 && (
+                    <div className="mt-3">
+                        <div className="progress">
+                            <div 
+                                className="progress-bar" 
+                                role="progressbar" 
+                                style={{ width: `${uploadProgress}%` }} 
+                                aria-valuenow={uploadProgress} 
+                                aria-valuemin="0" 
+                                aria-valuemax="100"
+                            >
+                                {uploadProgress}%
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
     }
 
     if (isEditing) {
@@ -148,7 +206,7 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
                         <label className="form-label">Título</label>
                         <input
                             type="text"
-                            className="form-control"
+                            className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
                             name="titulo"
                             value={formData.titulo}
                             onChange={handleChange}
@@ -157,13 +215,10 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
                     </div>
                     <div className="mb-3">
                         <label className="form-label">Descripción</label>
-                        <textarea
-                            className="form-control"
-                            name="descripcion"
-                            value={formData.descripcion}
-                            onChange={handleChange}
-                            rows="4"
-                            required
+                        <Editor
+                            data={formData.descripcion}
+                            onChange={handleDescriptionChange}
+                            placeholder="Escribe la descripción del material aquí..."
                         />
                     </div>
                     <div className="mb-3">
@@ -181,9 +236,13 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
                         <label className="form-label">Nuevo archivo (opcional)</label>
                         <input
                             type="file"
-                            className="form-control"
+                            className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
                             onChange={handleFileChange}
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.mp4,.webm,.mp3,.wav"
                         />
+                        <small className="text-muted d-block mt-1">
+                            Formatos permitidos: PDF, Word, JPG, PNG, MP4, WebM, MP3, WAV. Tamaño máximo: 20MB
+                        </small>
                     </div>
                     <div className="d-flex gap-2">
                         <button type="submit" className="btn btn-primary" disabled={loading}>
@@ -209,9 +268,14 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
             {error && (
                 <div className="alert alert-danger">{error}</div>
             )}
+            <div className="content mb-4">
+                <div 
+                    className="ck-content"
+                    dangerouslySetInnerHTML={{ __html: item.descripcion }} 
+                />
+            </div>
             {item.fichero && (
                 <div className="mb-4">
-                    <h5>Material descargable</h5>
                     <button 
                         className="btn btn-primary"
                         onClick={() => handleDownload(item.fichero)}
@@ -222,7 +286,7 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
                 </div>
             )}
             {item.userRole === 'profesor' && (
-                <div className="mt-4 d-flex gap-2 mb-4">
+                <div className="mt-4 d-flex gap-2">
                     <button 
                         className="btn btn-warning"
                         onClick={() => setIsEditing(true)}

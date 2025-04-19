@@ -3,6 +3,7 @@ import { useTheme } from '../../context/ThemeContext';
 import Icon from '../Icon';
 import axios from '../../utils/axios';
 import Loader from '../common/Loader';
+import Editor from '../common/Editor';
 
 const CreateMaterial = ({ courseId, onCreated, onCancel }) => {
     const { isDarkMode } = useTheme();
@@ -78,6 +79,13 @@ const CreateMaterial = ({ courseId, onCreated, onCancel }) => {
         }));
     };
 
+    const handleDescriptionChange = (content) => {
+        setFormData(prev => ({
+            ...prev,
+            descripcion: content
+        }));
+    };
+
     const handleFileChange = (e) => {
         const selectedFile = e.target.files[0];
         if (selectedFile) {
@@ -94,11 +102,15 @@ const CreateMaterial = ({ courseId, onCreated, onCancel }) => {
                 'image/jpeg', 
                 'image/png', 
                 'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                'video/mp4',
+                'video/webm',
+                'audio/mpeg',
+                'audio/wav'
             ];
             
             if (!allowedTypes.includes(selectedFile.type)) {
-                setError('Tipo de archivo no permitido. Solo se permiten PDF, imágenes y documentos Word.');
+                setError('Tipo de archivo no permitido. Solo se permiten PDF, imágenes, documentos Word, videos (MP4, WebM) y audio (MP3, WAV).');
                 e.target.value = '';
                 return;
             }
@@ -155,13 +167,10 @@ const CreateMaterial = ({ courseId, onCreated, onCancel }) => {
                     </div>
                     <div className="mb-3">
                         <label className="form-label">Descripción</label>
-                        <textarea
-                            className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
-                            name="descripcion"
-                            value={formData.descripcion}
-                            onChange={handleChange}
-                            rows="4"
-                            required
+                        <Editor
+                            data={formData.descripcion}
+                            onChange={handleDescriptionChange}
+                            placeholder="Escribe la descripción del material aquí..."
                         />
                     </div>
                     <div className="mb-3">
@@ -170,10 +179,10 @@ const CreateMaterial = ({ courseId, onCreated, onCancel }) => {
                             type="file"
                             className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
                             onChange={handleFileChange}
-                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.mp4,.webm,.mp3,.wav"
                         />
                         <small className="text-muted d-block mt-1">
-                            Formatos permitidos: PDF, Word, JPG, PNG. Tamaño máximo: 20MB
+                            Formatos permitidos: PDF, Word, JPG, PNG, MP4, WebM, MP3, WAV. Tamaño máximo: 20MB
                         </small>
                     </div>
                     <div className="d-flex gap-2">

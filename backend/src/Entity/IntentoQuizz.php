@@ -42,6 +42,9 @@ class IntentoQuizz
     #[ORM\OneToMany(targetEntity: RespuestaQuizz::class, mappedBy: 'idIntento')]
     private Collection $respuestaQuizzs;
 
+    #[ORM\Column(type: Types::DECIMAL, precision: 4, scale: 2, nullable: true)]
+    private ?string $calificacion = null;
+
     public function __construct()
     {
         $this->respuestaQuizzs = new ArrayCollection();
@@ -150,6 +153,18 @@ class IntentoQuizz
                 $respuestaQuizz->setIdIntento(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCalificacion(): ?string
+    {
+        return $this->calificacion;
+    }
+
+    public function setCalificacion(?string $calificacion): static
+    {
+        $this->calificacion = $calificacion;
 
         return $this;
     }

@@ -148,10 +148,6 @@ const ItemDetails = () => {
                         <div className="card-body">
                             <div className="row">
                                 <div className="col-md-8">
-                                    <div className="mb-4">
-                                        <h5>Descripción</h5>
-                                        <p>{item.descripcion}</p>
-                                    </div>
 
                                     {itemType === 'material' && (
                                         <MaterialItem 

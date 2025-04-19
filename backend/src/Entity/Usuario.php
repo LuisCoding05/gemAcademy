@@ -58,12 +58,6 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     private Collection $mensajeForos;
 
     /**
-     * @var Collection<int, EntregaTarea>
-     */
-    #[ORM\OneToMany(targetEntity: EntregaTarea::class, mappedBy: 'idUsuario')]
-    private Collection $entregaTareas;
-
-    /**
      * @var Collection<int, IntentoQuizz>
      */
     #[ORM\OneToMany(targetEntity: IntentoQuizz::class, mappedBy: 'idUsuario')]
@@ -100,7 +94,7 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
      * @var Collection<int, Log>
      */
     #[ORM\OneToMany(targetEntity: Log::class, mappedBy: 'usuario')]
-    private Collection $log;
+    private Collection $logs;
 
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $tokenVerificacion = null;
@@ -116,12 +110,11 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         $this->usuarioCursos = new ArrayCollection();
         $this->usuarioLogros = new ArrayCollection();
         $this->mensajeForos = new ArrayCollection();
-        $this->entregaTareas = new ArrayCollection();
         $this->intentoQuizzs = new ArrayCollection();
         $this->usuarioNivels = new ArrayCollection();
         $this->cursos = new ArrayCollection();
         $this->fechaRegistro = new \DateTime();
-        $this->log = new ArrayCollection();
+        $this->logs = new ArrayCollection();
         $this->ficheros = new ArrayCollection();
     }
 
@@ -305,14 +298,6 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, EntregaTarea>
-     */
-    public function getEntregaTareas(): Collection
-    {
-        return $this->entregaTareas;
-    }
-
-    /**
      * @return Collection<int, IntentoQuizz>
      */
     public function getIntentoQuizzs(): Collection
@@ -485,15 +470,15 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     /**
      * @return Collection<int, Log>
      */
-    public function getLog(): Collection
+    public function getLogs(): Collection
     {
-        return $this->log;
+        return $this->logs;
     }
 
     public function addLog(Log $log): static
     {
-        if (!$this->log->contains($log)) {
-            $this->log->add($log);
+        if (!$this->logs->contains($log)) {
+            $this->logs->add($log);
             $log->setUsuario($this);
         }
 
@@ -502,7 +487,7 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function removeLog(Log $log): static
     {
-        if ($this->log->removeElement($log)) {
+        if ($this->logs->removeElement($log)) {
             // set the owning side to null (unless already changed)
             if ($log->getUsuario() === $this) {
                 $log->setUsuario(null);

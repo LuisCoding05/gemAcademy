@@ -19,7 +19,7 @@ class Tarea
     #[ORM\Column(length: 100)]
     private ?string $titulo = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(type:'text', nullable: true)]
     private ?string $descripcion = null;
 
     #[ORM\Column(length: 255, nullable: true)]
@@ -46,6 +46,9 @@ class Tarea
     #[ORM\ManyToOne(inversedBy: 'tareas')]
     #[ORM\JoinColumn(nullable: false)]
     private ?Curso $idCurso = null;
+
+    #[ORM\OneToOne(inversedBy: 'tarea', cascade: ['persist'])]
+    private ?Fichero $fichero = null;
 
     
 
@@ -182,6 +185,28 @@ class Tarea
     public function setIdCurso(?Curso $idCurso): static
     {
         $this->idCurso = $idCurso;
+
+        return $this;
+    }
+
+    public function getFichero(): ?Fichero
+    {
+        return $this->fichero;
+    }
+
+    public function setFichero(?Fichero $fichero): static
+    {
+        // unset the owning side of the relation if necessary
+        if ($fichero === null && $this->fichero !== null) {
+            $this->fichero->setTarea(null);
+        }
+
+        // set the owning side of the relation if necessary
+        if ($fichero !== null && $fichero->getTarea() !== $this) {
+            $fichero->setTarea($this);
+        }
+
+        $this->fichero = $fichero;
 
         return $this;
     }
