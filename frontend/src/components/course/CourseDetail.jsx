@@ -6,6 +6,7 @@ import axios from '../../utils/axios';
 import Icon from '../Icon';
 import Loader from '../common/Loader';
 import CreateMaterial from '../item/CreateMaterial';
+import CreateTarea from '../item/CreateTarea';
 
 const CourseDetail = () => {
     const { user } = useAuth();
@@ -20,6 +21,8 @@ const CourseDetail = () => {
     const [enrolling, setEnrolling] = useState(false);
     const [isSearching, setIsSearching] = useState(false);
     const [showCreateMaterial, setShowCreateMaterial] = useState(false);
+    const [showCreateTarea, setShowCreateTarea] = useState(false);
+    const navigate = useNavigate();
 
     const handleDeleteMaterial = async (materialId) => {
         if (window.confirm('¿Estás seguro de que quieres eliminar este material?')) {
@@ -32,6 +35,21 @@ const CourseDetail = () => {
             } catch (error) {
                 console.error('Error al eliminar el material:', error);
                 alert(error.response?.data?.message || 'Error al eliminar el material');
+            }
+        }
+    };
+
+    const handleDeleteTarea = async (tareaId) => {
+        if (window.confirm('¿Estás seguro de que quieres eliminar esta tarea?')) {
+            try {
+                await axios.delete(`/api/item/${id}/tarea/${tareaId}/delete`);
+                setCourse(prev => ({
+                    ...prev,
+                    tareas: prev.tareas.filter(tarea => tarea.id !== tareaId)
+                }));
+            } catch (error) {
+                console.error('Error al eliminar la tarea:', error);
+                alert(error.response?.data?.message || 'Error al eliminar la tarea');
             }
         }
     };
@@ -318,29 +336,77 @@ const CourseDetail = () => {
                                 data-bs-parent="#courseAccordion"
                             >
                                 <div className="accordion-body">
+                                    {course.userRole === 'profesor' && (
+                                        <button 
+                                            className="btn btn-success mb-3"
+                                            onClick={() => setShowCreateTarea(true)}
+                                        >
+                                            <Icon name="plus" size={20} className="me-2" />
+                                            Crear nueva tarea
+                                        </button>
+                                    )}
+
+                                    {showCreateTarea && (
+                                        <CreateTarea 
+                                            courseId={id}
+                                            onCreated={(newTarea) => {
+                                                setCourse(prev => ({
+                                                    ...prev,
+                                                    tareas: [...prev.tareas, newTarea]
+                                                }));
+                                                setShowCreateTarea(false);
+                                            }}
+                                            onCancel={() => setShowCreateTarea(false)}
+                                        />
+                                    )}
+
                                     {course.tareas && course.tareas.length > 0 ? (
                                         <ul className="list-group">
                                             {course.tareas.map((tarea, index) => (
-                                                <li key={index} className="list-group-item">
-                                                    <div className="d-flex justify-content-between align-items-center">
-                                                        <div>
-                                                            <Icon name="files" size={20} className="me-2" />
-                                                            {tarea.titulo}
-                                                        </div>
-                                                        <div>
-                                                            <small className="text-muted me-3">
-                                                                Fecha límite: {new Date(tarea.fechaLimite).toLocaleDateString()}
-                                                            </small>
-                                                            {course.isEnrolled && (
-                                                                <Link 
-                                                                    to={`/cursos/${id}/tarea/${tarea.id}`}
-                                                                    className="btn btn-link btn-sm p-0" 
-                                                                    title="Ver tarea"
+                                                <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <Icon name="files" size={20} className="me-2" />
+                                                        {tarea.titulo}
+                                                        {tarea.fichero && (
+                                                            <span className="ms-2 text-muted small">
+                                                                <Icon name="file" size={16} className="me-1" />
+                                                                {tarea.fichero.nombreOriginal}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <div className="d-flex align-items-center gap-2">
+                                                        <small className="text-muted me-3">
+                                                            Fecha límite: {new Date(tarea.fechaLimite).toLocaleDateString()}
+                                                        </small>
+                                                        {course.isEnrolled && (
+                                                            <Link 
+                                                                to={`/cursos/${id}/tarea/${tarea.id}`}
+                                                                className="btn btn-link btn-sm p-0" 
+                                                                title="Ver tarea"
+                                                            >
+                                                                <Icon name="eye" size={20} color="#0d6efd" />
+                                                            </Link>
+                                                        )}
+                                                        {course.userRole === 'profesor' && (
+                                                            <div className="ms-2">
+                                                                <button 
+                                                                    className="btn btn-link btn-sm text-warning p-0 me-2" 
+                                                                    title="Editar tarea"
+                                                                    onClick={() => {
+                                                                        navigate(`/cursos/${id}/tarea/${tarea.id}`, { state: { isEditing: true } });
+                                                                    }}
                                                                 >
-                                                                    <Icon name="eye" size={20} color="#0d6efd" />
-                                                                </Link>
-                                                            )}
-                                                        </div>
+                                                                    <Icon name="pen" size={20} />
+                                                                </button>
+                                                                <button 
+                                                                    className="btn btn-link btn-sm text-danger p-0" 
+                                                                    title="Eliminar tarea"
+                                                                    onClick={() => handleDeleteTarea(tarea.id)}
+                                                                >
+                                                                    <Icon name="trash-can" size={20} />
+                                                                </button>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 </li>
                                             ))}

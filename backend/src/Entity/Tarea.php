@@ -47,7 +47,7 @@ class Tarea
     #[ORM\JoinColumn(nullable: false)]
     private ?Curso $idCurso = null;
 
-    #[ORM\OneToOne(inversedBy: 'tarea', cascade: ['persist'])]
+    #[ORM\OneToOne(inversedBy: 'tarea', cascade: ['persist', 'remove'])]
     private ?Fichero $fichero = null;
 
     

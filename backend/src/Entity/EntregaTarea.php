@@ -46,7 +46,7 @@ class EntregaTarea
     #[ORM\Column(length: 255, nullable:true)]
     private ?string $comentarioEstudiante = null;
 
-    #[ORM\OneToOne(inversedBy: 'entregaTarea', cascade: ['persist'])]
+    #[ORM\OneToOne(inversedBy: 'entregaTarea', cascade: ['persist', 'remove'])]
     private ?Fichero $fichero = null;
 
     public function __construct()

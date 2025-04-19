@@ -62,7 +62,7 @@ const ItemDetails = () => {
     const handleItemUpdate = (updatedData) => {
         setItem(prev => ({
             ...prev,
-            entrega: updatedData
+            ...updatedData // Actualizamos todo el objeto, no solo la entrega
         }));
     };
 
