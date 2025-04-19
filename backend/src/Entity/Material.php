@@ -76,18 +76,6 @@ class Material
         return $this;
     }
 
-    public function getUrl(): ?string
-    {
-        return $this->url;
-    }
-
-    public function setUrl(string $url): static
-    {
-        $this->url = $url;
-
-        return $this;
-    }
-
 
     public function getFechaPublicacion(): ?\DateTimeInterface
     {

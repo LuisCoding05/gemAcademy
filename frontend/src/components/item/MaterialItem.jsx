@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
 import { useNavigate } from 'react-router-dom';
 import Icon from '../Icon';
@@ -8,6 +8,7 @@ import Loader from '../common/Loader';
 const MaterialItem = ({ item, courseId, onUpdate }) => {
     const { isDarkMode } = useTheme();
     const navigate = useNavigate();
+    // Inicializar isEditing como false para permitir alternar entre vistas
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -16,6 +17,15 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
         descripcion: item.descripcion
     });
     const [file, setFile] = useState(null);
+    const [uploadProgress, setUploadProgress] = useState(0);
+
+    // Actualizar el formulario cuando cambia el item
+    useEffect(() => {
+        setFormData({
+            titulo: item.titulo,
+            descripcion: item.descripcion
+        });
+    }, [item]);
 
     const handleDownload = async (fichero) => {
         try {
@@ -41,19 +51,45 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
         e.preventDefault();
         setLoading(true);
         setError(null);
+        setUploadProgress(0);
 
         try {
-            const data = new FormData();
-            data.append('data', JSON.stringify(formData));
+            let ficheroId = null;
+
+            // Primero subir el archivo si existe
             if (file) {
-                data.append('file', file);
+                const uploadFormData = new FormData();
+                uploadFormData.append('file', file);
+
+                const uploadResponse = await axios.post('/api/upload', uploadFormData, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    },
+                    onUploadProgress: (progressEvent) => {
+                        const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                        setUploadProgress(percentCompleted);
+                    }
+                });
+
+                ficheroId = uploadResponse.data.id;
             }
 
-            const response = await axios.post(`/api/item/${courseId}/material/${item.id}/edit`, data, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
+            // Luego actualizar el material con la referencia al archivo
+            const updateData = new FormData();
+            updateData.append('data', JSON.stringify({
+                ...formData,
+                ficheroId
+            }));
+
+            const response = await axios.post(
+                `/api/item/${courseId}/material/${item.id}/edit`,
+                updateData,
+                {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
                 }
-            });
+            );
 
             if (onUpdate) {
                 onUpdate(response.data.material);
@@ -151,7 +187,7 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
                     </div>
                     <div className="d-flex gap-2">
                         <button type="submit" className="btn btn-primary" disabled={loading}>
-                            <Icon name="save" size={20} className="me-2" />
+                            <Icon name="share-alternitive" size={20} className="me-2" />
                             Guardar cambios
                         </button>
                         <button 
@@ -159,7 +195,7 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
                             className="btn btn-secondary"
                             onClick={() => setIsEditing(false)}
                         >
-                            <Icon name="cross" size={20} className="me-2" />
+                            <Icon name="circle-with-cross" size={20} className="me-2" />
                             Cancelar
                         </button>
                     </div>
@@ -186,19 +222,19 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
                 </div>
             )}
             {item.userRole === 'profesor' && (
-                <div className="mt-4 d-flex gap-2">
+                <div className="mt-4 d-flex gap-2 mb-4">
                     <button 
                         className="btn btn-warning"
                         onClick={() => setIsEditing(true)}
                     >
-                        <Icon name="edit" size={20} className="me-2" />
+                        <Icon name="pencil2" size={20} className="me-2" />
                         Editar material
                     </button>
                     <button 
                         className="btn btn-danger"
                         onClick={handleDelete}
                     >
-                        <Icon name="trash" size={20} className="me-2" />
+                        <Icon name="trash-can" size={20} className="me-2" />
                         Eliminar material
                     </button>
                 </div>

@@ -155,9 +155,10 @@ const ItemDetails = () => {
 
                                     {itemType === 'material' && (
                                         <MaterialItem 
-                                            item={item} 
+                                            item={{...item, userRole: item.userRole}} 
                                             courseId={courseId}
                                             onUpdate={handleMaterialUpdate}
+                                            isEditing={item.userRole === 'profesor'}
                                         />
                                     )}
 

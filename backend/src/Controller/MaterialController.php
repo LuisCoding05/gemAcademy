@@ -11,6 +11,7 @@ use App\Entity\Fichero;
 use App\Service\FileService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -133,7 +134,8 @@ final class MaterialController extends AbstractController
                 "url" => $material->getFichero()->getRuta(),
                 "nombreOriginal" => $material->getFichero()->getNombreOriginal()
             ] : null,
-            "completado" => $materialCompletado !== null
+            "completado" => $materialCompletado !== null,
+            "userRole" => $isProfesor ? 'profesor' : ($isEstudiante ? 'estudiante' : null)
         ];
 
         return $this->json($materialData);
@@ -233,42 +235,19 @@ final class MaterialController extends AbstractController
                 $material->setDescripcion($data['descripcion']);
             }
 
-            // Procesar nuevo archivo si se proporciona
-            $file = $request->files->get('file');
-            if ($file) {
-                // Si hay un archivo anterior, eliminarlo físicamente
-                $ficheroAnterior = $material->getFichero();
-                if ($ficheroAnterior) {
-                    $rutaAnterior = $this->getParameter('kernel.project_dir') . '/public' . $ficheroAnterior->getRuta();
-                    if (file_exists($rutaAnterior)) {
-                        unlink($rutaAnterior);
+            // Procesar ficheroId si existe
+            if (isset($data['ficheroId'])) {
+                $fichero = $this->entityManager->getRepository(Fichero::class)->find($data['ficheroId']);
+                if ($fichero) {
+                    // Si hay un archivo anterior, eliminarlo
+                    $ficheroAnterior = $material->getFichero();
+                    if ($ficheroAnterior) {
+                        // Eliminar el archivo físico usando FileService
+                        $this->fileService->deleteFile($ficheroAnterior->getRuta());
+                        $this->entityManager->remove($ficheroAnterior);
                     }
-                    $this->entityManager->remove($ficheroAnterior);
-                }
-
-                // Subir nuevo archivo
-                $originalFilename = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-                $safeFilename = $this->slugger->slug($originalFilename);
-                $newFilename = $safeFilename . '-' . uniqid() . '.' . $file->guessExtension();
-
-                try {
-                    $file->move(
-                        $this->getParameter('uploads_directory'),
-                        $newFilename
-                    );
-
-                    $fichero = new Fichero();
-                    $fichero->setNombreOriginal($file->getClientOriginalName());
-                    $fichero->setRuta('/uploads/' . $newFilename);
-                    $fichero->setMimeType($file->getMimeType());
-                    $fichero->setTamanio($file->getSize());
-                    $fichero->setFechaSubida(new DateTime());
-                    $fichero->setUsuario($usuario);
                     
                     $material->setFichero($fichero);
-                    $this->entityManager->persist($fichero);
-                } catch (FileException $e) {
-                    return $this->json(['message' => 'Error al subir el archivo'], 500);
                 }
             }
 
@@ -289,7 +268,7 @@ final class MaterialController extends AbstractController
                 ]
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->json([
                 'message' => 'Error al actualizar el material',
                 'error' => $e->getMessage()
@@ -368,7 +347,7 @@ final class MaterialController extends AbstractController
                 'message' => 'Material eliminado exitosamente'
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->json([
                 'message' => 'Error al eliminar el material',
                 'error' => $e->getMessage()

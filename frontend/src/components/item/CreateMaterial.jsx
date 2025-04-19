@@ -186,7 +186,7 @@ const CreateMaterial = ({ courseId, onCreated, onCancel }) => {
                             className="btn btn-secondary"
                             onClick={onCancel}
                         >
-                            <Icon name="cross" size={20} className="me-2" />
+                            <Icon name="circle-with-cross" size={20} className="me-2" />
                             Cancelar
                         </button>
                     </div>
