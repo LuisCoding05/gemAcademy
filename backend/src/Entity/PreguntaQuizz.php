@@ -31,13 +31,13 @@ class PreguntaQuizz
     /**
      * @var Collection<int, OpcionPregunta>
      */
-    #[ORM\OneToMany(targetEntity: OpcionPregunta::class, mappedBy: 'idPregunta')]
+    #[ORM\OneToMany(targetEntity: OpcionPregunta::class, mappedBy: 'idPregunta', cascade: ['remove'])]
     private Collection $opcionPreguntas;
 
     /**
      * @var Collection<int, RespuestaQuizz>
      */
-    #[ORM\OneToMany(targetEntity: RespuestaQuizz::class, mappedBy: 'idPregunta')]
+    #[ORM\OneToMany(targetEntity: RespuestaQuizz::class, mappedBy: 'idPregunta', cascade: ['remove'])]
     private Collection $respuestaQuizzs;
 
     public function __construct()

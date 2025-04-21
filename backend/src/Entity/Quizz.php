@@ -41,13 +41,13 @@ class Quizz
     /**
      * @var Collection<int, PreguntaQuizz>
      */
-    #[ORM\OneToMany(targetEntity: PreguntaQuizz::class, mappedBy: 'idQuizz')]
+    #[ORM\OneToMany(targetEntity: PreguntaQuizz::class, mappedBy: 'idQuizz', cascade: ['remove'])]
     private Collection $preguntaQuizzs;
 
     /**
      * @var Collection<int, IntentoQuizz>
      */
-    #[ORM\OneToMany(targetEntity: IntentoQuizz::class, mappedBy: 'idQuizz')]
+    #[ORM\OneToMany(targetEntity: IntentoQuizz::class, mappedBy: 'idQuizz', cascade: ['remove'])]
     private Collection $intentoQuizzs;
 
     #[ORM\ManyToOne(inversedBy: 'quizzs')]

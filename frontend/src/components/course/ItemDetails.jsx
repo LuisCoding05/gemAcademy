@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
 import axios from '../../utils/axios';
@@ -34,7 +34,9 @@ const ItemDetails = () => {
                         endpoint = `/api/item/${courseId}/tarea/${itemId}`;
                         break;
                     case 'quiz':
-                        endpoint = `/api/item/${courseId}/quiz/${itemId}`;
+                        endpoint = location.state?.isEditing ? 
+                            `/api/item/${courseId}/quiz/${itemId}/edit` :
+                            `/api/item/${courseId}/quiz/${itemId}`;
                         break;
                     default:
                         setError('Tipo de elemento no válido');
@@ -53,7 +55,7 @@ const ItemDetails = () => {
         };
 
         fetchItemDetails();
-    }, [courseId, itemType, itemId]);
+    }, [courseId, itemType, itemId, location.state?.isEditing]);
 
     const handleBack = () => {
         navigate(`/cursos/${courseId}`);

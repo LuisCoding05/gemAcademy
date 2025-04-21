@@ -7,6 +7,7 @@ import Icon from '../Icon';
 import Loader from '../common/Loader';
 import CreateMaterial from '../item/CreateMaterial';
 import CreateTarea from '../item/CreateTarea';
+import CreateQuiz from '../item/CreateQuiz';
 
 const CourseDetail = () => {
     const { user } = useAuth();
@@ -22,6 +23,7 @@ const CourseDetail = () => {
     const [isSearching, setIsSearching] = useState(false);
     const [showCreateMaterial, setShowCreateMaterial] = useState(false);
     const [showCreateTarea, setShowCreateTarea] = useState(false);
+    const [showCreateQuiz, setShowCreateQuiz] = useState(false);
     const navigate = useNavigate();
 
     const handleDeleteMaterial = async (materialId) => {
@@ -50,6 +52,21 @@ const CourseDetail = () => {
             } catch (error) {
                 console.error('Error al eliminar la tarea:', error);
                 alert(error.response?.data?.message || 'Error al eliminar la tarea');
+            }
+        }
+    };
+
+    const handleDeleteQuiz = async (quizId) => {
+        if (window.confirm('¿Estás seguro de que quieres eliminar este quiz?')) {
+            try {
+                await axios.delete(`/api/item/${id}/quiz/${quizId}`);
+                setCourse(prev => ({
+                    ...prev,
+                    quizzes: prev.quizzes.filter(quiz => quiz.id !== quizId)
+                }));
+            } catch (error) {
+                console.error('Error al eliminar el quiz:', error);
+                alert(error.response?.data?.message || 'Error al eliminar el quiz');
             }
         }
     };
@@ -440,6 +457,30 @@ const CourseDetail = () => {
                                 data-bs-parent="#courseAccordion"
                             >
                                 <div className="accordion-body">
+                                    {course.userRole === 'profesor' && (
+                                        <button 
+                                            className="btn btn-success mb-3"
+                                            onClick={() => setShowCreateQuiz(true)}
+                                        >
+                                            <Icon name="plus" size={20} className="me-2" />
+                                            Crear nuevo quiz
+                                        </button>
+                                    )}
+
+                                    {showCreateQuiz && (
+                                        <CreateQuiz 
+                                            courseId={id}
+                                            onCreated={(newQuiz) => {
+                                                setCourse(prev => ({
+                                                    ...prev,
+                                                    quizzes: [...prev.quizzes, newQuiz]
+                                                }));
+                                                setShowCreateQuiz(false);
+                                            }}
+                                            onCancel={() => setShowCreateQuiz(false)}
+                                        />
+                                    )}
+
                                     {course.quizzes && course.quizzes.length > 0 ? (
                                         <ul className="list-group">
                                             {course.quizzes.map((quiz, index) => (
@@ -449,7 +490,7 @@ const CourseDetail = () => {
                                                             <Icon name="gamepad" size={20} className="me-2" />
                                                             {quiz.titulo}
                                                         </div>
-                                                        <div>
+                                                        <div className="d-flex align-items-center gap-2">
                                                             <small className="text-muted me-3">
                                                                 Fecha límite: {new Date(quiz.fechaLimite).toLocaleDateString()}
                                                             </small>
@@ -461,6 +502,25 @@ const CourseDetail = () => {
                                                                 >
                                                                     <Icon name="eye" size={20} color="#0d6efd" />
                                                                 </Link>
+                                                            )}
+                                                            {course.userRole === 'profesor' && (
+                                                                <div className="ms-2">
+                                                                    <Link 
+                                                                        to={`/cursos/${id}/quiz/${quiz.id}`}
+                                                                        state={{ isEditing: true }}
+                                                                        className="btn btn-link btn-sm text-warning p-0 me-2" 
+                                                                        title="Editar quiz"
+                                                                    >
+                                                                        <Icon name="pen" size={20} />
+                                                                    </Link>
+                                                                    <button 
+                                                                        className="btn btn-link btn-sm text-danger p-0" 
+                                                                        title="Eliminar quiz"
+                                                                        onClick={() => handleDeleteQuiz(quiz.id)}
+                                                                    >
+                                                                        <Icon name="trash-can" size={20} />
+                                                                    </button>
+                                                                </div>
                                                             )}
                                                         </div>
                                                     </div>
