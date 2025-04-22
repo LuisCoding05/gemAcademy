@@ -85,7 +85,7 @@ const QuizItem = ({ item, courseId }) => {
             setError(null);
 
             // Actualizar quiz
-            await axios.put(`/api/item/${courseId}/quiz/${item.id}`, {
+            const quizResponse = await axios.put(`/api/item/${courseId}/quiz/${item.id}`, {
                 titulo: formData.titulo,
                 descripcion: formData.descripcion,
                 fechaLimite: formData.fechaLimite,
@@ -93,13 +93,13 @@ const QuizItem = ({ item, courseId }) => {
                 intentosPermitidos: formData.intentosPermitidos
             });
 
-            // Actualizar cada pregunta
+            // Si el quiz se actualizó correctamente, actualizar las preguntas
             for (const pregunta of formData.preguntas) {
                 if (pregunta.id) {
                     // Si la pregunta existe, actualizarla
                     await axios.put(`/api/item/${courseId}/quiz/${item.id}/preguntas/${pregunta.id}`, {
                         pregunta: pregunta.pregunta,
-                        puntos: pregunta.puntos,
+                        puntos: parseInt(pregunta.puntos),
                         orden: pregunta.orden,
                         opciones: pregunta.opciones
                     });
@@ -107,17 +107,18 @@ const QuizItem = ({ item, courseId }) => {
                     // Si es una pregunta nueva, crearla
                     await axios.post(`/api/item/${courseId}/quiz/${item.id}/preguntas`, {
                         pregunta: pregunta.pregunta,
-                        puntos: pregunta.puntos,
+                        puntos: parseInt(pregunta.puntos),
                         orden: pregunta.orden,
                         opciones: pregunta.opciones
                     });
                 }
             }
 
-            // Recargar el quiz
+            // Recargar el quiz para obtener los puntos totales actualizados
             const response = await axios.get(`/api/item/${courseId}/quiz/${item.id}`);
             setCurrentItem(response.data);
             setIsEditing(false);
+
         } catch (error) {
             setError(error.response?.data?.message || 'Error al actualizar el quiz');
         } finally {
@@ -211,9 +212,9 @@ const QuizItem = ({ item, courseId }) => {
                                         <span className={`badge ${intento.completado ? 'bg-success' : 'bg-warning'}`}>
                                             {intento.completado ? 'Completado' : 'En progreso'}
                                         </span>
-                                        {intento.puntuacionTotal !== null && (
+                                        {intento.calificacion !== null && intento.completado && (
                                             <span className="badge bg-primary ms-2">
-                                                {((intento.puntuacionTotal / item.puntos) * 10).toFixed(2)}/10
+                                                {intento.calificacion}/10
                                             </span>
                                         )}
                                     </div>

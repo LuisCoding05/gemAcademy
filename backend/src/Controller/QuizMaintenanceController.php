@@ -128,17 +128,18 @@ final class QuizMaintenanceController extends AbstractController
             if (isset($data['tiempoLimite'])) {
                 $quiz->setTiempoLimite($data['tiempoLimite']);
             }
-            if (isset($data['puntosTotales'])) {
-                $quiz->setPuntosTotales($data['puntosTotales']);
-            }
             if (isset($data['intentosPermitidos'])) {
                 $quiz->setIntentosPermitidos($data['intentosPermitidos']);
             }
 
+            // Actualizar puntos totales basado en las preguntas existentes
+            $this->actualizarPuntosTotalesQuiz($quiz);
+
             $this->entityManager->flush();
 
             return $this->json([
-                'message' => 'Quiz actualizado correctamente'
+                'message' => 'Quiz actualizado correctamente',
+                'puntosTotales' => $quiz->getPuntosTotales() // Devolver los puntos actualizados
             ]);
 
         } catch (\Exception $e) {

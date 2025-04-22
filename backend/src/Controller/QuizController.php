@@ -90,7 +90,8 @@ final class QuizController extends AbstractController
                 "fechaInicio" => $intento->getFechaInicio() ? $intento->getFechaInicio()->format('Y/m/d H:i:s') : "No comenzado",
                 "fechaFin" => $intento->getFechaFin() ? $intento->getFechaFin()->format('Y/m/d H:i:s') : "No finalizado",
                 "puntuacionTotal" => $intento->getPuntuacionTotal(),
-                "completado" => $intento->isCompletado()
+                "completado" => $intento->isCompletado(),
+                "calificacion" => $intento->getCalificacion()
             ];
         }
 
@@ -332,13 +333,14 @@ final class QuizController extends AbstractController
                 $this->entityManager->persist($respuesta);
             }
 
-            // Calcular nota sobre 10
-            $notaFinal = ($puntuacionMaxima > 0) ? ($puntuacionObtenida / $puntuacionMaxima) * 10 : 0;
+            // Calcular nota sobre 10 con 2 decimales
+            $notaFinal = ($puntuacionMaxima > 0) ? round(($puntuacionObtenida / $puntuacionMaxima) * 10, 2) : 0;
             
             // Actualizar el intento
             $intento->setFechaFin(new \DateTime());
             $intento->setCompletado(true);
             $intento->setPuntuacionTotal($puntuacionObtenida);
+            $intento->setCalificacion(strval($notaFinal)); // Convertir a string ya que el campo es decimal en la BD
 
             // Actualizar estadísticas del usuario en el curso
             $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)

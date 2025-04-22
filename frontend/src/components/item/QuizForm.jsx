@@ -86,7 +86,16 @@ const QuizForm = ({ onSubmit, onCancel, initialData = {} }) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        onSubmit(formData);
+        // Al enviar el formulario, no enviamos los puntos totales ya que se calcularán en el backend
+        const formDataToSend = {
+            ...formData,
+            preguntas: formData.preguntas.map(pregunta => ({
+                ...pregunta,
+                puntos: parseInt(pregunta.puntos) // Asegurar que los puntos sean números
+            }))
+        };
+        delete formDataToSend.puntosTotales; // Eliminar puntos totales del envío
+        onSubmit(formDataToSend);
     };
 
     return (
@@ -282,7 +291,7 @@ const QuizForm = ({ onSubmit, onCancel, initialData = {} }) => {
                         </div>
                     </div>
 
-                    <div className="d-flex justify-content-end gap-2">
+                    <div className="d-flex justify-content-end mb-3 gap-2">
                         <button
                             type="button"
                             className="btn btn-secondary"

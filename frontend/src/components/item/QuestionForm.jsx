@@ -94,8 +94,8 @@ const QuestionForm = ({ questionData, onChange }) => {
                     {questionData.opciones.map((opcion, index) => (
                         <div key={index} className="card mb-2">
                             <div className="card-body">
-                                <div className="row">
-                                    <div className="col-md-6 mb-2">
+                                <div className="row align-items-center">
+                                    <div className="col-md-5 mb-2 mb-md-0">
                                         <input
                                             type="text"
                                             className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
@@ -105,7 +105,7 @@ const QuestionForm = ({ questionData, onChange }) => {
                                             required
                                         />
                                     </div>
-                                    <div className="col-md-4 mb-2">
+                                    <div className="col-md-4 mb-2 mb-md-0">
                                         <input
                                             type="text"
                                             className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
@@ -114,16 +114,22 @@ const QuestionForm = ({ questionData, onChange }) => {
                                             placeholder="Retroalimentación (opcional)"
                                         />
                                     </div>
-                                    <div className="col-md-2 d-flex align-items-center justify-content-end">
-                                        <div className="form-check me-2">
+                                    <div className="col-md-2 mb-2 mb-md-0">
+                                        <div className="form-check form-switch">
                                             <input
                                                 type="checkbox"
                                                 className="form-check-input"
                                                 checked={opcion.esCorrecta}
                                                 onChange={(e) => handleOptionChange(index, 'esCorrecta', e.target.checked)}
+                                                role="switch"
+                                                id={`opcionCorrecta${index}`}
                                             />
-                                            <label className="form-check-label">Correcta</label>
+                                            <label className="form-check-label" htmlFor={`opcionCorrecta${index}`}>
+                                                Correcta
+                                            </label>
                                         </div>
+                                    </div>
+                                    <div className="col-md-2 text-end mt-2">
                                         <button
                                             type="button"
                                             className="btn btn-outline-danger btn-sm"
