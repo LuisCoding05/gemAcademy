@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import Icon from '../Icon';
 import axios from '../../utils/axios';
 import TareaEditForm from './TareaEditForm';
+import EntregasLista from './EntregasLista';
 import Editor from '../common/Editor';
 import Loader from '../common/Loader';
 
@@ -278,265 +279,281 @@ const TareaItem = ({ item, courseId, onUpdate }) => {
                         </div>
                     )}
 
-                    {currentItem.entrega && currentItem.entrega.fechaEntrega && currentItem.entrega.estado !== 'pendiente' ? (
+                    {currentItem.userRole === 'profesor' ? (
                         <div className="mb-4">
-                            <h5>Estado de la entrega</h5>
-                            <div className={`card border-start border-5 border-${getEstadoColor(currentItem.entrega.estado)} ${isDarkMode ? 'bg-dark text-light' : 'bg-light'}`}>
-                                <div className={`card-header fw-bold text-capitalize text-${getEstadoColor(currentItem.entrega.estado)}`}>
-                                    {getEstadoTexto(currentItem.entrega.estado, currentItem.entrega.estado === 'atrasado')}
-                                </div>
-                                <div className="card-body">
-                                    <div className="d-flex justify-content-between align-items-center mb-4">
-                                        <span>
-                                            <Icon name="stop-watch" size={26} className="me-2" />
-                                            Entregado el {new Date(currentItem.entrega.fechaEntrega).toLocaleString()}
-                                        </span>
-                                        {currentItem.entrega.calificacion && (
-                                            <span className={'badge ' + (currentItem.entrega.calificacion >= 5 ? 'bg-success' : 'bg-danger')}>
-                                                {getPorcentaje(currentItem.entrega.calificacion)}%
-                                            </span>
-                                        )}
+                            <div className="mb-3">
+                                <h4>Entregas de los estudiantes</h4>
+                            </div>
+                            <EntregasLista 
+                                courseId={courseId} 
+                                tareaId={currentItem.id}
+                                onCalificar={(entregaActualizada) => {
+                                    // Si necesitamos actualizar algo en este componente
+                                    // después de calificar una entrega
+                                }}
+                            />
+                        </div>
+                    ) : (
+                        currentItem.entrega && currentItem.entrega.fechaEntrega && currentItem.entrega.estado !== 'pendiente' ? (
+                            <div className="mb-4">
+                                <h5>Estado de la entrega</h5>
+                                <div className={`card border-start border-5 border-${getEstadoColor(currentItem.entrega.estado)} ${isDarkMode ? 'bg-dark text-light' : 'bg-light'}`}>
+                                    <div className={`card-header fw-bold text-capitalize text-${getEstadoColor(currentItem.entrega.estado)}`}>
+                                        {getEstadoTexto(currentItem.entrega.estado, currentItem.entrega.estado === 'atrasado')}
                                     </div>
-
-                                    <div className="mb-3">
-                                        <h6><Icon name="documents" size={20} /> Archivos:</h6>
-                                        <div className="d-flex flex-wrap gap-2 align-items-start">
-                                            {currentItem.entrega.archivo ? (
-                                                <>
-                                                    <button 
-                                                       onClick={async () => {
-                                                           try {
-                                                               const response = await axios.get(
-                                                                   `/api/download/${currentItem.entrega.archivo.id}`,
-                                                                   { responseType: 'blob' }
-                                                               );
-                                                               
-                                                               const url = window.URL.createObjectURL(new Blob([response.data]));
-                                                               const link = document.createElement('a');
-                                                               link.href = url;
-                                                               link.setAttribute('download', currentItem.entrega.archivo.nombreOriginal);
-                                                               document.body.appendChild(link);
-                                                               link.click();
-                                                               document.body.removeChild(link);
-                                                               window.URL.revokeObjectURL(url);
-                                                           } catch (error) {
-                                                               console.error('Error al descargar el archivo:', error);
-                                                           }
-                                                       }}
-                                                       className="btn btn-sm btn-outline-primary d-flex align-items-center">
-                                                        <Icon name="folder-download1" size={20} className="me-2" />
-                                                        <span className="text-truncate" style={{maxWidth: '200px'}}>
-                                                            {currentItem.entrega.archivo.nombreOriginal}
-                                                        </span>
-                                                    </button>
-                                                    {!currentItem.entrega.isCalificado && (
-                                                        <button
-                                                            className="btn btn-sm btn-warning d-flex align-items-center"
-                                                            onClick={() => setEditandoEntrega(true)}
-                                                            disabled={actualizando}
-                                                        >
-                                                            <Icon name="pencil2" size={16} className="me-2" />
-                                                            Editar entrega
-                                                        </button>
-                                                    )}
-                                                </>
-                                            ) : (
-                                                <p className="mb-0"><strong>No se ha subido ningún archivo</strong></p>
+                                    <div className="card-body">
+                                        <div className="d-flex justify-content-between align-items-center mb-4">
+                                            <span>
+                                                <Icon name="stop-watch" size={26} className="me-2" />
+                                                Entregado el {new Date(currentItem.entrega.fechaEntrega).toLocaleString()}
+                                            </span>
+                                            {currentItem.entrega.calificacion && (
+                                                <span className={'badge ' + (currentItem.entrega.calificacion >= 5 ? 'bg-success' : 'bg-danger')}>
+                                                    {getPorcentaje(currentItem.entrega.calificacion)}%
+                                                </span>
                                             )}
                                         </div>
 
-                                        {editandoEntrega && !currentItem.entrega.isCalificado && (
-                                            <div className="mt-3">
-                                                <div className="alert alert-info">
-                                                    <Icon name="info" size={20} className="me-2" />
-                                                    Al actualizar el archivo, la fecha de entrega se actualizará automáticamente.
-                                                </div>
-                                                <input 
-                                                    type="file" 
-                                                    className="form-control form-control-sm mb-2" 
-                                                    onChange={handleFileUpload}
-                                                    disabled={uploadingFile}
-                                                />
-                                                <div className="d-flex gap-2">
-                                                    {archivo && (
+                                        <div className="mb-3">
+                                            <h6><Icon name="documents" size={20} /> Archivos:</h6>
+                                            <div className="d-flex flex-wrap gap-2 align-items-start">
+                                                {currentItem.entrega.archivo ? (
+                                                    <>
                                                         <button 
-                                                            className="btn btn-sm btn-success"
-                                                            onClick={handleUpdateFile}
+                                                           onClick={async () => {
+                                                               try {
+                                                                   const response = await axios.get(
+                                                                       `/api/download/${currentItem.entrega.archivo.id}`,
+                                                                       { responseType: 'blob' }
+                                                                   );
+                                                                   
+                                                                   const url = window.URL.createObjectURL(new Blob([response.data]));
+                                                                   const link = document.createElement('a');
+                                                                   link.href = url;
+                                                                   link.setAttribute('download', currentItem.entrega.archivo.nombreOriginal);
+                                                                   document.body.appendChild(link);
+                                                                   link.click();
+                                                                   document.body.removeChild(link);
+                                                                   window.URL.revokeObjectURL(url);
+                                                               } catch (error) {
+                                                                   console.error('Error al descargar el archivo:', error);
+                                                               }
+                                                           }}
+                                                           className="btn btn-sm btn-outline-primary d-flex align-items-center">
+                                                            <Icon name="folder-download1" size={20} className="me-2" />
+                                                            <span className="text-truncate" style={{maxWidth: '200px'}}>
+                                                                {currentItem.entrega.archivo.nombreOriginal}
+                                                            </span>
+                                                        </button>
+                                                        {!currentItem.entrega.isCalificado && (
+                                                            <button
+                                                                className="btn btn-sm btn-warning d-flex align-items-center"
+                                                                onClick={() => setEditandoEntrega(true)}
+                                                                disabled={actualizando}
+                                                            >
+                                                                <Icon name="pencil2" size={16} className="me-2" />
+                                                                Editar entrega
+                                                            </button>
+                                                        )}
+                                                    </>
+                                                ) : (
+                                                    <p className="mb-0"><strong>No se ha subido ningún archivo</strong></p>
+                                                )}
+                                            </div>
+
+                                            {editandoEntrega && !currentItem.entrega.isCalificado && (
+                                                <div className="mt-3">
+                                                    <div className="alert alert-info">
+                                                        <Icon name="info" size={20} className="me-2" />
+                                                        Al actualizar el archivo, la fecha de entrega se actualizará automáticamente.
+                                                    </div>
+                                                    <input 
+                                                        type="file" 
+                                                        className="form-control form-control-sm mb-2" 
+                                                        onChange={handleFileUpload}
+                                                        disabled={uploadingFile}
+                                                    />
+                                                    <div className="d-flex gap-2">
+                                                        {archivo && (
+                                                            <button 
+                                                                className="btn btn-sm btn-success"
+                                                                onClick={handleUpdateFile}
+                                                                disabled={uploadingFile}
+                                                            >
+                                                                {uploadingFile ? (
+                                                                    <>
+                                                                        <span className="spinner-border spinner-border-sm me-2" />
+                                                                        Actualizando...
+                                                                    </>
+                                                                ) : (
+                                                                    <>
+                                                                        <Icon name="folder-upload" size={16} className="me-2" />
+                                                                        Guardar cambios
+                                                                    </>
+                                                                )}
+                                                            </button>
+                                                        )}
+                                                        <button 
+                                                            className="btn btn-sm btn-secondary"
+                                                            onClick={() => {
+                                                                setEditandoEntrega(false);
+                                                                setArchivo(null);
+                                                            }}
                                                             disabled={uploadingFile}
                                                         >
-                                                            {uploadingFile ? (
-                                                                <>
-                                                                    <span className="spinner-border spinner-border-sm me-2" />
-                                                                    Actualizando...
-                                                                </>
-                                                            ) : (
-                                                                <>
-                                                                    <Icon name="folder-upload" size={16} className="me-2" />
-                                                                    Guardar cambios
-                                                                </>
-                                                            )}
+                                                            <Icon name="circle-with-cross" size={16} className="me-2" />
+                                                            Cancelar
                                                         </button>
-                                                    )}
-                                                    <button 
-                                                        className="btn btn-sm btn-secondary"
-                                                        onClick={() => {
-                                                            setEditandoEntrega(false);
-                                                            setArchivo(null);
-                                                        }}
-                                                        disabled={uploadingFile}
-                                                    >
-                                                        <Icon name="circle-with-cross" size={16} className="me-2" />
-                                                        Cancelar
-                                                    </button>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        )}
-                                    </div>
+                                            )}
+                                        </div>
 
-                                    <div className="mb-2">
-                                        <h6><Icon name="badge" size={22} /> Comentario del profesor:</h6>
-                                        <p className="mb-0">{currentItem.entrega.comentarioProfesor ?? 'Sin comentarios'}</p>
-                                    </div>
+                                        <div className="mb-2">
+                                            <h6><Icon name="badge" size={22} /> Comentario del profesor:</h6>
+                                            <p className="mb-0">{currentItem.entrega.comentarioProfesor ?? 'Sin comentarios'}</p>
+                                        </div>
 
-                                    <div className="mt-3">
-                                        <h6><Icon name="mail4" size={20} /> Comentario del estudiante:</h6>
-                                        {editandoComentario ? (
-                                            <div className="mb-3">
-                                                <textarea 
-                                                    className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
-                                                    value={comentario}
-                                                    onChange={(e) => setComentario(e.target.value)}
-                                                    rows="3"
-                                                    placeholder="Escribe tu comentario aquí..."
-                                                />
-                                                <div className="mt-2">
+                                        <div className="mt-3">
+                                            <h6><Icon name="mail4" size={20} /> Comentario del estudiante:</h6>
+                                            {editandoComentario ? (
+                                                <div className="mb-3">
+                                                    <textarea 
+                                                        className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
+                                                        value={comentario}
+                                                        onChange={(e) => setComentario(e.target.value)}
+                                                        rows="3"
+                                                        placeholder="Escribe tu comentario aquí..."
+                                                    />
+                                                    <div className="mt-2">
+                                                        <button 
+                                                            className="btn btn-primary btn-sm me-2"
+                                                            onClick={handleUpdateComment}
+                                                            disabled={actualizando}
+                                                        >
+                                                            {actualizando ? (
+                                                                <span className="spinner-border spinner-border-sm me-2" />
+                                                            ) : (
+                                                                <Icon name="checkmark" size={16} className="me-2" />
+                                                            )}
+                                                            Guardar
+                                                        </button>
+                                                        <button 
+                                                            className="btn btn-secondary btn-sm"
+                                                            onClick={() => {
+                                                                setEditandoComentario(false);
+                                                                setComentario(currentItem.entrega.comentarioEstudiante || '');
+                                                            }}
+                                                            disabled={actualizando}
+                                                        >
+                                                            <Icon name="circle-with-cross" size={16} className="me-2" />
+                                                            Cancelar
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="d-flex justify-content-between align-items-start">
+                                                    <p className="mb-0">
+                                                        {currentItem.entrega.comentarioEstudiante || 'Sin comentarios'}
+                                                    </p>
+                                                    {!currentItem.entrega.isCalificado && (
+                                                        <div>
+                                                            <button 
+                                                                className="btn btn-outline-primary btn-sm me-2"
+                                                                onClick={() => setEditandoComentario(true)}
+                                                                disabled={actualizando}
+                                                            >
+                                                                <Icon name="pencil2" size={16} />
+                                                            </button>
+                                                            {currentItem.entrega.comentarioEstudiante && (
+                                                                <button 
+                                                                    className="btn btn-outline-danger btn-sm"
+                                                                    onClick={handleDeleteComment}
+                                                                    disabled={actualizando}
+                                                                >
+                                                                    <Icon name="trash-can" size={16} />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {!currentItem.entrega.isCalificado && (
+                                            <div className="mt-3 d-flex gap-2">
+                                                <button 
+                                                    className="btn btn-danger"
+                                                    onClick={handleDeleteEntrega}
+                                                    disabled={actualizando}
+                                                >
+                                                    <Icon name="trash-can" size={20} className="me-2" />
+                                                    Borrar entrega
+                                                </button>
+                                                {(currentItem.entrega.estado === 'entregado' || currentItem.entrega.estado === 'atrasado') && (
                                                     <button 
-                                                        className="btn btn-primary btn-sm me-2"
-                                                        onClick={handleUpdateComment}
+                                                        className="btn btn-warning"
+                                                        onClick={handleRequestReview}
                                                         disabled={actualizando}
                                                     >
                                                         {actualizando ? (
                                                             <span className="spinner-border spinner-border-sm me-2" />
                                                         ) : (
-                                                            <Icon name="checkmark" size={16} className="me-2" />
+                                                            <Icon name="ticket1" size={20} className="me-2" />
                                                         )}
-                                                        Guardar
+                                                        Solicitar revisión
                                                     </button>
-                                                    <button 
-                                                        className="btn btn-secondary btn-sm"
-                                                        onClick={() => {
-                                                            setEditandoComentario(false);
-                                                            setComentario(currentItem.entrega.comentarioEstudiante || '');
-                                                        }}
-                                                        disabled={actualizando}
-                                                    >
-                                                        <Icon name="circle-with-cross" size={16} className="me-2" />
-                                                        Cancelar
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <div className="d-flex justify-content-between align-items-start">
-                                                <p className="mb-0">
-                                                    {currentItem.entrega.comentarioEstudiante || 'Sin comentarios'}
-                                                </p>
-                                                {!currentItem.entrega.isCalificado && (
-                                                    <div>
-                                                        <button 
-                                                            className="btn btn-outline-primary btn-sm me-2"
-                                                            onClick={() => setEditandoComentario(true)}
-                                                            disabled={actualizando}
-                                                        >
-                                                            <Icon name="pencil2" size={16} />
-                                                        </button>
-                                                        {currentItem.entrega.comentarioEstudiante && (
-                                                            <button 
-                                                                className="btn btn-outline-danger btn-sm"
-                                                                onClick={handleDeleteComment}
-                                                                disabled={actualizando}
-                                                            >
-                                                                <Icon name="trash-can" size={16} />
-                                                            </button>
-                                                        )}
-                                                    </div>
                                                 )}
                                             </div>
                                         )}
                                     </div>
-
-                                    {!currentItem.entrega.isCalificado && (
-                                        <div className="mt-3 d-flex gap-2">
-                                            <button 
-                                                className="btn btn-danger"
-                                                onClick={handleDeleteEntrega}
-                                                disabled={actualizando}
-                                            >
-                                                <Icon name="trash-can" size={20} className="me-2" />
-                                                Borrar entrega
-                                            </button>
-                                            {(currentItem.entrega.estado === 'entregado' || currentItem.entrega.estado === 'atrasado') && (
-                                                <button 
-                                                    className="btn btn-warning"
-                                                    onClick={handleRequestReview}
-                                                    disabled={actualizando}
-                                                >
-                                                    {actualizando ? (
-                                                        <span className="spinner-border spinner-border-sm me-2" />
-                                                    ) : (
-                                                        <Icon name="ticket1" size={20} className="me-2" />
-                                                    )}
-                                                    Solicitar revisión
-                                                </button>
-                                            )}
-                                        </div>
-                                    )}
                                 </div>
                             </div>
-                        </div>
-                    ) : (
-                        <div className="card">
-                            <div className="card-body">
-                                <h6>Entregar tarea:</h6>
-                                <div className="mb-3">
-                                    <input 
-                                        type="file" 
-                                        className="form-control mb-2" 
-                                        onChange={handleFileUpload}
-                                        disabled={uploadingFile}
-                                    />
-                                    <div className="d-flex gap-2">
-                                        <button 
-                                            className="btn btn-primary"
-                                            onClick={handleSubmitFile}
+                        ) : (
+                            <div className="card">
+                                <div className="card-body">
+                                    <h6>Entregar tarea:</h6>
+                                    <div className="mb-3">
+                                        <input 
+                                            type="file" 
+                                            className="form-control mb-2" 
+                                            onChange={handleFileUpload}
                                             disabled={uploadingFile}
-                                        >
-                                            {uploadingFile ? (
-                                                <>
-                                                    <span className="spinner-border spinner-border-sm me-2" />
-                                                    Entregando...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Icon name="folder-upload1" size={16} className="me-2" />
-                                                    {archivo ? 'Entregar con archivo' : 'Entregar sin archivo'}
-                                                </>
-                                            )}
-                                        </button>
+                                        />
+                                        <div className="d-flex gap-2">
+                                            <button 
+                                                className="btn btn-primary"
+                                                onClick={handleSubmitFile}
+                                                disabled={uploadingFile}
+                                            >
+                                                {uploadingFile ? (
+                                                    <>
+                                                        <span className="spinner-border spinner-border-sm me-2" />
+                                                        Entregando...
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Icon name="folder-upload1" size={16} className="me-2" />
+                                                        {archivo ? 'Entregar con archivo' : 'Entregar sin archivo'}
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="mb-3">
+                                        <label className="form-label">Comentario (opcional):</label>
+                                        <textarea 
+                                            className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
+                                            value={comentario}
+                                            onChange={(e) => setComentario(e.target.value)}
+                                            rows="3"
+                                            placeholder="Añade un comentario a tu entrega..."
+                                        />
                                     </div>
                                 </div>
-                                
-                                <div className="mb-3">
-                                    <label className="form-label">Comentario (opcional):</label>
-                                    <textarea 
-                                        className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
-                                        value={comentario}
-                                        onChange={(e) => setComentario(e.target.value)}
-                                        rows="3"
-                                        placeholder="Añade un comentario a tu entrega..."
-                                    />
-                                </div>
                             </div>
-                        </div>
+                        )
                     )}
 
                     {currentItem.userRole === 'profesor' && (

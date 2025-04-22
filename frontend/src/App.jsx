@@ -16,6 +16,7 @@ import { SearchCourse } from './components/course/SearchCourse'
 import { CourseDetail } from './components/course/CourseDetail'
 import { CreateCourse } from './components/course/CreateCourse'
 import ItemDetails from './components/course/ItemDetails'
+import EntregaDetalle from './components/item/EntregaDetalle'
 
 function App() {
   return (
@@ -108,6 +109,17 @@ function App() {
                 </ProtectedRoute>
               </div>
             } />
+
+            <Route path="/cursos/:courseId/tarea/:tareaId/entrega/:entregaId" element={
+              <div className="wrapper">
+                <ProtectedRoute>
+                  <Navbar />
+                  <EntregaDetalle />
+                  <Copy />
+                </ProtectedRoute>
+              </div>
+            } />
+
           </Routes>
         </BrowserRouter>
       </AuthProvider>
