@@ -9,7 +9,9 @@ use App\Entity\PreguntaQuizz;
 use App\Entity\Quizz;
 use App\Entity\Usuario;
 use App\Entity\UsuarioCurso;
+use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -68,8 +70,8 @@ final class QuizMaintenanceController extends AbstractController
             $quiz = new Quizz();
             $quiz->setTitulo($data['titulo']);
             $quiz->setDescripcion($data['descripcion'] ?? null);
-            $quiz->setFechaPublicacion(new \DateTime());
-            $quiz->setFechaLimite(new \DateTime($data['fechaLimite']));
+            $quiz->setFechaPublicacion(new DateTime());
+            $quiz->setFechaLimite(new DateTime($data['fechaLimite']));
             $quiz->setTiempoLimite($data['tiempoLimite'] ?? 30);
             $quiz->setPuntosTotales(0); // Inicialmente 0, se actualizará al añadir preguntas
             $quiz->setIntentosPermitidos($data['intentosPermitidos'] ?? 1);
@@ -83,7 +85,7 @@ final class QuizMaintenanceController extends AbstractController
                 'id' => $quiz->getId()
             ], 201);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->json([
                 'message' => 'Error al crear el quiz',
                 'error' => $e->getMessage()
@@ -123,7 +125,7 @@ final class QuizMaintenanceController extends AbstractController
                 $quiz->setDescripcion($data['descripcion']);
             }
             if (isset($data['fechaLimite'])) {
-                $quiz->setFechaLimite(new \DateTime($data['fechaLimite']));
+                $quiz->setFechaLimite(new DateTime($data['fechaLimite']));
             }
             if (isset($data['tiempoLimite'])) {
                 $quiz->setTiempoLimite($data['tiempoLimite']);
@@ -142,7 +144,7 @@ final class QuizMaintenanceController extends AbstractController
                 'puntosTotales' => $quiz->getPuntosTotales() // Devolver los puntos actualizados
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->json([
                 'message' => 'Error al actualizar el quiz',
                 'error' => $e->getMessage()
@@ -212,7 +214,7 @@ final class QuizMaintenanceController extends AbstractController
                         round(($itemsCompletados / $totalItems) * 100, 2) : 0;
                     
                     $usuarioCurso->setPorcentajeCompletado(strval($porcentajeCompletado));
-                    $usuarioCurso->setUltimaActualizacion(new \DateTime());
+                    $usuarioCurso->setUltimaActualizacion(new DateTime());
                 }
             }
 
@@ -224,7 +226,7 @@ final class QuizMaintenanceController extends AbstractController
                 'message' => 'Quiz eliminado correctamente'
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->json([
                 'message' => 'Error al eliminar el quiz',
                 'error' => $e->getMessage()
@@ -308,7 +310,7 @@ final class QuizMaintenanceController extends AbstractController
                 'id' => $pregunta->getId()
             ], 201);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->json([
                 'message' => 'Error al crear la pregunta',
                 'error' => $e->getMessage()
@@ -400,7 +402,7 @@ final class QuizMaintenanceController extends AbstractController
                 'message' => 'Pregunta actualizada correctamente'
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->json([
                 'message' => 'Error al actualizar la pregunta',
                 'error' => $e->getMessage()
@@ -443,7 +445,7 @@ final class QuizMaintenanceController extends AbstractController
                 'message' => 'Pregunta eliminada correctamente'
             ]);
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             return $this->json([
                 'message' => 'Error al eliminar la pregunta',
                 'error' => $e->getMessage()

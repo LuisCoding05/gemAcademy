@@ -5,10 +5,14 @@ namespace App\Controller;
 use App\Entity\Curso;
 use App\Entity\EntregaTarea;
 use App\Entity\Fichero;
+use App\Entity\IntentoQuizz;
 use App\Entity\Tarea;
 use App\Entity\Usuario;
 use App\Entity\UsuarioCurso;
 use App\Service\FileService;
+use App\Service\CursoInscripcionService;
+use DateTime;
+use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -222,8 +226,8 @@ final class TareaController extends AbstractController
                         }
                     }
 
-                    $entrega->setFechaEntrega(new \DateTime());
-                    $entrega->setEstado($tarea->getFechaLimite() < new \DateTime() ? 
+                    $entrega->setFechaEntrega(new DateTime());
+                    $entrega->setEstado($tarea->getFechaLimite() < new DateTime() ? 
                         EntregaTarea::ESTADO_ATRASADO : 
                         EntregaTarea::ESTADO_ENTREGADO
                     );
@@ -259,8 +263,8 @@ final class TareaController extends AbstractController
                             $entrega->setFichero($fichero);
                         }
                     }
-                    $entrega->setFechaEntrega(new \DateTime());
-                    if ($tarea->getFechaLimite() < new \DateTime()) {
+                    $entrega->setFechaEntrega(new DateTime());
+                    if ($tarea->getFechaLimite() < new DateTime()) {
                         $entrega->setEstado(EntregaTarea::ESTADO_ATRASADO);
                     }
                     break;
@@ -325,7 +329,7 @@ final class TareaController extends AbstractController
                 round(($itemsCompletados / $totalItems) * 100, 2) : 0;
             
             $usuarioCurso->setPorcentajeCompletado(strval($porcentajeCompletado));
-            $usuarioCurso->setUltimaActualizacion(new \DateTime());
+            $usuarioCurso->setUltimaActualizacion(new DateTime());
 
             $this->entityManager->flush();
             
@@ -403,8 +407,8 @@ final class TareaController extends AbstractController
             $tarea->setTitulo($data['titulo']);
             $tarea->setDescripcion($data['descripcion']);
             $tarea->setIdCurso($curso);
-            $tarea->setFechaPublicacion(new \DateTime());
-            $tarea->setFechaLimite(new \DateTime($data['fechaLimite']));
+            $tarea->setFechaPublicacion(new DateTime());
+            $tarea->setFechaLimite(new DateTime($data['fechaLimite']));
             $tarea->setPuntosMaximos($data['puntosMaximos'] ?? 100);
             $tarea->setEsObligatoria($data['esObligatoria'] ?? true);
 
@@ -473,7 +477,7 @@ final class TareaController extends AbstractController
                 $tarea->setDescripcion($data['descripcion']);
             }
             if (isset($data['fechaLimite'])) {
-                $tarea->setFechaLimite(new \DateTime($data['fechaLimite']));
+                $tarea->setFechaLimite(new DateTime($data['fechaLimite']));
             }
             if (isset($data['puntosMaximos'])) {
                 $tarea->setPuntosMaximos($data['puntosMaximos']);
@@ -587,7 +591,7 @@ final class TareaController extends AbstractController
                     round(($itemsCompletados / $totalItems) * 100, 2) : 0;
                 
                 $usuarioCurso->setPorcentajeCompletado(strval($porcentajeCompletado));
-                $usuarioCurso->setUltimaActualizacion(new \DateTime());
+                $usuarioCurso->setUltimaActualizacion(new DateTime());
             }
 
             // Eliminar el archivo de la tarea si existe

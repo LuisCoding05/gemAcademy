@@ -7,6 +7,8 @@ use App\Entity\Foro;
 use App\Entity\UsuarioCurso;
 use App\Entity\Usuario;
 use App\Entity\Imagen;
+use App\Entity\IntentoQuizz;
+use App\Entity\EntregaTarea;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -19,7 +21,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class CourseController extends AbstractController
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly CursoInscripcionService $inscripcionService
     ) {}
 
     #[Route('/api/course', name: 'app_course')]
@@ -234,6 +237,8 @@ final class CourseController extends AbstractController
                     if ($usuarioCurso) {
                         $userRole = 'estudiante';
                         $isEnrolled = true;
+                        $this->inscripcionService->calcularPromedio($usuarioCurso);
+                        $promedio = $usuarioCurso->getPromedio();
                     }
                 }
             }
@@ -253,7 +258,8 @@ final class CourseController extends AbstractController
                 "username" => $curso->getProfesor()->getUsername()
             ],
             "userRole" => $userRole,
-            "isEnrolled" => $isEnrolled
+            "isEnrolled" => $isEnrolled,
+            "promedio" => $promedio ?? null
         ];
 
         $cursoTareas = $curso->getTareas();
@@ -339,6 +345,7 @@ final class CourseController extends AbstractController
             "quizzes" => $cursoQuizzData,
             "materiales" => $cursoMaterialesData,
             "foros" => $cursoForosData,
+            "promedio" => $promedio ?? null
         ]);
     }
 
@@ -363,7 +370,7 @@ final class CourseController extends AbstractController
 
         // Usar el servicio para inscribir al usuario
         $usuarioCurso = $inscripcionService->inscribirUsuarioEnCurso($user, $curso);
-
+        $inscripcionService->calcularPromedio($usuarioCurso);
         return $this->json([
             'message' => 'Inscripción exitosa',
             'usuarioCurso' => [

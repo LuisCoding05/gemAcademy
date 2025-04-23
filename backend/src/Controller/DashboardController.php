@@ -80,7 +80,8 @@ class DashboardController extends AbstractController
                 'quizzesTotales' => count($curso->getQuizzs()),
                 'fechaInscripcion' => $usuarioCurso->getFechaInscripcion()->format('Y-m-d H:i:s'),
                 'ultimaActualizacion' => $usuarioCurso->getUltimaActualizacion()->format('Y-m-d H:i:s'),
-                'userRole' => 'estudiante'
+                'userRole' => 'estudiante',
+                'promedio' => $usuarioCurso->getPromedio()
             ];
         }
 
@@ -285,4 +286,4 @@ class DashboardController extends AbstractController
             'deletedCount' => $deletedCount
         ]);
     }
-} 
+}

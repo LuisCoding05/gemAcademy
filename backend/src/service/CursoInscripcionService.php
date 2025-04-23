@@ -75,4 +75,44 @@ class CursoInscripcionService
 
         $this->entityManager->flush();
     }
-} 
+
+    public function calcularPromedio(UsuarioCurso $usuarioCurso): void
+    {
+        $curso = $usuarioCurso->getIdCurso();
+        $sumaCalificaciones = 0;
+        $totalItems = 0;
+
+        // Calcular promedio de tareas entregadas y calificadas
+        $entregasTareas = $this->entityManager->getRepository(EntregaTarea::class)
+            ->findBy(['usuarioCurso' => $usuarioCurso]);
+
+        foreach ($entregasTareas as $entrega) {
+            if ($entrega->isCalificado() && $entrega->getCalificacion() !== null) {
+                $sumaCalificaciones += floatval($entrega->getCalificacion());
+                $totalItems++;
+            }
+        }
+
+        // Calcular promedio de quizzes (solo último intento)
+        foreach ($curso->getQuizzs() as $quizz) {
+            $ultimoIntento = $this->entityManager->getRepository(IntentoQuizz::class)
+                ->findOneBy(
+                    ['idQuizz' => $quizz, 'idUsuario' => $usuarioCurso->getIdUsuario()],
+                    ['fechaFin' => 'DESC']
+                );
+
+            if ($ultimoIntento && $ultimoIntento->getCalificacion() !== null) {
+                $sumaCalificaciones += floatval($ultimoIntento->getCalificacion());
+                $totalItems++;
+            }
+        }
+
+        // Calcular y guardar el promedio
+        if ($totalItems > 0) {
+            $promedio = number_format($sumaCalificaciones / $totalItems, 2);
+            $usuarioCurso->setPromedio($promedio);
+            $usuarioCurso->setUltimaActualizacion(new \DateTime());
+            $this->entityManager->flush();
+        }
+    }
+}

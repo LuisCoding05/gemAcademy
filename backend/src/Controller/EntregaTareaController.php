@@ -7,6 +7,7 @@ use App\Entity\EntregaTarea;
 use App\Entity\Tarea;
 use App\Entity\Usuario;
 use App\Entity\UsuarioCurso;
+use App\Service\CursoInscripcionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,7 +19,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class EntregaTareaController extends AbstractController
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly CursoInscripcionService $cursoInscripcionService
     ) {}
 
     #[Route('/api/item/{id}/tarea/{tareaId}/entregas', name: 'app_tarea_entregas', methods: ['GET'])]
@@ -188,6 +190,9 @@ final class EntregaTareaController extends AbstractController
             $entrega->setPuntosObtenidos($puntosObtenidos);
             $entrega->setComentarioProfesor($comentario);
             $entrega->setEstado(EntregaTarea::ESTADO_CALIFICADO);
+
+            $usuarioCurso = $entrega->getUsuarioCurso();
+            $this->cursoInscripcionService->calcularPromedio($usuarioCurso);
 
             $this->entityManager->flush();
 

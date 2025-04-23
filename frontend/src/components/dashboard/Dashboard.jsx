@@ -382,6 +382,27 @@ const Dashboard = () => {
                               <div className="card-body">
                                 <h5 className="card-title">{curso.titulo}</h5>
                                 <p className="card-text text-muted">{curso.descripcion}</p>
+                                
+                                {/* Promedio del curso */}
+                                <div className="mb-3">
+                                  <p className="mb-1 fw-bold">Promedio del curso</p>
+                                  <div className="progress" style={{ height: '25px' }}>
+                                    <div 
+                                      className={`progress-bar progress-bar-striped progress-bar-animated ${
+                                        parseFloat(curso.promedio || 0) >= 7 ? 'bg-success' :
+                                        parseFloat(curso.promedio || 0) >= 5 ? 'bg-warning' : 'bg-danger'
+                                      }`}
+                                      role="progressbar" 
+                                      style={{ width: `${(parseFloat(curso.promedio || 0) * 10)}%` }}
+                                      aria-valuenow={parseFloat(curso.promedio || 0)}
+                                      aria-valuemin="0"
+                                      aria-valuemax="10"
+                                    >
+                                      {curso.promedio ? `${curso.promedio}/10` : 'Sin calificaciones'}
+                                    </div>
+                                  </div>
+                                </div>
+
                                 <div className="progress mb-2">
                                   <div 
                                     className="progress-bar bg-success" 
@@ -507,4 +528,4 @@ const Dashboard = () => {
   );
 };
 
-export default Dashboard; 
+export default Dashboard;

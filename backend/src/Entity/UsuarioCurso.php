@@ -54,6 +54,9 @@ class UsuarioCurso
     #[ORM\OneToMany(targetEntity: EntregaTarea::class, mappedBy: 'usuarioCurso')]
     private Collection $entregaTareas;
 
+    #[ORM\Column(type: Types::DECIMAL, precision: 4, scale: 2, nullable: true)]
+    private ?string $promedio = null;
+
     public function __construct()
     {
         $this->fechaInscripcion = new \DateTime();
@@ -224,6 +227,18 @@ class UsuarioCurso
                 $entregaTarea->setUsuarioCurso(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPromedio(): ?string
+    {
+        return $this->promedio;
+    }
+
+    public function setPromedio(?string $promedio): static
+    {
+        $this->promedio = $promedio;
 
         return $this;
     }

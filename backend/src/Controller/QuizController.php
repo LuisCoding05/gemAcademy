@@ -10,6 +10,7 @@ use App\Entity\Usuario;
 use App\Entity\UsuarioCurso;
 use App\Entity\OpcionPregunta;
 use App\Entity\PreguntaQuizz;
+use App\Service\CursoInscripcionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -21,7 +22,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class QuizController extends AbstractController
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly CursoInscripcionService $cursoInscripcionService
     ) {}
 
     #[Route('/api/item/{id}/quiz/{quizId}', name: 'app_quiz_detail', methods: ['GET'])]
@@ -372,6 +374,7 @@ final class QuizController extends AbstractController
                         round(($itemsCompletados / $totalItems) * 100, 2) : 0;
                     
                     $usuarioCurso->setPorcentajeCompletado(strval($porcentajeCompletado));
+                    $this->handleQuizCompletion($intento);
                 }
                 
                 $usuarioCurso->setUltimaActualizacion(new \DateTime());
@@ -439,4 +442,19 @@ final class QuizController extends AbstractController
             'tiempoRestante' => ($quiz->getTiempoLimite() * 60) - ($minutosTranscurridos * 60)
         ]);
     }
+
+    // After a quiz attempt is completed and graded
+    private function handleQuizCompletion(IntentoQuizz $intento): void
+    {
+        $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)
+            ->findOneBy([
+                'idUsuario' => $intento->getIdUsuario(),
+                'idCurso' => $intento->getIdQuizz()->getIdCurso()
+            ]);
+
+        if ($usuarioCurso) {
+            $this->cursoInscripcionService->calcularPromedio($usuarioCurso);
+        }
+    }
+
 }
