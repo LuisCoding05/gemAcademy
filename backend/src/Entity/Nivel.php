@@ -30,6 +30,9 @@ class Nivel
     #[ORM\OneToMany(targetEntity: UsuarioNivel::class, mappedBy: 'idNivel')]
     private Collection $usuarioNivels;
 
+    #[ORM\Column]
+    private ?int $numNivel = null;
+
     public function __construct()
     {
         $this->usuarioNivels = new ArrayCollection();
@@ -102,6 +105,18 @@ class Nivel
                 $usuarioNivel->setIdNivel(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getNumNivel(): ?int
+    {
+        return $this->numNivel;
+    }
+
+    public function setNumNivel(int $numNivel): static
+    {
+        $this->numNivel = $numNivel;
 
         return $this;
     }

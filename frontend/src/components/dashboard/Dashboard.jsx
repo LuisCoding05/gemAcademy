@@ -5,8 +5,8 @@ import axios from '../../utils/axios';
 import ImageGallery from './ImageGallery';
 import Icon from '../Icon';
 import Loader from '../common/Loader';
+import Editor from '../common/Editor';
 import { Link } from 'react-router-dom';
-
 
 const Dashboard = () => {
   const { user, login } = useAuth();
@@ -17,7 +17,9 @@ const Dashboard = () => {
   const [editingProfile, setEditingProfile] = useState(false);
   const [newUsername, setNewUsername] = useState('');
   const [newNombre, setNewNombre] = useState('');
-  const [newApellido, setNewApellido] = useState('');
+  const [newApellido1, setNewApellido1] = useState('');
+  const [newApellido2, setNewApellido2] = useState('');
+  const [newDescripcion, setNewDescripcion] = useState('');
   const [selectedImageUrl, setSelectedImageUrl] = useState('');
   const [updateError, setUpdateError] = useState('');
   const [updateSuccess, setUpdateSuccess] = useState('');
@@ -30,7 +32,9 @@ const Dashboard = () => {
         setDashboardData(response.data);
         setNewUsername(response.data.user.username || '');
         setNewNombre(response.data.user.nombre || '');
-        setNewApellido(response.data.user.apellido || '');
+        setNewApellido1(response.data.user.apellido || '');
+        setNewApellido2(response.data.user.apellido2 || '');
+        setNewDescripcion(response.data.user.descripcion || '');
         setSelectedImageUrl(response.data.user.imagen?.url || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp');
         setLoading(false);
       } catch (err) {
@@ -51,7 +55,9 @@ const Dashboard = () => {
     setEditingProfile(false);
     setNewUsername(dashboardData.user.username || '');
     setNewNombre(dashboardData.user.nombre || '');
-    setNewApellido(dashboardData.user.apellido || '');
+    setNewApellido1(dashboardData.user.apellido || '');
+    setNewApellido2(dashboardData.user.apellido2 || '');
+    setNewDescripcion(dashboardData.user.descripcion || '');
     setSelectedImageUrl(dashboardData.user.imagen?.url || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp');
     setUpdateError('');
     setUpdateSuccess('');
@@ -62,11 +68,19 @@ const Dashboard = () => {
       setUpdateError('');
       setUpdateSuccess('');
       
+      // Validar campos requeridos
+      if (!newNombre || !newApellido1 || !newUsername) {
+        setUpdateError('El nombre, primer apellido y nombre de usuario son obligatorios');
+        return;
+      }
+
       // Preparar los datos para enviar
       const formData = {
         username: newUsername,
         nombre: newNombre,
-        apellido: newApellido,
+        apellido: newApellido1,
+        apellido2: newApellido2,
+        descripcion: newDescripcion,
         imagen: {
           url: selectedImageUrl
         }
@@ -178,41 +192,74 @@ const Dashboard = () => {
                     <h4 className="mb-3"> Editar Perfil <Icon name="pencil" color="#1337ea" size={20} /></h4>
                   </div>
                   <div className="row justify-content-center">
-                    <div className="col-md-6 mb-4">
-                      <label className="form-label">Nombre</label>
-                      <input 
-                        type="text" 
-                        className="form-control mb-3" 
-                        value={newNombre} 
-                        onChange={(e) => setNewNombre(e.target.value)}
-                        placeholder="Nombre"
-                      />
-                      <label className="form-label">Apellidos</label>
-                      <input 
-                        type="text" 
-                        className="form-control mb-3" 
-                        value={newApellido} 
-                        onChange={(e) => setNewApellido(e.target.value)}
-                        placeholder="Apellidos"
-                      />
-                      <label className="form-label">Nombre de usuario</label>
-                      <div className="input-group">
-                        <span className="input-group-text">@</span>
+                    <div className="col-md-8 mb-4">
+                      <div className="mb-3">
+                        <label className="form-label">Nombre</label>
                         <input 
                           type="text" 
                           className="form-control" 
-                          value={newUsername} 
-                          onChange={(e) => setNewUsername(e.target.value)}
-                          placeholder="Nombre de usuario"
+                          value={newNombre} 
+                          onChange={(e) => setNewNombre(e.target.value)}
+                          placeholder="Nombre"
+                          required
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Primer Apellido</label>
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          value={newApellido1} 
+                          onChange={(e) => setNewApellido1(e.target.value)}
+                          placeholder="Primer Apellido"
+                          required
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Segundo Apellido (opcional)</label>
+                        <input 
+                          type="text" 
+                          className="form-control" 
+                          value={newApellido2} 
+                          onChange={(e) => setNewApellido2(e.target.value)}
+                          placeholder="Segundo Apellido"
+                        />
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Nombre de usuario</label>
+                        <div className="input-group">
+                          <span className="input-group-text">@</span>
+                          <input 
+                            type="text" 
+                            className="form-control" 
+                            value={newUsername} 
+                            onChange={(e) => setNewUsername(e.target.value)}
+                            placeholder="Nombre de usuario"
+                            required
+                          />
+                        </div>
+                      </div>
+
+                      <div className="mb-3">
+                        <label className="form-label">Descripción</label>
+                        <Editor
+                          data={newDescripcion}
+                          onChange={setNewDescripcion}
+                          placeholder="Cuéntanos sobre ti..."
                         />
                       </div>
                     </div>
                   </div>
+
                   <ImageGallery 
                     images={dashboardData.imagenesDisponibles || []}
                     onSelectImage={setSelectedImageUrl} 
                     selectedImageUrl={selectedImageUrl} 
                   />
+
                   {updateError && (
                     <div className="alert alert-danger py-2" role="alert">
                       {updateError}
@@ -251,9 +298,15 @@ const Dashboard = () => {
                       border: '3px solid #0d6efd'
                     }}
                   />
-                  <h3 className="card-title">{userData.nombre} {userData.apellido}</h3>
+                  <h3 className="card-title">
+                    {userData.nombre} {userData.apellido} {userData.apellido2 && `${userData.apellido2}`}
+                  </h3>
                   <p className="text-muted mb-1">@{userData.username}</p>
                   <p className="text-muted">{userData.email}</p>
+                  {userData.descripcion && (
+                    <div className="mt-3 text-start" 
+                         dangerouslySetInnerHTML={{ __html: userData.descripcion }} />
+                  )}
                   <button 
                     className="btn btn-outline-primary btn-sm mt-3" 
                     onClick={handleEditProfile}
@@ -270,30 +323,46 @@ const Dashboard = () => {
             <div className="card-body">
               <div className="row text-center">
                 <div className="col-md-4">
-                  <div className="display-4 fw-bold">{estadisticas.nivel || 1}</div>
-                  <p className="text-muted">Nivel</p>
+                  <div className="display-4 fw-bold">{estadisticas.nivel?.numero || 1}</div>
+                  <h5>{estadisticas.nivel?.nombre || 'Novato'}</h5>
+                  <p className="text-muted small">{estadisticas.nivel?.descripcion || 'Acabas de empezar'}</p>
                 </div>
                 <div className="col-md-4">
                   <div className="display-4 fw-bold">{estadisticas.puntosTotales || 0}</div>
-                  <p className="text-muted">Puntos</p>
+                  <p className="text-muted">Puntos Totales</p>
+                  <p className="small text-info">
+                    {estadisticas.puntosSiguienteNivel ? 
+                      `${estadisticas.puntosSiguienteNivel - estadisticas.puntosTotales} puntos para el siguiente nivel` :
+                      'Nivel máximo alcanzado'}
+                  </p>
                 </div>
                 <div className="col-md-4">
-                  <div className="display-4 fw-bold">{estadisticas.cursosCompletados || 0}/{estadisticas.totalCursos || 0}</div>
+                  <div className="display-4 fw-bold">
+                    {estadisticas.cursosCompletados || 0}/{estadisticas.totalCursos || 0}
+                  </div>
                   <p className="text-muted">Cursos Completados</p>
+                  <p className="small text-success">
+                    {estadisticas.porcentajeCompletado?.toFixed(1) || 0}% completado
+                  </p>
                 </div>
               </div>
               <div className="progress mt-3" style={{ height: '20px' }}>
                 <div 
-                  className="progress-bar bg-primary" 
+                  className="progress-bar bg-primary progress-bar-striped progress-bar-animated" 
                   role="progressbar" 
                   style={{ width: `${estadisticas.progresoNivel || 0}%` }}
                   aria-valuenow={estadisticas.progresoNivel || 0}
                   aria-valuemin="0"
                   aria-valuemax="100"
                 >
-                  {estadisticas.progresoNivel || 0}%
+                  {`${Math.round(estadisticas.progresoNivel || 0)}%`}
                 </div>
               </div>
+              {estadisticas.puntosSiguienteNivel && (
+                <p className="text-center small text-muted mt-2">
+                  Progreso hacia el nivel {(estadisticas.nivel?.numero || 1) + 1}
+                </p>
+              )}
             </div>
           </div>
 

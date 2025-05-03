@@ -250,10 +250,20 @@ const CourseDetail = () => {
 
                 {/* Columna derecha con información del curso */}
                 <div className="col-md-8">
-                    <h1 className="mb-3">{course.nombre}</h1>
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                        <h1>{course.nombre}</h1>
+                        {course.userRole === 'profesor' && (
+                            <Link 
+                                to={`/cursos/${id}/edit`} 
+                                className="btn btn-link text-warning rounded-circle"
+                                title="Editar curso"
+                            >
+                                <Icon name="cog" size={24} />
+                            </Link>
+                        )}
+                    </div>
                     <div className="row mb-4">
                         <div className="col-lg-8">
-                            <p className="text-muted">{course.descripcion}</p>
                             
                             <div className="d-flex align-items-center mb-3">
                                 <span className="me-3">
@@ -266,7 +276,10 @@ const CourseDetail = () => {
 
                             <div className="mb-4">
                                 <h4>Descripción</h4>
-                                <p>{course.descripcion}</p>
+                                <div 
+                                    className="course-description"
+                                    dangerouslySetInnerHTML={{ __html: course.descripcion }}
+                                />
                             </div>
 
                             {/* Acordeón de Materiales */}

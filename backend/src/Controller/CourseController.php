@@ -380,4 +380,61 @@ final class CourseController extends AbstractController
             ]
         ]);
     }
+
+    #[Route('/api/course/{id}/update', name: 'app_course_update', methods: ['PUT'])]
+    #[IsGranted('ROLE_USER')]
+    public function updateCourse(Request $request, $id): JsonResponse
+    {
+        // Obtener el curso
+        $curso = $this->entityManager->getRepository(Curso::class)->find($id);
+        if (!$curso) {
+            return $this->json([
+                'message' => 'Curso no encontrado'
+            ], 404);
+        }
+
+        // Verificar que el usuario actual es el profesor del curso
+        /** @var Usuario $user */
+        $user = $this->getUser();
+        if ($curso->getProfesor()->getId() !== $user->getId()) {
+            return $this->json([
+                'message' => 'No tienes permisos para editar este curso'
+            ], 403);
+        }
+
+        $data = json_decode($request->getContent(), true);
+
+        // Actualizar nombre si se proporciona
+        if (isset($data['nombre']) && !empty($data['nombre'])) {
+            $curso->setNombre($data['nombre']);
+        }
+
+        // Actualizar descripción si se proporciona
+        if (isset($data['descripcion'])) {
+            $curso->setDescripcion($data['descripcion']);
+        }
+
+        // Actualizar imagen si se proporciona
+        if (isset($data['imagen'])) {
+            $imagen = $this->entityManager->getRepository(Imagen::class)
+                ->findOneBy(['url' => $data['imagen']]);
+            
+            if ($imagen) {
+                $curso->setImagen($imagen);
+            }
+        }
+
+        // Guardar cambios
+        $this->entityManager->flush();
+
+        return $this->json([
+            'message' => 'Curso actualizado exitosamente',
+            'curso' => [
+                'id' => $curso->getId(),
+                'nombre' => $curso->getNombre(),
+                'descripcion' => $curso->getDescripcion(),
+                'imagen' => $curso->getImagen() ? $curso->getImagen()->getUrl() : null
+            ]
+        ]);
+    }
 }

@@ -19,9 +19,6 @@ class Curso
     #[ORM\Column(length: 100)]
     private ?string $nombre = null;
 
-    #[ORM\Column(length: 255)]
-    private ?string $descripcion = null;
-
     #[ORM\ManyToOne(inversedBy: 'cursos')]
     private ?Imagen $imagen = null;
 
@@ -61,6 +58,9 @@ class Curso
      */
     #[ORM\OneToMany(targetEntity: Quizz::class, mappedBy: 'idCurso')]
     private Collection $quizzs;
+
+    #[ORM\Column(type: Types::TEXT)]
+    private ?string $descripcion = null;
 
     public function __construct()
     {

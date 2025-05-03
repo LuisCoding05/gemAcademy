@@ -13,21 +13,27 @@ class NivelFixtures extends Fixture
     public function load(ObjectManager $manager): void
     {
         $niveles = [
-            ['nombre' => 'Principiante', 'puntos' => 0, 'desc' => 'Nivel inicial'],
-            ['nombre' => 'Intermedio', 'puntos' => 1000, 'desc' => 'Nivel medio'],
-            ['nombre' => 'Avanzado', 'puntos' => 5000, 'desc' => 'Nivel experto']
+            ['numero_nivel' => 1, 'nombre' => 'Novato Aprendiz', 'puntos' => 0, 'desc' => 'Acabas de llegar. ¡Empieza tu aventura!'],
+            ['numero_nivel' => 2, 'nombre' => 'Explorador', 'puntos' => 100, 'desc' => 'Sigue descubriendo conocimientos.'],
+            ['numero_nivel' => 3, 'nombre' => 'Guerrero', 'puntos' => 300, 'desc' => 'Tus habilidades están mejorando.'],
+            ['numero_nivel' => 4, 'nombre' => 'Maestro Junior', 'puntos' => 600, 'desc' => 'Ya controlas lo básico. ¡A por más!'],
+            ['numero_nivel' => 5, 'nombre' => 'Maestro', 'puntos' => 1000, 'desc' => 'Tus conocimientos brillan con fuerza.'],
+            ['numero_nivel' => 6, 'nombre' => 'Gran Sabio', 'puntos' => 1600, 'desc' => 'La sabiduría te impulsa.'],
+            ['numero_nivel' => 7, 'nombre' => 'Leyenda', 'puntos' => 2500, 'desc' => 'Tu nombre se cuenta en las historias.'],
+            ['numero_nivel' => 8, 'nombre' => 'Ascensión Divina', 'puntos' => 4000, 'desc' => 'Has alcanzado la cúspide. ¡Eres una leyenda viva!']
         ];
         
         foreach ($niveles as $nivelData) {
             $nivel = new Nivel();
             $nivel->setNombre($nivelData['nombre'])
                 ->setPuntosRequeridos($nivelData['puntos'])
-                ->setDescripcion($nivelData['desc']);
+                ->setDescripcion($nivelData['desc'])
+                ->setNumNivel($nivelData['numero_nivel']);
             
             $manager->persist($nivel);
             
-            // Assuming this is the first iteration
-            if ($nivelData['nombre'] === 'Principiante') {
+            // Set reference for the initial level
+            if ($nivelData['numero_nivel'] === 1) {
                 $this->addReference(self::NIVEL_PRINCIPIANTE, $nivel);
             }
         }

@@ -7,6 +7,7 @@ use App\Entity\UsuarioCurso;
 use App\Entity\UsuarioLogro;
 use App\Entity\Imagen;
 use App\Entity\Curso;
+use App\Entity\UsuarioNivel;
 use App\Service\CursoInscripcionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -121,9 +122,28 @@ class DashboardController extends AbstractController
             ];
         }
 
-        // Calcular nivel basado en puntos
-        $nivel = floor($puntosTotales / 100) + 1;
-        $progresoNivel = $puntosTotales % 100;
+        // Obtener información del nivel actual del usuario
+        $usuarioNivel = $this->entityManager->getRepository(UsuarioNivel::class)
+            ->findOneBy(['idUsuario' => $user]);
+
+        $nivelActual = null;
+        $puntosActuales = 0;
+        $puntosSiguienteNivel = 0;
+        $progresoNivel = 0;
+
+        if ($usuarioNivel) {
+            $nivelActual = $usuarioNivel->getIdNivel();
+            $puntosActuales = $usuarioNivel->getPuntosActuales();
+            $puntosSiguienteNivel = $usuarioNivel->getPuntosSiguienteNivel();
+            
+            // Calcular el progreso hacia el siguiente nivel
+            if ($puntosSiguienteNivel > 0) {
+                $puntosNivelActual = $nivelActual ? $nivelActual->getPuntosRequeridos() : 0;
+                $puntosNecesarios = $puntosSiguienteNivel - $puntosNivelActual;
+                $puntosConseguidos = $puntosActuales - $puntosNivelActual;
+                $progresoNivel = $puntosNecesarios > 0 ? ($puntosConseguidos / $puntosNecesarios) * 100 : 100;
+            }
+        }
 
         $response = new JsonResponse([
             'user' => [
@@ -131,16 +151,23 @@ class DashboardController extends AbstractController
                 'email' => $user->getEmail(),
                 'nombre' => $user->getNombre(),
                 'apellido' => $user->getApellido(),
+                'apellido2' => $user->getApellido2(),
                 'username' => $user->getUsername(),
                 'roles' => $user->getRoles(),
+                'descripcion' => $user->getDescripcion(),
                 'imagen' => $user->getImagen() ? [
                     'url' => $user->getImagen()->getUrl()
                 ] : null
             ],
             'estadisticas' => [
-                'nivel' => $nivel,
-                'puntosTotales' => $puntosTotales,
-                'progresoNivel' => $progresoNivel,
+                'nivel' => $nivelActual ? [
+                    'numero' => $nivelActual->getNumNivel(),
+                    'nombre' => $nivelActual->getNombre(),
+                    'descripcion' => $nivelActual->getDescripcion()
+                ] : null,
+                'puntosTotales' => $puntosActuales,
+                'puntosSiguienteNivel' => $puntosSiguienteNivel,
+                'progresoNivel' => round($progresoNivel, 2),
                 'totalCursos' => $totalCursos,
                 'cursosCompletados' => $cursosCompletados,
                 'porcentajeCompletado' => $totalCursos > 0 ? ($cursosCompletados / $totalCursos) * 100 : 0
@@ -172,9 +199,19 @@ class DashboardController extends AbstractController
             $user->setNombre($data['nombre']);
         }
         
-        // Actualizar apellido si se proporciona
+        // Actualizar apellido (ahora apellido1) si se proporciona
         if (isset($data['apellido']) && !empty($data['apellido'])) {
             $user->setApellido($data['apellido']);
+        }
+        
+        // Actualizar apellido2 (opcional)
+        if (isset($data['apellido2'])) {
+            $user->setApellido2($data['apellido2']);
+        }
+        
+        // Actualizar descripción (puede contener HTML del CKEditor)
+        if (isset($data['descripcion'])) {
+            $user->setDescripcion($data['descripcion']);
         }
 
         // Actualizar username si se proporciona
@@ -235,8 +272,10 @@ class DashboardController extends AbstractController
                 'email' => $user->getEmail(),
                 'nombre' => $user->getNombre(),
                 'apellido' => $user->getApellido(),
+                'apellido2' => $user->getApellido2(),
                 'username' => $user->getUsername(),
                 'roles' => $user->getRoles(),
+                'descripcion' => $user->getDescripcion(),
                 'imagen' => $user->getImagen() ? [
                     'url' => $user->getImagen()->getUrl()
                 ] : null

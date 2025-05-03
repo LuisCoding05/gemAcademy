@@ -105,6 +105,9 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Fichero::class, mappedBy: 'usuario')]
     private Collection $ficheros;
 
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $descripcion = null;
+
     public function __construct()
     {
         $this->usuarioCursos = new ArrayCollection();
@@ -535,6 +538,18 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
                 $fichero->setUsuario(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getDescripcion(): ?string
+    {
+        return $this->descripcion;
+    }
+
+    public function setDescripcion(?string $descripcion): static
+    {
+        $this->descripcion = $descripcion;
 
         return $this;
     }

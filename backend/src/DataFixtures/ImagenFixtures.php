@@ -35,7 +35,12 @@ class ImagenFixtures extends Fixture
         'rana' => 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483545/ranapepe_dxk89v.webp',
         'reina' => 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483545/reinaroja_n2ql4x.jpg',
         'shinobu' => 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483546/shinobu_vfsp6x.jpg',
-        'L' => 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483545/L_pxgnzj.webp'
+        'L' => 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483545/L_pxgnzj.webp',
+        'juego' => 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1746286806/videogamepfp_zchfir.jpg',
+        'code' => 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1746286807/iconocode_ys83lo.png',
+        'coche' => 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1746286807/cochescursos_r9shbz.png',
+        'cocina' => 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1746286806/cocinacursos_qpszaj.png',
+        'link' => 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1746286962/link_dxrsts.png'
     ];
 
     public function load(ObjectManager $manager): void

@@ -17,6 +17,7 @@ import { CourseDetail } from './components/course/CourseDetail'
 import { CreateCourse } from './components/course/CreateCourse'
 import ItemDetails from './components/course/ItemDetails'
 import EntregaDetalle from './components/item/EntregaDetalle'
+import { EditCourse } from './components/course/EditCourse'
 
 function App() {
   return (
@@ -115,6 +116,16 @@ function App() {
                 <ProtectedRoute>
                   <Navbar />
                   <EntregaDetalle />
+                  <Copy />
+                </ProtectedRoute>
+              </div>
+            } />
+
+            <Route path="/cursos/:id/edit" element={
+              <div className="wrapper">
+                <ProtectedRoute>
+                  <Navbar />
+                  <EditCourse />
                   <Copy />
                 </ProtectedRoute>
               </div>
