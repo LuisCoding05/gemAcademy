@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from '../../utils/axios';
 import { useAuth } from '../../context/AuthContext';
+import Icon from '../Icon';
 
 const MainLogin = () => {
   const navigate = useNavigate();
@@ -12,6 +13,11 @@ const MainLogin = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  
+  const togglePassword = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -113,16 +119,28 @@ const MainLogin = () => {
 
               <div className="mb-3">
                 <label htmlFor="password" className="form-label">Contraseña</label>
-                <input
-                  type="password"
-                  className="form-control bg-secondary bg-gradient"
-                  id="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  disabled={loading}
-                  required
-                />
+                <div className="position-relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    className="form-control bg-secondary bg-gradient"
+                    style={{ paddingRight: '40px' }}
+                    id="password"
+                    name="password"
+                    value={formData.password}
+                    onChange={handleChange}
+                    disabled={loading}
+                    required
+                  />
+                  <button
+                    type='button'
+                    className='btn btn-outline-light border-0 position-absolute end-0 top-50 translate-middle-y'
+                    style={{ padding: '0.375rem' }}
+                    onClick={togglePassword}
+                    aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                  >
+                    <Icon name={showPassword ? 'eye-hidden' : 'eye'} />
+                  </button>
+                </div>
               </div>
 
               <button 

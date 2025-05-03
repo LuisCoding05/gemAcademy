@@ -76,6 +76,25 @@ class CursoInscripcionService
         $this->entityManager->flush();
     }
 
+    public function calcularPorcentaje(UsuarioCurso $usuarioCurso){
+        $curso = $usuarioCurso->getIdCurso();
+        // Obtener los items totales del curso
+        $totalItemsCurso = $curso->getTotalItems();
+        // Obtener los items realizados de ese curso
+        $quizzesCompletados = $usuarioCurso->getQuizzesCompletados();
+        $materialesCompletados = $usuarioCurso->getMaterialesCompletados();
+        $tareasCompletadas = $usuarioCurso->getTareasCompletadas();
+
+        // Hacer la división y actualizar los datos
+        $nuevoProgreso = (($quizzesCompletados + $materialesCompletados + $tareasCompletadas) / ($totalItemsCurso))*100;
+        $nuevoProgreso = number_format($nuevoProgreso, 2, '.', '');
+        $usuarioCurso->setPorcentajeCompletado($nuevoProgreso);
+
+        $this->entityManager->flush();
+
+        return $nuevoProgreso;
+    }
+
     public function calcularPromedio(UsuarioCurso $usuarioCurso): void
     {
         $curso = $usuarioCurso->getIdCurso();

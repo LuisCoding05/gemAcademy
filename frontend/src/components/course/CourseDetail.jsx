@@ -709,40 +709,6 @@ const CourseDetail = () => {
                                 </div>
                             </div>
                         </div>
-                        
-                        {/* Columna derecha con acciones */}
-                        <div className="col-lg-4">
-                            {!course.isEnrolled && (
-                                <div className="card mb-4">
-                                    <div className="card-body">
-                                        <h5 className="card-title">Inscripción al curso</h5>
-                                        <p className="card-text">¿Te interesa este curso? ¡Inscríbete ahora!</p>
-                                        <button 
-                                            className="btn btn-primary w-100"
-                                            onClick={handleEnroll}
-                                            disabled={enrolling}
-                                        >
-                                            {enrolling ? (
-                                                <>
-                                                    <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                                                    Inscribiendo...
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <Icon name="person-add" size={20} className="me-2" />
-                                                    Inscribirse al curso
-                                                </>
-                                            )}
-                                        </button>
-                                        {enrollError && (
-                                            <div className="alert alert-danger mt-3" role="alert">
-                                                {enrollError}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
                     </div>
                 </div>
             </div>

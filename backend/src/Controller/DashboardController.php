@@ -7,6 +7,7 @@ use App\Entity\UsuarioCurso;
 use App\Entity\UsuarioLogro;
 use App\Entity\Imagen;
 use App\Entity\Curso;
+use App\Service\CursoInscripcionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,7 +19,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 class DashboardController extends AbstractController
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly CursoInscripcionService $inscripcionService
     ) {}
 
     #[Route('/api/dashboard', name: 'api_dashboard', methods: ['GET'])]
@@ -61,7 +63,8 @@ class DashboardController extends AbstractController
 
         foreach ($usuarioCursos as $usuarioCurso) {
             $curso = $usuarioCurso->getIdCurso();
-            $porcentaje = (float)$usuarioCurso->getPorcentajeCompletado();
+            $porcentajeActualizado = $this->inscripcionService->calcularPorcentaje($usuarioCurso);
+            $porcentaje = (float) $porcentajeActualizado;
             
             if ($porcentaje >= 100) {
                 $cursosCompletados++;
