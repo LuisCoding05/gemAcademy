@@ -67,6 +67,7 @@ class UsuarioCurso
         $this->tareasCompletadas = 0;
         $this->quizzesCompletados = 0;
         $this->porcentajeCompletado = '0.00';
+        $this->promedio = '0.00';
     }
 
     public function getId(): ?int

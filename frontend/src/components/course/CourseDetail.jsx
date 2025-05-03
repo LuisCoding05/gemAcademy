@@ -253,7 +253,6 @@ const CourseDetail = () => {
                     <h1 className="mb-3">{course.nombre}</h1>
                     <div className="row mb-4">
                         <div className="col-lg-8">
-                            <h2>{course.nombre}</h2>
                             <p className="text-muted">{course.descripcion}</p>
                             
                             <div className="d-flex align-items-center mb-3">

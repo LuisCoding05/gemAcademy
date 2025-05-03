@@ -74,6 +74,10 @@ class CursoInscripcionService
         }
 
         $this->entityManager->flush();
+
+        // Calcular el promedio y el porcentaje de progreso
+        $this->calcularPorcentaje($usuarioCurso);
+        $this->calcularPromedio($usuarioCurso);
     }
 
     public function calcularPorcentaje(UsuarioCurso $usuarioCurso){
