@@ -269,16 +269,20 @@ export const SearchCourse = () => {
                           </div>
                           <div className="card-body p-3">
                             <h5 className="card-title fw-bold fs-6 mb-2 text-truncate">{course.nombre}</h5>
-                            <p className="card-text small text-muted mb-2" style={{ 
-                              display: '-webkit-box', 
-                              WebkitLineClamp: 2, 
-                              WebkitBoxOrient: 'vertical', 
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              minHeight: '2.4em'
-                            }}>
-                              {course.descripcion}
-                            </p>
+                            <div 
+                              className="card-text small text-muted mb-2" 
+                              style={{ 
+                                display: '-webkit-box', 
+                                WebkitLineClamp: 2, 
+                                WebkitBoxOrient: 'vertical', 
+                                overflow: 'hidden',
+                                textOverflow: 'ellipsis',
+                                minHeight: '2.4em'
+                              }}
+                              dangerouslySetInnerHTML={{ 
+                                __html: course.descripcion?.replace(/<[^>]*>?/gm, ' ') 
+                              }}
+                            />
                             <p className='card-text small text-muted mb-2'>
                               {course.estudiantes} estudiantes inscritos
                             </p>
