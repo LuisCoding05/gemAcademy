@@ -7,7 +7,9 @@ use App\Entity\EntregaTarea;
 use App\Entity\Tarea;
 use App\Entity\Usuario;
 use App\Entity\UsuarioCurso;
+use App\Entity\Notificacion;
 use App\Service\CursoInscripcionService;
+use App\Service\NotificacionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,7 +22,8 @@ final class EntregaTareaController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly CursoInscripcionService $cursoInscripcionService
+        private readonly CursoInscripcionService $cursoInscripcionService,
+        private readonly NotificacionService $notificacionService
     ) {}
 
     #[Route('/api/item/{id}/tarea/{tareaId}/entregas', name: 'app_tarea_entregas', methods: ['GET'])]
@@ -193,6 +196,20 @@ final class EntregaTareaController extends AbstractController
 
             $usuarioCurso = $entrega->getUsuarioCurso();
             $this->cursoInscripcionService->calcularPromedio($usuarioCurso);
+
+            // Create notification for the student
+            $tarea = $entrega->getIdTarea();
+            $this->notificacionService->crearNotificacion(
+                $usuarioCurso->getIdUsuario(),
+                Notificacion::TIPO_CORRECCION,
+                'Tu entrega ha sido calificada',
+                sprintf(
+                    'Tu entrega para la tarea "%s" ha sido calificada con %s/10', 
+                    $tarea->getTitulo(),
+                    $calificacion
+                ),
+                sprintf('/cursos/%d/tarea/%d', $id, $tareaId)
+            );
 
             $this->entityManager->flush();
 

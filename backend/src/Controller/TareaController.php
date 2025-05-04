@@ -9,7 +9,9 @@ use App\Entity\IntentoQuizz;
 use App\Entity\Tarea;
 use App\Entity\Usuario;
 use App\Entity\UsuarioCurso;
+use App\Entity\Notificacion;
 use App\Service\FileService;
+use App\Service\NotificacionService;
 use App\Service\CursoInscripcionService;
 use DateTime;
 use DateTimeInterface;
@@ -26,7 +28,8 @@ final class TareaController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly FileService $fileService
+        private readonly FileService $fileService,
+        private readonly NotificacionService $notificacionService
     ) {}
 
     #[Route('/api/item/{id}/tarea/{tareaId}', name: 'app_tarea_detail', methods: ['GET'])]
@@ -191,9 +194,22 @@ final class TareaController extends AbstractController
                         $entrega->setUsuarioCurso($usuarioCurso);
                         $this->entityManager->persist($entrega);
 
-                        // Actualizar estadísticas del usuario en el curso
+                        // Solo incrementar la tarea entregada en la primera ocasion
                         $tareasCompletadasActual = $usuarioCurso->getTareasCompletadas() ?? 0;
                         $usuarioCurso->setTareasCompletadas($tareasCompletadasActual + 1);
+
+                        // Notificar al profesor sobre una entrega de un alumno
+                        $this->notificacionService->crearNotificacion(
+                            $tarea->getIdCurso()->getProfesor(),
+                            Notificacion::TIPO_TAREA,
+                            'Nueva entrega de tarea',
+                            sprintf(
+                                'El estudiante %s ha entregado la tarea "%s"',
+                                $usuario->getNombre() . ' ' . $usuario->getApellido(),
+                                $tarea->getTitulo()
+                            ),
+                            sprintf('/cursos/%d/tarea/%d/entregas', $id, $tareaId)
+                        );
                     }
 
                     // Establecer el comentario si se proporciona
@@ -311,6 +327,19 @@ final class TareaController extends AbstractController
                         ], 400);
                     }
                     $entrega->setEstado(EntregaTarea::ESTADO_REVISION_SOLICITADA);
+
+                    // Notificar al profesor sobre una solicitud de revision
+                    $this->notificacionService->crearNotificacion(
+                        $tarea->getIdCurso()->getProfesor(),
+                        Notificacion::TIPO_TAREA,
+                        'Solicitud de revisión de tarea',
+                        sprintf(
+                            'El estudiante %s ha solicitado una revisión de su calificación en la tarea "%s"',
+                            $usuario->getNombre() . ' ' . $usuario->getApellido(),
+                            $tarea->getTitulo()
+                        ),
+                        sprintf('/cursos/%d/tarea/%d/entregas', $id, $tareaId)
+                    );
                     break;
 
                 default:
@@ -421,6 +450,45 @@ final class TareaController extends AbstractController
             }
 
             $this->entityManager->persist($tarea);
+
+            // Notficar a todos los estudiantes sobre la nueva tarea
+            $usuariosCurso = $this->entityManager->getRepository(UsuarioCurso::class)
+                ->findBy(['idCurso' => $curso]);
+
+            foreach ($usuariosCurso as $usuarioCurso) {
+                $this->notificacionService->crearNotificacion(
+                    $usuarioCurso->getIdUsuario(),
+                    Notificacion::TIPO_TAREA,
+                    'Nueva tarea asignada',
+                    sprintf(
+                        'Se ha publicado una nueva tarea: "%s". Fecha límite: %s',
+                        $tarea->getTitulo(),
+                        $tarea->getFechaLimite()->format('d/m/Y H:i')
+                    ),
+                    sprintf('/cursos/%d/tarea/%d', $id, $tarea->getId())
+                );
+
+                // Crear un reminder por si quedan menos de 24 horas de la entrega
+                if ($tarea->getFechaLimite() > new DateTime('+24 hours')) {
+                    $recordatorioFecha = DateTime::createFromInterface($tarea->getFechaLimite());
+                    $recordatorioFecha->modify('-24 hours');
+                    
+                    $notificacionRecordatorio = new Notificacion();
+                    $notificacionRecordatorio->setUsuario($usuarioCurso->getIdUsuario());
+                    $notificacionRecordatorio->setTipo(Notificacion::TIPO_RECORDATORIO);
+                    $notificacionRecordatorio->setTitulo('Recordatorio de entrega');
+                    $notificacionRecordatorio->setContenido(sprintf(
+                        'La tarea "%s" vence mañana a las %s',
+                        $tarea->getTitulo(),
+                        $tarea->getFechaLimite()->format('H:i')
+                    ));
+                    $notificacionRecordatorio->setUrl(sprintf('/curso/%d/tarea/%d', $id, $tarea->getId()));
+                    $notificacionRecordatorio->setFechaCreacion($recordatorioFecha);
+                    
+                    $this->entityManager->persist($notificacionRecordatorio);
+                }
+            }
+
             $this->entityManager->flush();
 
             return $this->json([

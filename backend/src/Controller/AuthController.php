@@ -3,7 +3,9 @@
 namespace App\Controller;
 
 use App\Entity\Imagen;
+use App\Entity\Nivel;
 use App\Entity\Usuario;
+use App\Entity\UsuarioNivel;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -175,6 +177,21 @@ class AuthController extends AbstractController
             $verificationCode = bin2hex(random_bytes(16));
             $user->setTokenVerificacion($verificationCode);
             $user->setVerificado(false);
+
+                        // Crear relación con nivel inicial
+                        $nivelInicial = $this->entityManager->getRepository(Nivel::class)->findOneBy(['numNivel' => 1]);
+                        if (!$nivelInicial) {
+                            return $this->json(['message' => 'Error al asignar nivel inicial'], 500);
+                        }
+                        $nivel2 = $this->entityManager->getRepository(Nivel::class)->findOneBy(['numNivel' => 2]);
+
+                        $usuarioNivel = new UsuarioNivel();
+                        $usuarioNivel->setIdUsuario($user)
+                            ->setIdNivel($nivelInicial)
+                            ->setPuntosActuales(0)
+                            ->setPuntosSiguienteNivel($nivel2->getPuntosRequeridos()); // Puntos necesarios para el nivel 2 (Explorador)
+            
+            $this->entityManager->persist($usuarioNivel);
 
             $this->entityManager->persist($user);
             $this->entityManager->flush();

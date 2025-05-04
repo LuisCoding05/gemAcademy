@@ -2,6 +2,7 @@ import React from 'react'
 import { useTheme } from '../context/ThemeContext';
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext';
+import NotificationIndicator from './notifications/NotificationIndicator';
 
 export const Navbar = () => {
     const { isDarkMode, toggleDarkMode } = useTheme();
@@ -72,6 +73,11 @@ export const Navbar = () => {
                         </li>
                     </ul>
                     <div className="d-flex align-items-center">
+                        {user && (
+                            <div className="me-3">
+                                <NotificationIndicator />
+                            </div>
+                        )}
                         <button 
                             className={`btn ${isDarkMode ? 'btn-outline-light me-3' : 'btn-outline-dark me-3'} rounded-circle`}
                             onClick={toggleDarkMode}

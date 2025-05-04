@@ -108,6 +108,12 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     private ?string $descripcion = null;
 
+    /**
+     * @var Collection<int, Notificacion>
+     */
+    #[ORM\OneToMany(targetEntity: Notificacion::class, mappedBy: 'usuario')]
+    private Collection $notificaciones;
+
     public function __construct()
     {
         $this->usuarioCursos = new ArrayCollection();
@@ -119,6 +125,7 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         $this->fechaRegistro = new \DateTime();
         $this->logs = new ArrayCollection();
         $this->ficheros = new ArrayCollection();
+        $this->notificaciones = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -550,6 +557,35 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
     public function setDescripcion(?string $descripcion): static
     {
         $this->descripcion = $descripcion;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Notificacion>
+     */
+    public function getNotificaciones(): Collection
+    {
+        return $this->notificaciones;
+    }
+
+    public function addNotificacion(Notificacion $notificacion): static
+    {
+        if (!$this->notificaciones->contains($notificacion)) {
+            $this->notificaciones->add($notificacion);
+            $notificacion->setUsuario($this);
+        }
+
+        return $this;
+    }
+
+    public function removeNotificacion(Notificacion $notificacion): static
+    {
+        if ($this->notificaciones->removeElement($notificacion)) {
+            if ($notificacion->getUsuario() === $this) {
+                $notificacion->setUsuario(null);
+            }
+        }
 
         return $this;
     }

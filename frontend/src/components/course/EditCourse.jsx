@@ -167,7 +167,7 @@ export const EditCourse = () => {
                     className="btn btn-secondary btn-lg"
                     onClick={() => navigate(`/cursos/${id}`)}
                   >
-                    <Icon name="x" size={24} /> Cancelar
+                    <Icon name="circle-with-cross" size={24} /> Cancelar
                   </button>
                   <button
                     type="submit"
