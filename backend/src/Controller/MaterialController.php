@@ -5,10 +5,12 @@ namespace App\Controller;
 use App\Entity\Curso;
 use App\Entity\Material;
 use App\Entity\MaterialCompletado;
+use App\Entity\Notificacion;
 use App\Entity\Usuario;
 use App\Entity\UsuarioCurso;
 use App\Entity\Fichero;
 use App\Service\FileService;
+use App\Service\NotificacionService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -26,7 +28,8 @@ final class MaterialController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly SluggerInterface $slugger,
-        private readonly FileService $fileService
+        private readonly FileService $fileService,
+        private readonly NotificacionService $notificacionService
     ) {}
 
     #[Route('/api/item/{id}/material/{materialId}', name: 'app_material_detail', methods: ['GET'])]
@@ -99,6 +102,19 @@ final class MaterialController extends AbstractController
                     // Actualizar el contador de materiales completados
                     $materialesCompletadosActual = $usuarioCurso->getMaterialesCompletados() ?? 0;
                     $usuarioCurso->setMaterialesCompletados($materialesCompletadosActual + 1);
+
+                    // Notificar al profesor que un estudiante ha completado el material
+                    $this->notificacionService->crearNotificacion(
+                        $curso->getProfesor(),
+                        Notificacion::TIPO_TAREA,
+                        'Material completado por estudiante',
+                        sprintf(
+                            'El estudiante %s ha completado el material "%s"',
+                            $usuario->getNombre() . ' ' . $usuario->getApellido(),
+                            $material->getTitulo()
+                        ),
+                        sprintf('/cursos/%d/material/%d', $id, $materialId)
+                    );
                     
                     // Actualizar el porcentaje completado
                     $totalItems = $curso->getTotalItems();
@@ -182,7 +198,24 @@ final class MaterialController extends AbstractController
             }
 
             $this->entityManager->persist($material);
-            
+
+            // Notificar a todos los estudiantes sobre el nuevo material
+            $usuariosCurso = $this->entityManager->getRepository(UsuarioCurso::class)
+                ->findBy(['idCurso' => $curso]);
+
+            foreach ($usuariosCurso as $usuarioCurso) {
+                $this->notificacionService->crearNotificacion(
+                    $usuarioCurso->getIdUsuario(),
+                    Notificacion::TIPO_TAREA,
+                    'Nuevo material disponible',
+                    sprintf(
+                        'Se ha publicado un nuevo material: "%s"',
+                        $material->getTitulo()
+                    ),
+                    sprintf('/cursos/%d/material/%d', $id, $material->getId())
+                );
+            }
+
             $this->entityManager->flush();
 
             return $this->json([

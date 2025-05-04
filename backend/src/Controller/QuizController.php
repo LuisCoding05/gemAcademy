@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Curso;
 use App\Entity\IntentoQuizz;
+use App\Entity\Notificacion;
 use App\Entity\Quizz;
 use App\Entity\RespuestaQuizz;
 use App\Entity\Usuario;
@@ -11,6 +12,7 @@ use App\Entity\UsuarioCurso;
 use App\Entity\OpcionPregunta;
 use App\Entity\PreguntaQuizz;
 use App\Service\CursoInscripcionService;
+use App\Service\NotificacionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,7 +25,8 @@ final class QuizController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly CursoInscripcionService $cursoInscripcionService
+        private readonly CursoInscripcionService $cursoInscripcionService,
+        private readonly NotificacionService $notificacionService
     ) {}
 
     #[Route('/api/item/{id}/quiz/{quizId}', name: 'app_quiz_detail', methods: ['GET'])]
@@ -454,6 +457,23 @@ final class QuizController extends AbstractController
 
         if ($usuarioCurso) {
             $this->cursoInscripcionService->calcularPromedio($usuarioCurso);
+            
+            // Notificar al profesor sobre la finalización del quiz
+            $this->notificacionService->crearNotificacion(
+                $intento->getIdQuizz()->getIdCurso()->getProfesor(),
+                Notificacion::TIPO_TAREA,
+                'Quiz completado por estudiante',
+                sprintf(
+                    'El estudiante %s ha completado el quiz "%s" con una calificación de %s/10',
+                    $intento->getIdUsuario()->getNombre() . ' ' . $intento->getIdUsuario()->getApellido(),
+                    $intento->getIdQuizz()->getTitulo(),
+                    $intento->getCalificacion()
+                ),
+                sprintf('/cursos/%d/quiz/%d', 
+                    $intento->getIdQuizz()->getIdCurso()->getId(),
+                    $intento->getIdQuizz()->getId()
+                )
+            );
         }
     }
 

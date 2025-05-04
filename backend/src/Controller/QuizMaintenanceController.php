@@ -4,11 +4,13 @@ namespace App\Controller;
 
 use App\Entity\Curso;
 use App\Entity\IntentoQuizz;
+use App\Entity\Notificacion;
 use App\Entity\OpcionPregunta;
 use App\Entity\PreguntaQuizz;
 use App\Entity\Quizz;
 use App\Entity\Usuario;
 use App\Entity\UsuarioCurso;
+use App\Service\NotificacionService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -22,7 +24,8 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 final class QuizMaintenanceController extends AbstractController
 {
     public function __construct(
-        private readonly EntityManagerInterface $entityManager
+        private readonly EntityManagerInterface $entityManager,
+        private readonly NotificacionService $notificacionService
     ) {}
     #[Route('/quiz/maintenance', name: 'app_quiz_maintenance')]
     public function index(): JsonResponse
@@ -78,6 +81,25 @@ final class QuizMaintenanceController extends AbstractController
             $quiz->setIdCurso($curso);
 
             $this->entityManager->persist($quiz);
+
+            // Notificar a todos los estudiantes sobre el nuevo quiz
+            $usuariosCurso = $this->entityManager->getRepository(UsuarioCurso::class)
+                ->findBy(['idCurso' => $curso]);
+
+            foreach ($usuariosCurso as $usuarioCurso) {
+                $this->notificacionService->crearNotificacion(
+                    $usuarioCurso->getIdUsuario(),
+                    Notificacion::TIPO_TAREA,
+                    'Nuevo quiz disponible',
+                    sprintf(
+                        'Se ha publicado un nuevo quiz: "%s". Fecha límite: %s',
+                        $quiz->getTitulo(),
+                        $quiz->getFechaLimite()->format('d/m/Y H:i')
+                    ),
+                    sprintf('/cursos/%d/quiz/%d', $id, $quiz->getId())
+                );
+            }
+
             $this->entityManager->flush();
 
             return $this->json([

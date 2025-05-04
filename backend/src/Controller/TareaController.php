@@ -338,7 +338,7 @@ final class TareaController extends AbstractController
                             $usuario->getNombre() . ' ' . $usuario->getApellido(),
                             $tarea->getTitulo()
                         ),
-                        sprintf('/cursos/%d/tarea/%d/entregas', $id, $tareaId)
+                        sprintf('/cursos/%d/tarea/%d/entrega/%d', $id, $tareaId, $entrega->getId())
                     );
                     break;
 
@@ -482,7 +482,7 @@ final class TareaController extends AbstractController
                         $tarea->getTitulo(),
                         $tarea->getFechaLimite()->format('H:i')
                     ));
-                    $notificacionRecordatorio->setUrl(sprintf('/curso/%d/tarea/%d', $id, $tarea->getId()));
+                    $notificacionRecordatorio->setUrl(sprintf('/cursos/%d/tarea/%d', $id, $tarea->getId()));
                     $notificacionRecordatorio->setFechaCreacion($recordatorioFecha);
                     
                     $this->entityManager->persist($notificacionRecordatorio);
