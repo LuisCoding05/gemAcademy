@@ -20,12 +20,15 @@ class NotificacionRepository extends ServiceEntityRepository
     /**
      * @return Notificacion[] Returns an array of Notificacion objects
      */
-    public function findByUsuario(Usuario $usuario, int $limit = 10): array
+    public function findByUsuario(Usuario $usuario, int $page = 1, int $limit = 10): array
     {
+        $offset = ($page - 1) * $limit;
+
         return $this->createQueryBuilder('n')
             ->andWhere('n.usuario = :usuario')
             ->setParameter('usuario', $usuario)
             ->orderBy('n.fechaCreacion', 'DESC')
+            ->setFirstResult($offset)
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
@@ -39,6 +42,16 @@ class NotificacionRepository extends ServiceEntityRepository
             ->andWhere('n.leida = :leida')
             ->setParameter('usuario', $usuario)
             ->setParameter('leida', false)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    public function getTotalNotificationCount(Usuario $usuario): int
+    {
+        return $this->createQueryBuilder('n')
+            ->select('COUNT(n.id)')
+            ->andWhere('n.usuario = :usuario')
+            ->setParameter('usuario', $usuario)
             ->getQuery()
             ->getSingleScalarResult();
     }

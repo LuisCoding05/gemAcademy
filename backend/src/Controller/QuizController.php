@@ -13,6 +13,7 @@ use App\Entity\OpcionPregunta;
 use App\Entity\PreguntaQuizz;
 use App\Service\CursoInscripcionService;
 use App\Service\NotificacionService;
+use App\Service\LogroService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -26,7 +27,8 @@ final class QuizController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly CursoInscripcionService $cursoInscripcionService,
-        private readonly NotificacionService $notificacionService
+        private readonly NotificacionService $notificacionService,
+        private readonly LogroService $logroService
     ) {}
 
     #[Route('/api/item/{id}/quiz/{quizId}', name: 'app_quiz_detail', methods: ['GET'])]
@@ -336,6 +338,7 @@ final class QuizController extends AbstractController
                 }
 
                 $this->entityManager->persist($respuesta);
+                $intento->addRespuestaQuizz($respuesta);
             }
 
             // Calcular nota sobre 10 con 2 decimales
@@ -345,7 +348,7 @@ final class QuizController extends AbstractController
             $intento->setFechaFin(new \DateTime());
             $intento->setCompletado(true);
             $intento->setPuntuacionTotal($puntuacionObtenida);
-            $intento->setCalificacion(strval($notaFinal)); // Convertir a string ya que el campo es decimal en la BD
+            $intento->setCalificacion(strval($notaFinal));
 
             // Actualizar estadísticas del usuario en el curso
             $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)
@@ -377,13 +380,17 @@ final class QuizController extends AbstractController
                         round(($itemsCompletados / $totalItems) * 100, 2) : 0;
                     
                     $usuarioCurso->setPorcentajeCompletado(strval($porcentajeCompletado));
-                    $this->handleQuizCompletion($intento);
                 }
                 
                 $usuarioCurso->setUltimaActualizacion(new \DateTime());
             }
 
+            // Flush antes de verificar logros para asegurar que las respuestas están guardadas
             $this->entityManager->flush();
+
+            if ($usuarioCurso) {
+                $this->handleQuizCompletion($intento);
+            }
 
             return $this->json([
                 'message' => 'Quiz enviado correctamente',
@@ -457,6 +464,11 @@ final class QuizController extends AbstractController
 
         if ($usuarioCurso) {
             $this->cursoInscripcionService->calcularPromedio($usuarioCurso);
+            
+            // Verificar logros relacionados con el quiz
+            $this->logroService->verificarLogrosQuiz($intento);
+            // Verificar logros de curso si el porcentaje cambió
+            $this->logroService->verificarLogrosCurso($usuarioCurso);
             
             // Notificar al profesor sobre la finalización del quiz
             $this->notificacionService->crearNotificacion(

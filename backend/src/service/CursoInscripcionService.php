@@ -14,12 +14,10 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class CursoInscripcionService
 {
-    private $entityManager;
-
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
-    }
+    public function __construct(
+        private readonly EntityManagerInterface $entityManager,
+        private readonly LogroService $logroService
+    ) {}
 
     /**
      * Inscribe a un usuario en un curso y crea los registros iniciales
@@ -80,7 +78,8 @@ class CursoInscripcionService
         $this->calcularPromedio($usuarioCurso);
     }
 
-    public function calcularPorcentaje(UsuarioCurso $usuarioCurso){
+    public function calcularPorcentaje(UsuarioCurso $usuarioCurso)
+    {
         $curso = $usuarioCurso->getIdCurso();
         // Obtener los items totales del curso
         $totalItemsCurso = $curso->getTotalItems();
@@ -93,6 +92,9 @@ class CursoInscripcionService
         $nuevoProgreso = (($quizzesCompletados + $materialesCompletados + $tareasCompletadas) / ($totalItemsCurso))*100;
         $nuevoProgreso = number_format($nuevoProgreso, 2, '.', '');
         $usuarioCurso->setPorcentajeCompletado($nuevoProgreso);
+
+        // Verificar logros de curso cuando cambia el porcentaje
+        $this->logroService->verificarLogrosCurso($usuarioCurso);
 
         $this->entityManager->flush();
 

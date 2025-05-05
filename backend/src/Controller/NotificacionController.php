@@ -25,11 +25,19 @@ class NotificacionController extends AbstractController
     }
 
     #[Route('', name: 'get_notificaciones', methods: ['GET'])]
-    public function getNotificaciones(): JsonResponse
+    public function getNotificaciones(Request $request): JsonResponse
     {
         $usuario = $this->getUser();
+        $page = $request->query->getInt('page', 1);
+        $limit = $request->query->getInt('limit', 10);
+        
         $notificaciones = $this->entityManager->getRepository(Notificacion::class)
-            ->findByUsuario($usuario);
+            ->findByUsuario($usuario, $page, $limit);
+
+        $totalNotifications = $this->entityManager->getRepository(Notificacion::class)
+            ->getTotalNotificationCount($usuario);
+
+        $totalPages = ceil($totalNotifications / $limit);
 
         $data = array_map(function($notificacion) {
             return [
@@ -48,7 +56,13 @@ class NotificacionController extends AbstractController
         return $this->json([
             'notificaciones' => $data,
             'noLeidas' => $this->entityManager->getRepository(Notificacion::class)
-                ->countUnreadByUsuario($usuario)
+                ->countUnreadByUsuario($usuario),
+            'paginacion' => [
+                'paginaActual' => $page,
+                'totalPaginas' => $totalPages,
+                'totalNotificaciones' => $totalNotifications,
+                'porPagina' => $limit
+            ]
         ]);
     }
 

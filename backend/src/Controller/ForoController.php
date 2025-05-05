@@ -4,8 +4,10 @@ namespace App\Controller;
 
 use App\Entity\Foro;
 use App\Entity\MensajeForo;
+use App\Entity\Notificacion;
 use App\Repository\ForoRepository;
 use App\Repository\MensajeForoRepository;
+use App\Service\NotificacionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -18,15 +20,18 @@ class ForoController extends AbstractController
     private $entityManager;
     private $foroRepository;
     private $mensajeForoRepository;
+    private $notificacionService;
 
     public function __construct(
         EntityManagerInterface $entityManager,
         ForoRepository $foroRepository,
-        MensajeForoRepository $mensajeForoRepository
+        MensajeForoRepository $mensajeForoRepository,
+        NotificacionService $notificacionService
     ) {
         $this->entityManager = $entityManager;
         $this->foroRepository = $foroRepository;
         $this->mensajeForoRepository = $mensajeForoRepository;
+        $this->notificacionService = $notificacionService;
     }
 
     #[Route('/api/foro/{id}/mensajes', name: 'obtener_mensajes_foro', methods: ['GET'])]
@@ -140,6 +145,21 @@ class ForoController extends AbstractController
             $mensajePadre = $this->mensajeForoRepository->find($mensajePadreId);
             if ($mensajePadre) {
                 $mensaje->setIdMensajePadre($mensajePadre);
+                
+                // Notificar al autor del mensaje original
+                if ($mensajePadre->getIdUsuario() !== $usuario) {
+                    $this->notificacionService->crearNotificacion(
+                        $mensajePadre->getIdUsuario(),
+                        Notificacion::TIPO_MENSAJE,
+                        'Nueva respuesta en el foro',
+                        sprintf(
+                            '%s ha respondido a tu mensaje en el foro del curso "%s"',
+                            $usuario->getNombre() . ' ' . $usuario->getApellido(),
+                            $curso->getNombre()
+                        ),
+                        sprintf('/cursos/%d', $curso->getId())
+                    );
+                }
             }
         }
 
@@ -151,4 +171,4 @@ class ForoController extends AbstractController
             'id' => $mensaje->getId()
         ]);
     }
-} 
+}

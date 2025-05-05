@@ -13,6 +13,7 @@ use App\Entity\Notificacion;
 use App\Service\FileService;
 use App\Service\NotificacionService;
 use App\Service\CursoInscripcionService;
+use App\Service\LogroService;
 use DateTime;
 use DateTimeInterface;
 use Doctrine\ORM\EntityManagerInterface;
@@ -28,8 +29,10 @@ final class TareaController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly FileService $fileService,
-        private readonly NotificacionService $notificacionService
+        private readonly CursoInscripcionService $cursoInscripcionService,
+        private readonly NotificacionService $notificacionService,
+        private readonly LogroService $logroService,
+        private readonly FileService $fileService
     ) {}
 
     #[Route('/api/item/{id}/tarea/{tareaId}', name: 'app_tarea_detail', methods: ['GET'])]
@@ -362,6 +365,9 @@ final class TareaController extends AbstractController
 
             $this->entityManager->flush();
             
+            // Manejar la finalización de la entrega
+            $this->handleEntregaCompletion($entrega);
+
             return $this->json([
                 'message' => 'Entrega actualizada correctamente',
                 'entrega' => [
@@ -682,6 +688,38 @@ final class TareaController extends AbstractController
                 'message' => 'Error al eliminar la tarea',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    private function handleEntregaCompletion(EntregaTarea $entrega): void
+    {
+        $usuarioCurso = $entrega->getUsuarioCurso();
+        
+        if ($usuarioCurso) {
+            $this->cursoInscripcionService->calcularPromedio($usuarioCurso);
+            
+            // Verificar logros relacionados con tareas
+            $this->logroService->verificarLogrosTarea($entrega);
+            // Verificar logros de curso si el porcentaje cambió
+            $this->logroService->verificarLogrosCurso($usuarioCurso);
+            
+            // Notificar al profesor sobre la entrega de la tarea
+            $this->notificacionService->crearNotificacion(
+                $entrega->getIdTarea()->getIdCurso()->getProfesor(),
+                Notificacion::TIPO_TAREA,
+                'Tarea entregada por estudiante',
+                sprintf(
+                    'El estudiante %s ha entregado la tarea "%s"',
+                    $entrega->getUsuarioCurso()->getIdUsuario()->getNombre() . ' ' . 
+                    $entrega->getUsuarioCurso()->getIdUsuario()->getApellido(),
+                    $entrega->getIdTarea()->getTitulo()
+                ),
+                sprintf('/cursos/%d/tarea/%d/entrega/%d',
+                    $entrega->getIdTarea()->getIdCurso()->getId(),
+                    $entrega->getIdTarea()->getId(),
+                    $entrega->getId()
+                )
+            );
         }
     }
 }
