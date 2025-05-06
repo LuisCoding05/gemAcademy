@@ -10,6 +10,8 @@ use App\Entity\UsuarioCurso;
 use App\Entity\Notificacion;
 use App\Service\CursoInscripcionService;
 use App\Service\NotificacionService;
+use App\Service\LogroService;
+use App\Service\NivelService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,7 +25,9 @@ final class EntregaTareaController extends AbstractController
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
         private readonly CursoInscripcionService $cursoInscripcionService,
-        private readonly NotificacionService $notificacionService
+        private readonly NotificacionService $notificacionService,
+        private readonly LogroService $logroService,
+        private readonly NivelService $nivelService
     ) {}
 
     #[Route('/api/item/{id}/tarea/{tareaId}/entregas', name: 'app_tarea_entregas', methods: ['GET'])]
@@ -193,6 +197,9 @@ final class EntregaTareaController extends AbstractController
             $entrega->setPuntosObtenidos($puntosObtenidos);
             $entrega->setComentarioProfesor($comentario);
             $entrega->setEstado(EntregaTarea::ESTADO_CALIFICADO);
+
+            // Otorgar puntos al usuario
+            $this->nivelService->agregarPuntos($entrega->getUsuarioCurso()->getIdUsuario(), $puntosObtenidos);
 
             $usuarioCurso = $entrega->getUsuarioCurso();
             $this->cursoInscripcionService->calcularPromedio($usuarioCurso);

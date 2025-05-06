@@ -11,6 +11,7 @@ use App\Entity\UsuarioCurso;
 use App\Entity\Fichero;
 use App\Service\FileService;
 use App\Service\NotificacionService;
+use App\Service\CursoInscripcionService;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -27,9 +28,9 @@ final class MaterialController extends AbstractController
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly SluggerInterface $slugger,
-        private readonly FileService $fileService,
-        private readonly NotificacionService $notificacionService
+        private readonly NotificacionService $notificacionService,
+        private readonly CursoInscripcionService $cursoInscripcionService,
+        private readonly FileService $fileService
     ) {}
 
     #[Route('/api/item/{id}/material/{materialId}', name: 'app_material_detail', methods: ['GET'])]
@@ -102,7 +103,7 @@ final class MaterialController extends AbstractController
                     // Actualizar el contador de materiales completados
                     $materialesCompletadosActual = $usuarioCurso->getMaterialesCompletados() ?? 0;
                     $usuarioCurso->setMaterialesCompletados($materialesCompletadosActual + 1);
-
+                    
                     // Notificar al profesor que un estudiante ha completado el material
                     $this->notificacionService->crearNotificacion(
                         $curso->getProfesor(),
@@ -116,18 +117,9 @@ final class MaterialController extends AbstractController
                         sprintf('/cursos/%d/material/%d', $id, $materialId)
                     );
                     
-                    // Actualizar el porcentaje completado
-                    $totalItems = $curso->getTotalItems();
-                    $itemsCompletados = $usuarioCurso->getMaterialesCompletados() + 
-                                       $usuarioCurso->getTareasCompletadas() + 
-                                       $usuarioCurso->getQuizzesCompletados();
-                    
-                    $porcentajeCompletado = ($totalItems > 0) ? 
-                        round(($itemsCompletados / $totalItems) * 100, 2) : 0;
-                    
-                    $usuarioCurso->setPorcentajeCompletado(strval($porcentajeCompletado));
-                    $usuarioCurso->setUltimaActualizacion(new DateTime());
-                    
+                    // Actualizar el porcentaje usando el servicio centralizado
+                    $this->cursoInscripcionService->calcularPorcentaje($usuarioCurso);
+
                     $this->entityManager->flush();
                 } catch (Exception $e) {
                     return $this->json([

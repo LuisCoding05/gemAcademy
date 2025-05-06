@@ -191,16 +191,15 @@ final class TareaController extends AbstractController
                     break;
 
                 case 'entregar':
+                    $esNuevaEntrega = false;
                     if (!$entrega) {
+                        $esNuevaEntrega = true;
                         $entrega = new EntregaTarea();
                         $entrega->setIdTarea($tarea);
                         $entrega->setUsuarioCurso($usuarioCurso);
                         $this->entityManager->persist($entrega);
-
-                        // Solo incrementar la tarea entregada en la primera ocasion
-                        $tareasCompletadasActual = $usuarioCurso->getTareasCompletadas() ?? 0;
-                        $usuarioCurso->setTareasCompletadas($tareasCompletadasActual + 1);
-
+                    }
+                    
                         // Notificar al profesor sobre una entrega de un alumno
                         $this->notificacionService->crearNotificacion(
                             $tarea->getIdCurso()->getProfesor(),
@@ -213,7 +212,7 @@ final class TareaController extends AbstractController
                             ),
                             sprintf('/cursos/%d/tarea/%d/entregas', $id, $tareaId)
                         );
-                    }
+
 
                     // Establecer el comentario si se proporciona
                     if ($comentario !== null) {
@@ -246,10 +245,15 @@ final class TareaController extends AbstractController
                     }
 
                     $entrega->setFechaEntrega(new DateTime());
-                    $entrega->setEstado($tarea->getFechaLimite() < new DateTime() ? 
+                    $nuevoEstado = $tarea->getFechaLimite() < new DateTime() ? 
                         EntregaTarea::ESTADO_ATRASADO : 
-                        EntregaTarea::ESTADO_ENTREGADO
-                    );
+                        EntregaTarea::ESTADO_ENTREGADO;
+                    
+                    // Si cambia de pendiente a entregado, incrementar contador
+                    if ($entrega->getEstado() === EntregaTarea::ESTADO_PENDIENTE) {
+                        $entrega->setEstado($nuevoEstado);
+                        $this->actualizarTareasCompletadas($entrega, true);
+                    }
                     break;
 
                 case 'actualizarArchivo':
@@ -310,12 +314,12 @@ final class TareaController extends AbstractController
                         $this->entityManager->remove($oldFichero);
                     }
 
+                    // Si la entrega no estaba en estado pendiente, decrementar contador
                     if ($entrega->getEstado() !== EntregaTarea::ESTADO_PENDIENTE) {
-                        // Actualizar estadísticas del usuario en el curso
-                        $tareasCompletadasActual = $usuarioCurso->getTareasCompletadas();
-                        $usuarioCurso->setTareasCompletadas(max(0, $tareasCompletadasActual - 1));
+                        $this->actualizarTareasCompletadas($entrega, false);
                     }
 
+                    // Resetear la entrega a estado pendiente
                     $entrega->setEstado(EntregaTarea::ESTADO_PENDIENTE);
                     $entrega->setFechaEntrega(null);
                     $entrega->setPuntosObtenidos(null);
@@ -350,18 +354,6 @@ final class TareaController extends AbstractController
                         'message' => 'Acción no válida'
                     ], 400);
             }
-
-            // Actualizar el porcentaje completado
-            $totalItems = $curso->getTotalItems();
-            $itemsCompletados = $usuarioCurso->getMaterialesCompletados() + 
-                               $usuarioCurso->getTareasCompletadas() + 
-                               $usuarioCurso->getQuizzesCompletados();
-            
-            $porcentajeCompletado = ($totalItems > 0) ? 
-                round(($itemsCompletados / $totalItems) * 100, 2) : 0;
-            
-            $usuarioCurso->setPorcentajeCompletado(strval($porcentajeCompletado));
-            $usuarioCurso->setUltimaActualizacion(new DateTime());
 
             $this->entityManager->flush();
             
@@ -696,12 +688,11 @@ final class TareaController extends AbstractController
         $usuarioCurso = $entrega->getUsuarioCurso();
         
         if ($usuarioCurso) {
-            $this->cursoInscripcionService->calcularPromedio($usuarioCurso);
+            // Actualizar porcentaje usando el servicio centralizado
+            $this->cursoInscripcionService->calcularPorcentaje($usuarioCurso);
             
             // Verificar logros relacionados con tareas
             $this->logroService->verificarLogrosTarea($entrega);
-            // Verificar logros de curso si el porcentaje cambió
-            $this->logroService->verificarLogrosCurso($usuarioCurso);
             
             // Notificar al profesor sobre la entrega de la tarea
             $this->notificacionService->crearNotificacion(
@@ -721,5 +712,23 @@ final class TareaController extends AbstractController
                 )
             );
         }
+    }
+
+    private function actualizarTareasCompletadas(EntregaTarea $entrega, bool $incrementar): void 
+    {
+        $usuarioCurso = $entrega->getUsuarioCurso();
+        if (!$usuarioCurso) {
+            return;
+        }
+
+        $tareasCompletadas = $usuarioCurso->getTareasCompletadas() ?? 0;
+        if ($incrementar) {
+            $usuarioCurso->setTareasCompletadas($tareasCompletadas + 1);
+        } else {
+            $usuarioCurso->setTareasCompletadas(max(0, $tareasCompletadas - 1));
+        }
+
+        $this->cursoInscripcionService->calcularPorcentaje($usuarioCurso);
+        $this->entityManager->flush();
     }
 }

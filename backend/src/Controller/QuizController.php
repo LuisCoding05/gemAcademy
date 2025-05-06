@@ -14,6 +14,7 @@ use App\Entity\PreguntaQuizz;
 use App\Service\CursoInscripcionService;
 use App\Service\NotificacionService;
 use App\Service\LogroService;
+use App\Service\NivelService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -28,7 +29,8 @@ final class QuizController extends AbstractController
         private readonly EntityManagerInterface $entityManager,
         private readonly CursoInscripcionService $cursoInscripcionService,
         private readonly NotificacionService $notificacionService,
-        private readonly LogroService $logroService
+        private readonly LogroService $logroService,
+        private readonly NivelService $nivelService
     ) {}
 
     #[Route('/api/item/{id}/quiz/{quizId}', name: 'app_quiz_detail', methods: ['GET'])]
@@ -350,6 +352,9 @@ final class QuizController extends AbstractController
             $intento->setPuntuacionTotal($puntuacionObtenida);
             $intento->setCalificacion(strval($notaFinal));
 
+            // Otorgar puntos al usuario basado en la puntuación obtenida
+            $this->nivelService->agregarPuntos($intento->getIdUsuario(), $puntuacionObtenida);
+
             // Actualizar estadísticas del usuario en el curso
             $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)
                 ->findOneBy([
@@ -463,14 +468,31 @@ final class QuizController extends AbstractController
             ]);
 
         if ($usuarioCurso) {
+            // Verificar si es el primer intento completado de este quiz específico
+            $intentosAnteriores = $this->entityManager->getRepository(IntentoQuizz::class)
+                ->findBy([
+                    'idQuizz' => $intento->getIdQuizz(),
+                    'idUsuario' => $intento->getIdUsuario(),
+                    'completado' => true
+                ]);
+
+            // Si solo hay un intento (el actual) para este quiz, incrementar el contador
+            if (count($intentosAnteriores) === 1 && $intentosAnteriores[0]->getId() === $intento->getId()) {
+                $quizzesCompletados = $usuarioCurso->getQuizzesCompletados();
+                $usuarioCurso->setQuizzesCompletados($quizzesCompletados + 1);
+                
+                // Actualizar el porcentaje usando el servicio centralizado
+                $this->cursoInscripcionService->calcularPorcentaje($usuarioCurso);
+            }
+
+            // Calcular el nuevo promedio
             $this->cursoInscripcionService->calcularPromedio($usuarioCurso);
             
-            // Verificar logros relacionados con el quiz
+            // Verificar logros
             $this->logroService->verificarLogrosQuiz($intento);
-            // Verificar logros de curso si el porcentaje cambió
             $this->logroService->verificarLogrosCurso($usuarioCurso);
             
-            // Notificar al profesor sobre la finalización del quiz
+            // Notificar al profesor
             $this->notificacionService->crearNotificacion(
                 $intento->getIdQuizz()->getIdCurso()->getProfesor(),
                 Notificacion::TIPO_TAREA,

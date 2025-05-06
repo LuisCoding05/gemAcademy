@@ -16,7 +16,8 @@ class LogroService
 {
     public function __construct(
         private readonly EntityManagerInterface $entityManager,
-        private readonly NotificacionService $notificacionService
+        private readonly NotificacionService $notificacionService,
+        private readonly NivelService $nivelService
     ) {}
 
     public function verificarLogrosQuiz(IntentoQuizz $intento): void
@@ -160,30 +161,42 @@ class LogroService
         if (!$logro) {
             return;
         }
-        
-        $usuarioLogro = $this->entityManager->getRepository(UsuarioLogro::class)
+
+        // Verificar si el usuario ya tiene este logro
+        $yaOtorgado = $this->entityManager->getRepository(UsuarioLogro::class)
             ->findOneBy([
                 'idUsuario' => $usuario,
                 'idLogro' => $logro
             ]);
-        
-        if (!$usuarioLogro) {
-            $usuarioLogro = new UsuarioLogro();
-            $usuarioLogro->setIdUsuario($usuario);
-            $usuarioLogro->setIdLogro($logro);
-            $usuarioLogro->setFechaObtencion(new \DateTime());
-            
-            $this->entityManager->persist($usuarioLogro);
-            $this->entityManager->flush();
 
-            // Crear notificación del logro
-            $this->notificacionService->crearNotificacion(
-                $usuario,
-                Notificacion::TIPO_LOGRO,
-                '¡Nuevo logro desbloqueado!',
-                sprintf('Has desbloqueado el logro "%s" - %s', $logro->getTitulo(), $logro->getMotivo()),
-                '/dashboard'  // URL donde el usuario puede ver sus logros
-            );
+        if ($yaOtorgado) {
+            return;
         }
+
+        // Crear relación usuario-logro
+        $usuarioLogro = new UsuarioLogro();
+        $usuarioLogro->setIdUsuario($usuario);
+        $usuarioLogro->setIdLogro($logro);
+        
+        $this->entityManager->persist($usuarioLogro);
+
+        // Otorgar puntos al usuario
+        $this->nivelService->agregarPuntos($usuario, $logro->getPuntosOtorgados() ?? 0);
+
+        // Crear notificación
+        $this->notificacionService->crearNotificacion(
+            $usuario,
+            Notificacion::TIPO_LOGRO,
+            '¡Nuevo logro desbloqueado!',
+            sprintf(
+                'Has desbloqueado el logro "%s" y ganado %d puntos. %s',
+                $logro->getTitulo(),
+                $logro->getPuntosOtorgados(),
+                $logro->getMotivo()
+            ),
+            '/dashboard'
+        );
+
+        $this->entityManager->flush();
     }
 }

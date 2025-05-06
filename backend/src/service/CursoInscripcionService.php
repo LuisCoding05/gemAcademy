@@ -78,26 +78,38 @@ class CursoInscripcionService
         $this->calcularPromedio($usuarioCurso);
     }
 
-    public function calcularPorcentaje(UsuarioCurso $usuarioCurso)
+    public function calcularPorcentaje(UsuarioCurso $usuarioCurso): string
     {
         $curso = $usuarioCurso->getIdCurso();
-        // Obtener los items totales del curso
-        $totalItemsCurso = $curso->getTotalItems();
-        // Obtener los items realizados de ese curso
-        $quizzesCompletados = $usuarioCurso->getQuizzesCompletados();
-        $materialesCompletados = $usuarioCurso->getMaterialesCompletados();
-        $tareasCompletadas = $usuarioCurso->getTareasCompletadas();
+        $totalItems = $curso->getTotalItems();
 
-        // Hacer la división y actualizar los datos
-        $nuevoProgreso = (($quizzesCompletados + $materialesCompletados + $tareasCompletadas) / ($totalItemsCurso))*100;
-        $nuevoProgreso = number_format($nuevoProgreso, 2, '.', '');
+        // Si el curso no tiene items, el porcentaje es 0
+        if ($totalItems === 0) {
+            $nuevoProgreso = '0.00';
+            $usuarioCurso->setPorcentajeCompletado($nuevoProgreso);
+            $usuarioCurso->setUltimaActualizacion(new \DateTime());
+            $this->entityManager->flush();
+            return $nuevoProgreso;
+        }
+
+        // Calcular items completados
+        $itemsCompletados = 
+            $usuarioCurso->getMaterialesCompletados() + 
+            $usuarioCurso->getTareasCompletadas() + 
+            $usuarioCurso->getQuizzesCompletados();
+
+        // Calcular el porcentaje con 2 decimales
+        $nuevoProgreso = number_format(($itemsCompletados / $totalItems) * 100, 2, '.', '');
+        
+        // Actualizar el porcentaje y la fecha
         $usuarioCurso->setPorcentajeCompletado($nuevoProgreso);
-
-        // Verificar logros de curso cuando cambia el porcentaje
+        $usuarioCurso->setUltimaActualizacion(new \DateTime());
+        
+        // Verificar logros si el porcentaje cambió
         $this->logroService->verificarLogrosCurso($usuarioCurso);
-
+        
         $this->entityManager->flush();
-
+        
         return $nuevoProgreso;
     }
 
