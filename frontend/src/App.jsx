@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Layout } from './components/Layout'
 import { Logs } from './components/admin/Logs'
+import UserManagement from './components/admin/UserManagement'
 import { MainContent } from './components/index/MainContent'
 import { Aside } from './components/index/Aside'
 import { Navbar } from './components/Navbar'
@@ -19,6 +20,7 @@ import ItemDetails from './components/course/ItemDetails'
 import EntregaDetalle from './components/item/EntregaDetalle'
 import { EditCourse } from './components/course/EditCourse'
 import NotificationsPage from './components/notifications/NotificationsPage'
+import UserProfile from './components/profile/UserProfile'
 
 function App() {
   return (
@@ -139,6 +141,25 @@ function App() {
                   <EditCourse />
                   <Copy />
                 </ProtectedRoute>
+              </div>
+            } />
+
+            <Route path="/admin/users" element={
+              <div className="wrapper">
+                <ProtectedRoute requiredRole="ROLE_ADMIN">
+                  <Navbar />
+                  <UserManagement />
+                  <Copy />
+                </ProtectedRoute>
+              </div>
+            } />
+
+            {/* Ruta para ver perfil público de usuario */}
+            <Route path="/profile/:id" element={
+              <div className="wrapper">
+                <Navbar />
+                <UserProfile />
+                <Copy />
               </div>
             } />
 

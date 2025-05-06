@@ -29,6 +29,9 @@ export const Navbar = () => {
                                         <li>
                                             <Link className="dropdown-item" to="/logs">Logs</Link>
                                         </li>
+                                        <li>
+                                            <Link className="dropdown-item" to="/admin/users">Gestión de Usuarios</Link>
+                                        </li>
                                         <li><hr className="dropdown-divider"></hr></li>
                                     </>
                                 )}

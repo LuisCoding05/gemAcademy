@@ -24,6 +24,7 @@ const CourseDetail = () => {
     const [showCreateMaterial, setShowCreateMaterial] = useState(false);
     const [showCreateTarea, setShowCreateTarea] = useState(false);
     const [showCreateQuiz, setShowCreateQuiz] = useState(false);
+    const [participants, setParticipants] = useState(null);
     const navigate = useNavigate();
 
     const handleDeleteMaterial = async (materialId) => {
@@ -72,11 +73,15 @@ const CourseDetail = () => {
     };
 
     useEffect(() => {
-        const fetchCourse = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get(`/api/course/${id}`);
-                setCourse(response.data);
+                const [courseResponse, participantsResponse] = await Promise.all([
+                    axios.get(`/api/course/${id}`),
+                    axios.get(`/api/courses/${id}/participants`)
+                ]);
+                setCourse(courseResponse.data);
+                setParticipants(participantsResponse.data);
                 setLoading(false);
             } catch (error) {
                 console.error('Error al cargar el curso:', error);
@@ -85,7 +90,7 @@ const CourseDetail = () => {
             }
         };
 
-        fetchCourse();
+        fetchData();
     }, [id]);
 
     const handleEnroll = async () => {
@@ -282,8 +287,98 @@ const CourseDetail = () => {
                                 />
                             </div>
 
-                            {/* Acordeón de Materiales */}
+                            {/* Acordeón de todo el contenido */}
                             <div className="accordion mb-4" id="courseAccordion">
+                                {/* Acordeón de Participantes */}
+                                {user && course?.isEnrolled && participants && (
+                                    <div className="accordion-item">
+                                        <h2 className="accordion-header" id="headingParticipantes">
+                                            <button 
+                                                className="accordion-button collapsed" 
+                                                type="button" 
+                                                data-bs-toggle="collapse" 
+                                                data-bs-target="#collapseParticipantes" 
+                                                aria-expanded="false" 
+                                                aria-controls="collapseParticipantes"
+                                            >
+                                                <Icon name="users" color="#2ecc71" size={24} className="me-2" />
+                                                Participantes del Curso
+                                            </button>
+                                        </h2>
+                                        <div 
+                                            id="collapseParticipantes" 
+                                            className="accordion-collapse collapse" 
+                                            aria-labelledby="headingParticipantes" 
+                                            data-bs-parent="#courseAccordion"
+                                        >
+                                            <div className="accordion-body">
+                                                {/* Profesor */}
+                                                <div className="mb-4">
+                                                    <h5 className="border-bottom pb-2">Profesor</h5>
+                                                    <Link 
+                                                        to={`/profile/${participants.profesor.id}`}
+                                                        className="text-decoration-none"
+                                                    >
+                                                        <div className="d-flex align-items-center">
+                                                            <img
+                                                                src={participants.profesor.imagen?.url || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp'}
+                                                                alt={`${participants.profesor.nombre} ${participants.profesor.apellido}`}
+                                                                className="rounded-circle me-3"
+                                                                style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                                            />
+                                                            <div>
+                                                                <h6 className="mb-0">
+                                                                    {participants.profesor.nombre} {participants.profesor.apellido}
+                                                                    {participants.profesor.apellido2 && ` ${participants.profesor.apellido2}`}
+                                                                </h6>
+                                                                <small className="text-muted">@{participants.profesor.username}</small>
+                                                            </div>
+                                                        </div>
+                                                    </Link>
+                                                </div>
+
+                                                {/* Estudiantes */}
+                                                <div>
+                                                    <h5 className="border-bottom pb-2">Estudiantes ({participants.estudiantes.length})</h5>
+                                                    {participants.estudiantes.length > 0 ? (
+                                                        <div className="row g-3" style={{ maxHeight: '400px', overflowY: 'auto', marginRight: '0', marginLeft: '0' }}>
+                                                            {participants.estudiantes.map(estudiante => (
+                                                                <div key={estudiante.id} className="col-12">
+                                                                    <Link 
+                                                                        to={`/profile/${estudiante.id}`}
+                                                                        className="text-decoration-none"
+                                                                    >
+                                                                        <div className="d-flex align-items-center">
+                                                                            <img
+                                                                                src={estudiante.imagen?.url || 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp'}
+                                                                                alt={`${estudiante.nombre} ${estudiante.apellido}`}
+                                                                                className="rounded-circle me-3"
+                                                                                style={{ width: '50px', height: '50px', objectFit: 'cover' }}
+                                                                            />
+                                                                            <div>
+                                                                                <h6 className="mb-0">
+                                                                                    {estudiante.nombre} {estudiante.apellido}
+                                                                                    {estudiante.apellido2 && ` ${estudiante.apellido2}`}
+                                                                                </h6>
+                                                                                <small className="text-muted">@{estudiante.username}</small>
+                                                                            </div>
+                                                                        </div>
+                                                                    </Link>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="alert alert-info">
+                                                            Este curso aún no tiene estudiantes inscritos.
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Acordeón de Materiales */}
                                 <div className="accordion-item">
                                     <h2 className="accordion-header" id="headingMateriales">
                                         <button 
