@@ -32,6 +32,7 @@ security:
         - { path: ^/api/reset-password, roles: PUBLIC_ACCESS }
         - { path: ^/api/request-password-reset, roles: PUBLIC_ACCESS }
         - { path: ^/api/course, roles: PUBLIC_ACCESS }
+        - { path: ^/api/ranking, roles: PUBLIC_ACCESS }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

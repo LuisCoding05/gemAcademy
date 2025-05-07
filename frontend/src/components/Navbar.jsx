@@ -3,13 +3,14 @@ import { useTheme } from '../context/ThemeContext';
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext';
 import NotificationIndicator from './notifications/NotificationIndicator';
+import Icon from './Icon';
 
 export const Navbar = () => {
     const { isDarkMode, toggleDarkMode } = useTheme();
     const { user, logout } = useAuth();
     return (
-        <nav className="navbar navbar-expand-lg navbar-dark bg-dark absolute-top">
-            <div className="container">
+        <nav className={"navbar navbar-expand-lg navbar-dark bg-dark absolute-top"}>
+            <div className="container-fluid">
                 <Link className="navbar-brand" to="/">G.E.M Academy</Link>
                 <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent">
                     <span className="navbar-toggler-icon"></span>
@@ -73,6 +74,15 @@ export const Navbar = () => {
                                 <li><hr className="dropdown-divider"></hr></li>
                                 <li><Link className="dropdown-item" to="/verify">Verificarse/recuperar contraseña</Link></li>
                             </ul>
+                        </li>
+                        <li className="nav-item">
+                            <Link 
+                                to="/ranking" 
+                                className={`nav-link ${location.pathname === '/ranking' ? 'active' : ''}`}
+                            >
+                                <Icon name="trophy" className="me-1" />
+                                Ranking
+                            </Link>
                         </li>
                     </ul>
                     <div className="d-flex align-items-center">

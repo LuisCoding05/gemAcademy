@@ -21,6 +21,7 @@ import EntregaDetalle from './components/item/EntregaDetalle'
 import { EditCourse } from './components/course/EditCourse'
 import NotificationsPage from './components/notifications/NotificationsPage'
 import UserProfile from './components/profile/UserProfile'
+import GlobalRanking from './components/ranking/GlobalRanking'
 
 function App() {
   return (
@@ -159,6 +160,15 @@ function App() {
               <div className="wrapper">
                 <Navbar />
                 <UserProfile />
+                <Copy />
+              </div>
+            } />
+
+            {/* Ruta para el ranking global */}
+            <Route path="/ranking" element={
+              <div className="wrapper">
+                <Navbar />
+                <GlobalRanking />
                 <Copy />
               </div>
             } />
