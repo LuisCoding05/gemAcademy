@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTheme } from '../../context/ThemeContext';
+import { useNavigate } from 'react-router-dom';
 import Icon from '../Icon';
 import axios from '../../utils/axios';
 import Loader from '../common/Loader';
@@ -7,6 +8,7 @@ import Editor from '../common/Editor';
 
 const MaterialItem = ({ item, courseId, onUpdate }) => {
     const { isDarkMode } = useTheme();
+    const navigate = useNavigate();
     const [isEditing, setIsEditing] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
@@ -118,6 +120,7 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
             if (onUpdate) {
                 onUpdate(null);
             }
+            navigate(`/cursos/${courseId}`);
         } catch (error) {
             setError(error.response?.data?.message || 'Error al eliminar el material');
             setLoading(false);
@@ -149,11 +152,22 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
             }
             
             const allowedTypes = [
+                // Documentos
                 'application/pdf', 
-                'image/jpeg', 
-                'image/png', 
                 'application/msword',
                 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                // Imágenes
+                'image/jpeg', 
+                'image/png',
+                'image/webp',
+                // Archivos web
+                'text/html',
+                'application/javascript',
+                'text/javascript',
+                // Archivos comprimidos
+                'application/zip',
+                'application/x-zip-compressed',
+                // Audio/Video
                 'video/mp4',
                 'video/webm',
                 'audio/mpeg',
@@ -161,7 +175,7 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
             ];
             
             if (!allowedTypes.includes(selectedFile.type)) {
-                setError('Tipo de archivo no permitido. Solo se permiten PDF, imágenes, documentos Word, videos (MP4, WebM) y audio (MP3, WAV).');
+                setError('Tipo de archivo no permitido. Se permiten: PDF, Word, imágenes (JPG, PNG, WebP), HTML, JS, ZIP, videos (MP4, WebM) y audio (MP3, WAV).');
                 e.target.value = '';
                 return;
             }
@@ -238,10 +252,10 @@ const MaterialItem = ({ item, courseId, onUpdate }) => {
                             type="file"
                             className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
                             onChange={handleFileChange}
-                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.mp4,.webm,.mp3,.wav"
+                            accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.html,.js,.zip,.mp4,.webm,.mp3,.wav"
                         />
                         <small className="text-muted d-block mt-1">
-                            Formatos permitidos: PDF, Word, JPG, PNG, MP4, WebM, MP3, WAV. Tamaño máximo: 20MB
+                            Formatos permitidos: PDF, Word, imágenes (JPG, PNG, WebP), HTML, JS, ZIP, videos (MP4, WebM) y audio (MP3, WAV). Tamaño máximo: 20MB
                         </small>
                     </div>
                     <div className="d-flex gap-2">

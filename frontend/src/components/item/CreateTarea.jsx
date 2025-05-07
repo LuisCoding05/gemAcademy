@@ -43,15 +43,30 @@ const CreateTarea = ({ courseId, onCreated, onCancel }) => {
             }
             
             const allowedTypes = [
+                // Documentos
                 'application/pdf', 
-                'image/jpeg', 
-                'image/png', 
                 'application/msword',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                // Imágenes
+                'image/jpeg', 
+                'image/png',
+                'image/webp',
+                // Archivos web
+                'text/html',
+                'application/javascript',
+                'text/javascript',
+                // Archivos comprimidos
+                'application/zip',
+                'application/x-zip-compressed',
+                // Audio/Video
+                'video/mp4',
+                'video/webm',
+                'audio/mpeg',
+                'audio/wav'
             ];
             
             if (!allowedTypes.includes(selectedFile.type)) {
-                setError('Tipo de archivo no permitido. Solo se permiten PDF, imágenes y documentos Word.');
+                setError('Tipo de archivo no permitido. Se permiten: PDF, Word, imágenes (JPG, PNG, WebP), HTML, JS, ZIP, videos (MP4, WebM) y audio (MP3, WAV).');
                 e.target.value = '';
                 return;
             }
@@ -212,10 +227,10 @@ const CreateTarea = ({ courseId, onCreated, onCancel }) => {
                     type="file"
                     className={`form-control ${isDarkMode ? 'bg-dark text-light' : ''}`}
                     onChange={handleFileChange}
-                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.webp,.html,.js,.zip,.mp4,.webm,.mp3,.wav"
                 />
                 <small className="text-muted d-block mt-1">
-                    Formatos permitidos: PDF, Word, JPG, PNG. Tamaño máximo: 20MB
+                    Formatos permitidos: PDF, Word, imágenes (JPG, PNG, WebP), HTML, JS, ZIP, videos (MP4, WebM) y audio (MP3, WAV). Tamaño máximo: 20MB
                 </small>
             </div>
 

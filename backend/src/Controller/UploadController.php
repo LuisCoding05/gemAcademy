@@ -33,7 +33,29 @@ final class UploadController extends AbstractController
             return $this->json(['error' => 'El archivo excede el límite de 20MB'], 400);
         }
     
-        $allowedMimeTypes = ['application/pdf', 'image/jpeg', 'image/png', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+        $allowedMimeTypes = [
+            // Documentos
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            // Imágenes
+            'image/jpeg',
+            'image/png',
+            'image/webp',
+            // Archivos web
+            'text/html',
+            'application/javascript',
+            'text/javascript',
+            // Archivos comprimidos
+            'application/zip',
+            'application/x-zip-compressed',
+            // Audio/Video
+            'video/mp4',
+            'video/webm',
+            'audio/mpeg',
+            'audio/wav'
+        ];
+
         if (!in_array($uploadedFile->getMimeType(), $allowedMimeTypes)) {
             return $this->json(['error' => 'Tipo de archivo no permitido'], 400);
         }
