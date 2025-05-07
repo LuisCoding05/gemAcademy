@@ -33,7 +33,7 @@ import {
 } from '@ckeditor/ckeditor5-build-classic';
 
 import '@ckeditor/ckeditor5-build-classic/build/translations/es';
-import './Editor.css';
+import './../../styles/editor/Editor.css';
 import { useTheme } from '../../context/ThemeContext';
 
 export default function Editor({ data, onChange, placeholder }) {
