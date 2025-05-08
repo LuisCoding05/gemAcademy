@@ -163,9 +163,11 @@ function App() {
               {/* Ruta para ver perfil público de usuario */}
               <Route path="/profile/:id" element={
                 <div className="wrapper">
-                  <Navbar />
-                  <UserProfile />
-                  <Copy />
+                  <ProtectedRoute>
+                    <Navbar />
+                    <UserProfile />
+                    <Copy />
+                  </ProtectedRoute>
                 </div>
               } />
 
