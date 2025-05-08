@@ -7,6 +7,7 @@ import { Aside } from './components/index/Aside'
 import { Navbar } from './components/Navbar'
 import { Copy } from './components/Copy'
 import { ThemeProvider } from './context/ThemeContext';
+import { CookieProvider } from './context/CookieContext';
 import MainRegister from './components/register/MainRegister'
 import MainLogin from './components/register/MainLogin'
 import VerificationResetPassword from './components/register/VerificationResetPassword'
@@ -22,159 +23,173 @@ import { EditCourse } from './components/course/EditCourse'
 import NotificationsPage from './components/notifications/NotificationsPage'
 import UserProfile from './components/profile/UserProfile'
 import GlobalRanking from './components/ranking/GlobalRanking'
+import PrivacyPolicy from './components/PrivacyPolicy'
+import CookieBanner from './components/common/CookieBanner'
 
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <BrowserRouter>
-          <Routes>
-            <Route path="/" element={<Layout />}>
-              <Route index element={
-                <div className="container">
-                  <div className="row">
-                    <MainContent />
-                    <Aside />
+        <CookieProvider>
+          <BrowserRouter>
+            <CookieBanner />
+            <Routes>
+              <Route path="/" element={<Layout />}>
+                <Route index element={
+                  <div className="container">
+                    <div className="row">
+                      <MainContent />
+                      <Aside />
+                    </div>
                   </div>
+                } />
+              </Route>
+              
+              <Route path="/logs" element={
+                <div className="wrapper">
+                  <ProtectedRoute requiredRole="ROLE_ADMIN">
+                    <Navbar />
+                    <Logs />
+                    <Copy />
+                  </ProtectedRoute>
                 </div>
               } />
-            </Route>
-            
-            <Route path="/logs" element={
-              <div className="wrapper">
-                <ProtectedRoute requiredRole="ROLE_ADMIN">
-                  <Navbar />
-                  <Logs />
+              <Route path="/register" element={
+                <div className="wrapper">
+                  <MainRegister />
+                </div>
+              } />
+              <Route path="/login" element={
+                <div className="wrapper">
+                  <MainLogin />
                   <Copy />
-                </ProtectedRoute>
-              </div>
-            } />
-            <Route path="/register" element={
-              <div className="wrapper">
-                <MainRegister />
-              </div>
-            } />
-            <Route path="/login" element={
-              <div className="wrapper">
-                <MainLogin />
-                <Copy />
-              </div>
-            } />
-            <Route path="/verify" element={
-              <div className="wrapper">
-                <VerificationResetPassword />
-                <Copy />
-              </div>
-            } />
-
-            {/* Ruta protegida */}
-            <Route path="/dashboard" element={
-              <div className="wrapper">
-                <ProtectedRoute>
-                  <Navbar />
-                  <Dashboard />
+                </div>
+              } />
+              <Route path="/verify" element={
+                <div className="wrapper">
+                  <VerificationResetPassword />
                   <Copy />
-                </ProtectedRoute>
-              </div>
-            } />
+                </div>
+              } />
 
-            <Route path="/cursos" element={
-              <div className="wrapper">
+              {/* Ruta protegida */}
+              <Route path="/dashboard" element={
+                <div className="wrapper">
+                  <ProtectedRoute>
+                    <Navbar />
+                    <Dashboard />
+                    <Copy />
+                  </ProtectedRoute>
+                </div>
+              } />
+
+              <Route path="/cursos" element={
+                <div className="wrapper">
+                    <Navbar />
+                    <SearchCourse />
+                    <Copy />
+                </div>
+              } />
+
+              <Route path="/cursos/crear" element={
+                <div className="wrapper">
+                  <ProtectedRoute>
+                    <Navbar />
+                    <CreateCourse />
+                    <Copy />
+                  </ProtectedRoute>
+                </div>
+              } />
+
+              <Route path="/cursos/:id" element={
+                <div className="wrapper">
+                    <Navbar />
+                    <CourseDetail />
+                    <Copy />
+                </div>
+              } />
+
+              {/* Ruta para ver detalles de materiales, tareas y quizzes */}
+              <Route path="/cursos/:courseId/:itemType/:itemId" element={
+                <div className="wrapper">
+                  <ProtectedRoute>
+                    <Navbar />
+                    <ItemDetails />
+                    <Copy />
+                  </ProtectedRoute>
+                </div>
+              } />
+
+              <Route path="/cursos/:courseId/tarea/:tareaId/entrega/:entregaId" element={
+                <div className="wrapper">
+                  <ProtectedRoute>
+                    <Navbar />
+                    <EntregaDetalle />
+                    <Copy />
+                  </ProtectedRoute>
+                </div>
+              } />
+
+              <Route path="/notificaciones" element={
+                <div className="wrapper">
+                  <ProtectedRoute>
+                    <Navbar />
+                    <NotificationsPage />
+                    <Copy />
+                  </ProtectedRoute>
+                </div>
+              } />
+
+              <Route path="/cursos/:id/edit" element={
+                <div className="wrapper">
+                  <ProtectedRoute>
+                    <Navbar />
+                    <EditCourse />
+                    <Copy />
+                  </ProtectedRoute>
+                </div>
+              } />
+
+              <Route path="/admin/users" element={
+                <div className="wrapper">
+                  <ProtectedRoute requiredRole="ROLE_ADMIN">
+                    <Navbar />
+                    <UserManagement />
+                    <Copy />
+                  </ProtectedRoute>
+                </div>
+              } />
+
+              {/* Ruta para ver perfil público de usuario */}
+              <Route path="/profile/:id" element={
+                <div className="wrapper">
                   <Navbar />
-                  <SearchCourse />
+                  <UserProfile />
                   <Copy />
-              </div>
-            } />
+                </div>
+              } />
 
-            <Route path="/cursos/crear" element={
-              <div className="wrapper">
-                <ProtectedRoute>
+              {/* Ruta para el ranking global */}
+              <Route path="/ranking" element={
+                <div className="wrapper">
                   <Navbar />
-                  <CreateCourse />
+                  <GlobalRanking />
                   <Copy />
-                </ProtectedRoute>
-              </div>
-            } />
+                </div>
+              } />
 
-            <Route path="/cursos/:id" element={
-              <div className="wrapper">
+              {/* Política de privacidad */}
+              <Route path="/privacy-policy" element={
+                <div className="wrapper">
                   <Navbar />
-                  <CourseDetail />
+                  <PrivacyPolicy />
                   <Copy />
-              </div>
-            } />
+                </div>
+              } />
 
-            {/* Ruta para ver detalles de materiales, tareas y quizzes */}
-            <Route path="/cursos/:courseId/:itemType/:itemId" element={
-              <div className="wrapper">
-                <ProtectedRoute>
-                  <Navbar />
-                  <ItemDetails />
-                  <Copy />
-                </ProtectedRoute>
-              </div>
-            } />
-
-            <Route path="/cursos/:courseId/tarea/:tareaId/entrega/:entregaId" element={
-              <div className="wrapper">
-                <ProtectedRoute>
-                  <Navbar />
-                  <EntregaDetalle />
-                  <Copy />
-                </ProtectedRoute>
-              </div>
-            } />
-
-            <Route path="/notificaciones" element={
-              <div className="wrapper">
-                <ProtectedRoute>
-                  <Navbar />
-                  <NotificationsPage />
-                  <Copy />
-                </ProtectedRoute>
-              </div>
-            } />
-
-            <Route path="/cursos/:id/edit" element={
-              <div className="wrapper">
-                <ProtectedRoute>
-                  <Navbar />
-                  <EditCourse />
-                  <Copy />
-                </ProtectedRoute>
-              </div>
-            } />
-
-            <Route path="/admin/users" element={
-              <div className="wrapper">
-                <ProtectedRoute requiredRole="ROLE_ADMIN">
-                  <Navbar />
-                  <UserManagement />
-                  <Copy />
-                </ProtectedRoute>
-              </div>
-            } />
-
-            {/* Ruta para ver perfil público de usuario */}
-            <Route path="/profile/:id" element={
-              <div className="wrapper">
-                <Navbar />
-                <UserProfile />
-                <Copy />
-              </div>
-            } />
-
-            {/* Ruta para el ranking global */}
-            <Route path="/ranking" element={
-              <div className="wrapper">
-                <Navbar />
-                <GlobalRanking />
-                <Copy />
-              </div>
-            } />
-
-          </Routes>
-        </BrowserRouter>
+            </Routes>
+          </BrowserRouter>
+        </CookieProvider>
       </AuthProvider>
     </ThemeProvider>
   )

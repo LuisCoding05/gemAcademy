@@ -72,6 +72,12 @@
     width: 100%;
     height: 100%;
     border: 0;
+    border-radius: 8px;
+}
+
+/* Estilo para el modo oscuro */
+.dark-mode .video-wrapper iframe {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 /* Estilos para las tablas */

@@ -35,9 +35,12 @@ import {
 import '@ckeditor/ckeditor5-build-classic/build/translations/es';
 import './../../styles/editor/Editor.css';
 import { useTheme } from '../../context/ThemeContext';
+import { useCookies } from '../../context/CookieContext';
 
 export default function Editor({ data, onChange, placeholder }) {
-    const { isDarkMode } = useTheme();
+  const { isDarkMode } = useTheme();
+  const { cookieConsent } = useCookies();
+
   const editorConfiguration = {
     language: 'es',
     toolbar: {
@@ -47,7 +50,8 @@ export default function Editor({ data, onChange, placeholder }) {
         '|', 'bold', 'italic',
         '|', 'numberedList', 'bulletedList',
         '|', 'indent', 'outdent',
-        '|', 'link', 'blockquote', 'insertTable', 'mediaEmbed'
+        '|', 'link', 'blockquote', 'insertTable', 
+        ...(cookieConsent?.youtube ? ['mediaEmbed'] : [])
       ],
       shouldNotGroupWhenFull: true
     },
@@ -69,7 +73,7 @@ export default function Editor({ data, onChange, placeholder }) {
         'linkImage'
       ]
     },
-    mediaEmbed: {
+    mediaEmbed: cookieConsent?.youtube ? {
       previewsInData: true,
       providers: [
         {
@@ -84,15 +88,21 @@ export default function Editor({ data, onChange, placeholder }) {
             const id = match[1];
             return (
               '<div class="video-wrapper">' +
-              '<iframe src="https://www.youtube.com/embed/' + id + '" ' +
-              'frameborder="0" allowfullscreen="true" allowtransparency="true">' +
+              '<iframe ' +
+              'src="https://www.youtube-nocookie.com/embed/' + id + '" ' +
+              'loading="lazy" ' +
+              'referrerpolicy="strict-origin-when-cross-origin" ' +
+              'allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" ' +
+              'sandbox="allow-scripts allow-same-origin allow-presentation" ' +
+              'frameborder="0" ' +
+              'allowfullscreen="true">' +
               '</iframe>' +
               '</div>'
             );
           }
         }
       ]
-    },
+    } : undefined,
     fontSize: {
       options: [
         9,
@@ -142,6 +152,14 @@ export default function Editor({ data, onChange, placeholder }) {
           onChange(content);
         }}
       />
+      {!cookieConsent?.youtube && (
+        <div className="alert alert-info mt-2">
+          <small>
+            La inserción de videos de YouTube no está disponible porque no has aceptado las cookies de terceros. 
+            Puedes cambiar esta configuración en cualquier momento.
+          </small>
+        </div>
+      )}
     </div>
   );
 }
