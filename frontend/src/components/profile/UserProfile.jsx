@@ -117,7 +117,7 @@ const UserProfile = () => {
                           <div className={`card ${isDarkMode ? 'bg-dark text-light' : ''} h-100 shadow-sm`}>
                             <div className="card-body">
                               <h5 className="card-title">{curso.titulo}</h5>
-                              <p className="card-text text-muted">{curso.descripcion}</p>
+                              <p className="card-text text-muted" dangerouslySetInnerHTML={{ __html: curso.descripcion }} ></p>
                               <Link to={`/cursos/${curso.id}`} className="btn btn-primary w-100">
                                 <Icon name="eye" size={20} className="me-2" />
                                 Ver Curso

@@ -10,7 +10,7 @@
 .env
 .env.dev
 .env.test
-
+.env.prod
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###

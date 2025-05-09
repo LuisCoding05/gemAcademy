@@ -383,7 +383,7 @@ const Dashboard = () => {
                             <div className={`card ${isDarkMode ? 'bg-dark text-light' : ''} h-100 shadow-sm`}>
                               <div className="card-body">
                                 <h5 className="card-title">{curso.titulo}</h5>
-                                <p className="card-text text-muted">{curso.descripcion}</p>
+                                <p className="card-text text-muted" dangerouslySetInnerHTML={{ __html: curso.descripcion }}></p>
                                 <div className="progress mb-2">
                                   <div 
                                     className="progress-bar bg-success" 
@@ -450,7 +450,7 @@ const Dashboard = () => {
                             <div className={`card ${isDarkMode ? 'bg-dark text-light' : ''} h-100 shadow-sm`}>
                               <div className="card-body">
                                 <h5 className="card-title">{curso.titulo}</h5>
-                                <p className="card-text text-muted">{curso.descripcion}</p>
+                                <p className="card-text text-muted" dangerouslySetInnerHTML={{ __html: curso.descripcion }}></p>
                                 
                                 {/* Promedio del curso */}
                                 <div className="mb-3">
