@@ -12,7 +12,7 @@ export const Aside = () => {
                             <li className="mb-4">
                                 <p className="fw-bold text-center">Luis Miguel</p>
                                 <figure className="text-center border border-2 border-black rounded-3 w-75 mx-auto" id="figure1">
-                                    <img src="images/Luis Miguel.jpg" className="img-fluid rounded-circle mb-2" alt="Luis Miguel"></img>
+                                    <img src="https://res.cloudinary.com/dlgpvjulu/image/upload/v1746896741/Luis_Miguel_crlc8w.jpg" className="img-fluid rounded-circle mb-2" alt="Luis Miguel"></img>
                                     <figcaption className="descripcion bg-dark text-white p-2">Full stack developer</figcaption>
                                 </figure>
                             </li>
@@ -26,7 +26,7 @@ export const Aside = () => {
                             <li className="mb-4">
                                 <p className="fw-bold text-center">Bootstrap</p>
                                 <figure className="text-center border border-2 border-black rounded-3 w-75 mx-auto " id="figure2">
-                                    <img src="images/Bootstrap_logo.png" className="img-fluid rounded mb-2" alt="Bootstrap Logo"></img>
+                                    <img src="https://res.cloudinary.com/dlgpvjulu/image/upload/v1746896741/Bootstrap_logo_mhgstr.png" className="img-fluid rounded mb-2" alt="Bootstrap Logo"></img>
                                     <figcaption className="descripcion bg-dark text-white p-2">Framework utilizado</figcaption>
                                 </figure>
                             </li>

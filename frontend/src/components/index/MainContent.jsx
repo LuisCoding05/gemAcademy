@@ -75,7 +75,7 @@ export const MainContent = () => {
                         <div className="carousel-inner">
 
                           <div className="carousel-item active">
-                            <img src="images/slides/portada de curso de html.png" className="d-block w-100" alt="..."></img>
+                            <img src="https://res.cloudinary.com/dlgpvjulu/image/upload/v1746896740/portada_de_curso_de_html_anutmq.jpg" className="d-block w-100" alt="..."></img>
                             <div className="carousel-caption d-none d-md-block">
                               <h5>Curso de HTML</h5>
                               <p>Este es un curso básico de HTML para principiantes.</p>
@@ -83,7 +83,7 @@ export const MainContent = () => {
                           </div>
 
                           <div className="carousel-item">
-                            <img src="images/slides/portada de curso de CSS.png" className="d-block w-100" alt="..."></img>
+                            <img src="https://res.cloudinary.com/dlgpvjulu/image/upload/v1746896740/portada_de_curso_de_CSS_mmoq5e.jpg" className="d-block w-100" alt="..."></img>
                             <div className="carousel-caption d-none d-md-block">
                               <h5>Curso de CSS</h5>
                               <p>Este es un curso básico de CSS para principiantes.</p>
@@ -91,7 +91,7 @@ export const MainContent = () => {
                           </div>
 
                           <div className="carousel-item">
-                            <img src="images/slides/portada de curso de JavaScript.png" className="d-block w-100" alt="..."></img>
+                            <img src="https://res.cloudinary.com/dlgpvjulu/image/upload/v1746896740/portada_de_curso_de_JavaScript_zlqm04.jpg" className="d-block w-100" alt="..."></img>
                             <div className="carousel-caption d-none d-md-block">
                               <h5>Curso de JavaScript</h5>
                               <p>Este es un curso básico de CSS para JavaScript.</p>

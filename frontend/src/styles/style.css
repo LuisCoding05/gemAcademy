@@ -148,7 +148,7 @@ body.dark-mode {
 header {
     padding-top: 150px;
     padding-bottom: 100px;
-    background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.6)), url("../../images/tortugaNinja.gif");
+    background: linear-gradient(rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0.6)), url("https://res.cloudinary.com/dlgpvjulu/image/upload/v1746896741/tortugaNinja_oxiwk8.gif");
     background-repeat: no-repeat;
     color: var(--color-texto-primario);
     background-size: 100% 100%;

@@ -119,7 +119,7 @@ const MainRegister = () => {
       {/* Objetos flotantes */}
       <div className="position-absolute" style={{top: '10%', left: '5%', zIndex: 1}}>
         <img 
-          src="images/floatingObjects/controller.png" 
+          src="https://res.cloudinary.com/dlgpvjulu/image/upload/v1746896740/controller_wejg0p.png" 
           alt="Game Controller" 
           className="floating-object" 
           style={{width: '100px', opacity: 0.7}}
@@ -127,7 +127,7 @@ const MainRegister = () => {
       </div>
       <div className="position-absolute" style={{top: '50%', right: '10%', zIndex: 1}}>
         <img 
-          src="images/floatingObjects/bookFloating.png" 
+          src="https://res.cloudinary.com/dlgpvjulu/image/upload/v1746896740/bookFloating_gr1n13.png" 
           alt="Book" 
           className="floating-object" 
           style={{width: '180px', opacity: 0.6}}
@@ -135,7 +135,7 @@ const MainRegister = () => {
       </div>
       <div className="position-absolute" style={{bottom: '20%', left: '15%', zIndex: 1}}>
         <img 
-          src="images/floatingObjects/dispositivosFlotantes.png" 
+          src="https://res.cloudinary.com/dlgpvjulu/image/upload/v1746896740/dispositivosFlotantes_z1ckh6.png" 
           alt="Device" 
           className="floating-object" 
           style={{width: '160px', opacity: 0.5}}

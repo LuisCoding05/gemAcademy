@@ -17,7 +17,6 @@ class CourseParticipantsController extends AbstractController
     ) {}
 
     #[Route('/api/courses/{id}/participants', name: 'api_course_participants', methods: ['GET'])]
-    #[IsGranted('ROLE_USER')]
     public function getParticipants(int $id): JsonResponse
     {
         $curso = $this->entityManager->getRepository(Curso::class)->find($id);
