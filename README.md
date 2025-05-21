@@ -17,6 +17,7 @@
 - [Desarrollo](#-desarrollo)
 - [Autenticación](#-autenticación)
 - [Variables de Entorno](#-variables-de-entorno)
+- [Resolución de Problemas Comunes](#-resolución-de-problemas-comunes)
 
 ## 🎯 Descripción
 
@@ -40,7 +41,7 @@ gemacademy/
 │
 └── frontend/               # Frontend React
     ├── public/             # Archivos estáticos
-    ├── src/                # Código fuente
+    │   ├── src/                # Código fuente
     │   ├── components/     # Componentes React
     │   ├── context/        # Contextos de React
     │   ├── utils/          # Utilidades y helpers
@@ -113,12 +114,20 @@ npm install
 
 ### Backend
 
-1. Copiar el archivo `.env.example` a `.env`:
-```bash
-cp .env.example .env
-```
+1. Copiar los archivos de configuración de entorno según corresponda:
 
-2. Configurar las variables de entorno en `.env`
+   **Para desarrollo:**
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   **Para producción:**
+   ```bash
+   cp .env.example .env
+   # Modificar APP_ENV=prod en .env
+   ```
+
+2. Configurar las variables de entorno en el archivo correspondiente.
 
 3. Para desarrollo local, ejecutar el servidor:
 ```bash
@@ -131,12 +140,19 @@ symfony server:start
 
 ### Frontend
 
-1. Copiar el archivo `.env.example` a `.env`:
-```bash
-cp .env.example .env
-```
+1. Copiar el archivo de configuración correspondiente:
+   
+   **Para desarrollo:**
+   ```bash
+   cp .env.example .env.development
+   ```
 
-2. Configurar las variables de entorno en `.env`
+   **Para producción:**
+   ```bash
+   cp .env.example .env.production
+   ```
+
+2. Configurar las variables de entorno en el archivo correspondiente.
 
 3. Para desarrollo local:
 ```bash
@@ -155,7 +171,25 @@ El sistema utiliza JWT (JSON Web Tokens) para la autenticación. Las rutas prote
 
 ## 🌍 Variables de Entorno
 
-### Backend (.env)
+El proyecto utiliza diferentes archivos de configuración según el entorno:
+
+### Backend
+
+- **`.env`**: Configuración base con valores predeterminados
+- **`.env.local`**: Configuración local que no se sube al repositorio
+- **`.env.dev`**: Configuración específica para entorno de desarrollo
+- **`.env.prod`**: Configuración específica para entorno de producción
+
+### Frontend
+
+- **`.env.development`**: Configuración para entorno de desarrollo
+- **`.env.production`**: Configuración para entorno de producción
+
+Estos archivos contienen variables como URL de la API, URL del frontend, configuración de CORS y otras configuraciones específicas del entorno.
+
+### Ejemplos de configuración
+
+#### Backend (.env.example)
 
 ```env
 # Symfony
@@ -175,14 +209,50 @@ CORS_ALLOW_ORIGIN='^https?://(localhost|127\.0\.0\.1|192\.168\.1\.)[0-9]+$'
 
 # Mailer
 MAILER_DSN=smtp://user:password@smtp.example.com:587
+
+# Frontend URL
+FRONTEND_URL=http://localhost:5173
 ```
 
-### Frontend (.env)
+#### Frontend (.env.example)
 
 ```env
-VITE_API_URL=http://localhost:8000/api
+# API URL
+VITE_API_URL=http://localhost:8000
 ```
 
+## 🛠️ Resolución de Problemas Comunes
+
+### Error 500 después de hacer pull desde GitHub
+
+Si después de hacer un `git pull` recibes errores 500, es posible que el nombre de la carpeta `Service` haya cambiado a `service`. Este es un problema común en sistemas que no distinguen mayúsculas y minúsculas (como Windows) versus sistemas que sí lo hacen (como Linux).
+
+**Solución:**
+
+1. Verificar si la carpeta `src/service` existe en lugar de `src/Service`:
+
+```powershell
+ls ./backend/src
+```
+
+2. Si la carpeta está en minúscula, renombrarla:
+
+```powershell
+# En Windows
+mv ./backend/src/service ./backend/src/Service_temp
+mv ./backend/src/Service_temp ./backend/src/Service
+
+# En Linux/macOS
+mv ./backend/src/service ./backend/src/Service
+```
+
+3. Asegurarse de que Git registre el cambio:
+
+```powershell
+git config core.ignorecase false
+git add ./backend/src/Service
+git commit -m "Fix: Corrección del nombre de la carpeta Service"
+```
 ## 🛠️ Desarrollo
 
 ### Comandos Útiles
@@ -239,4 +309,4 @@ npm run build
 
 ## 📝 Licencia
 
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles. 
+Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
