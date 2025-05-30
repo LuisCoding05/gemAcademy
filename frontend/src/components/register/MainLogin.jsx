@@ -154,10 +154,10 @@ const MainLogin = () => {
               <div className="text-center">
                 <button 
                   type="button"
-                  className="btn btn-link text-light text-decoration-none"
+                  className="btn btn-link text-bg-primary text-light text-decoration-none"
                   onClick={() => handleNavigate('/verify')}
                 >
-                  ¿Olvidaste tu contraseña?
+                  ¿Olvidaste tu contraseña o no estás verificado? Clickea aquí
                 </button>
                 <p className="mb-0">
                   ¿No tienes cuenta? 
@@ -168,6 +168,8 @@ const MainLogin = () => {
                   >
                     Regístrate
                   </button>
+
+                  
                 </p>
               </div>
             </form>

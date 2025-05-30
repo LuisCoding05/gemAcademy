@@ -54,17 +54,7 @@ export const Navbar = () => {
                                 <li><Link className="dropdown-item" to="/privacy-policy">Política de Privacidad</Link></li>
                             </ul>
                         </li>
-                        
-                        <li className="nav-item dropdown">
-                            <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                Guías
-                            </a>
-                            <ul className="dropdown-menu" aria-labelledby="navbarDropdown">
-                                <li><a className="dropdown-item" href="#">Guía para profesor</a></li>
-                                <li><hr className="dropdown-divider"></hr></li>
-                                <li><a className="dropdown-item" href="#">Guía para alumnos</a></li>
-                            </ul>
-                        </li>
+
                         <li className="nav-item dropdown">
                             <a className="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                                 Autenticación

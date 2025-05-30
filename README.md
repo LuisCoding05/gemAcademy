@@ -58,6 +58,12 @@ gemacademy/
 - OpenSSL (para JWT)
 - Extensión PHP para JWT
 
+### Instalación de scoop y symfony
+Recomiendo buscar info además en internet [Enlace_al_docx](https://docs.google.com/document/d/1WnICFn70dZ24K2FGP4WODYunvLiayr_rfMP8tOpuSEU/edit?tab=t.0#heading=h.anedcrnn2cio)
+
+### Instalación node
+Recomiendo buscar info además en internet [descargar_node](https://nodejs.org/es)
+
 ### Instalación de OpenSSL
 
 #### Windows
@@ -97,9 +103,40 @@ php bin/console doctrine:migrations:migrate
 php bin/console doctrine:fixtures:load
 ```
 
-4. Generar claves JWT:
+4. Instalar el módulo de JWT si por alguna razón no lo está:
 ```bash
-php bin/console lexik:jwt:generate-keypair
+composer require lexik/jwt-authentication-bundle
+```
+
+5. Generar claves JWT:
+```bash
+php bin/console lexik:jwt:generate-keypair --skip-if-exists
+```
+
+### Configuración de OpenSSL para JWT
+
+Para la generación correcta de claves JWT, se requiere OpenSSL:
+
+> **NOTA:** Si al generar las claves JWT obtienes errores, probablemente necesites instalar o configurar OpenSSL.
+
+#### Instalación de OpenSSL en Windows
+
+1. Descarga el instalador desde la [página oficial de OpenSSL](https://slproweb.com/products/Win32OpenSSL.html)
+2. **Importante:** Instala la versión completa (no la Light):
+   ```
+   Win64 OpenSSL v3.5.0 EXE | MSI (280MB)
+   ```
+3. Sigue las instrucciones del instalador
+4. Para una guía visual detallada, puedes consultar [este tutorial](https://www.ssldragon.com/es/how-to/openssl/install-opnessl-windows/)
+
+#### Configuración de PHP
+
+Asegúrate de descomentar las siguientes extensiones en tu archivo `php.ini`:
+
+```ini
+extension=sodium
+extension=openssl
+extension=zip
 ```
 
 ### Frontend (React)
@@ -112,6 +149,12 @@ npm install
 
 ## ⚡ Configuración
 
+Simplemente recorte el ".example" de cada .env y modifica los valores según tu entorno
+
+> **NOTA:** No he compartido mi clave de aplicación, por lo tanto
+a la hora de registrar un nuevo usuario tendréis que crear la vuestra
+siguiendo el formato que hay en el ejemplo
+
 ### Backend
 
 1. Copiar los archivos de configuración de entorno según corresponda:
@@ -119,6 +162,10 @@ npm install
    **Para desarrollo:**
    ```bash
    cp .env.example .env.local
+   ```
+
+   ```bash
+   cp .env.dev.example .env.dev
    ```
 
    **Para producción:**
@@ -144,12 +191,12 @@ symfony server:start
    
    **Para desarrollo:**
    ```bash
-   cp .env.example .env.development
+   cp .env.development.example .env.development
    ```
 
    **Para producción:**
    ```bash
-   cp .env.example .env.production
+   cp .env.production.example .env.production
    ```
 
 2. Configurar las variables de entorno en el archivo correspondiente.

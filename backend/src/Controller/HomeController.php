@@ -98,24 +98,46 @@ class HomeController extends AbstractController
             return $this->json(['message' => 'Usuario no encontrado'], 404);
         }
 
-        $data = json_decode($request->getContent(), true);
-
-        // No permitir que un admin se modifique a sí mismo
+        $data = json_decode($request->getContent(), true);        // No permitir que un admin se modifique a sí mismo
         if ($user->getId() === $this->getUser()->getId()) {
             return $this->json(['message' => 'No puedes modificar tu propio usuario'], 403);
+        }
+
+        /** @var Usuario $currentUser */
+        $currentUser = $this->getUser();
+        
+        // No permitir que un admin normal modifique a un super administrador
+        if (in_array('ROLE_SUPER_ADMIN', $user->getRoles()) && !in_array('ROLE_SUPER_ADMIN', $currentUser->getRoles())) {
+            return $this->json(['message' => 'No puedes modificar a un Super Administrador'], 403);
         }
 
         // Actualizar estado de ban si se proporciona
         if (isset($data['banned'])) {
             $user->setBan($data['banned']);
-        }
-
-        // Actualizar roles si se proporcionan
+        }        // Actualizar roles si se proporcionan
         if (isset($data['roles'])) {
+            /** @var Usuario $currentUser */
+            $currentUser = $this->getUser();
+            $isSuperAdmin = in_array('ROLE_SUPER_ADMIN', $currentUser->getRoles());
+            
+            // Solo un super admin puede otorgar o quitar el rol de super admin
+            if (!$isSuperAdmin) {
+                // Si el usuario a modificar tiene ROLE_SUPER_ADMIN, conservarlo
+                if (in_array('ROLE_SUPER_ADMIN', $user->getRoles()) && !in_array('ROLE_SUPER_ADMIN', $data['roles'])) {
+                    $data['roles'][] = 'ROLE_SUPER_ADMIN';
+                }
+                
+                // No permitir que un admin normal añada el rol ROLE_SUPER_ADMIN
+                if (in_array('ROLE_SUPER_ADMIN', $data['roles']) && !in_array('ROLE_SUPER_ADMIN', $user->getRoles())) {
+                    return $this->json(['message' => 'No tienes permisos para otorgar el rol de Super Administrador'], 403);
+                }
+            }
+            
             // Asegurarse de que ROLE_USER siempre esté presente
             if (!in_array('ROLE_USER', $data['roles'])) {
                 $data['roles'][] = 'ROLE_USER';
             }
+            
             $user->setRoles($data['roles']);
         }
 

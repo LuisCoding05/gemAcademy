@@ -10,12 +10,11 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 class UsuarioFixtures extends Fixture
 {
-    public const USUARIOS = [
-        [
+    public const USUARIOS = [        [
             'username' => 'admin',
             'email' => 'admin@gemacademy.com',
             'password' => 'admin123',
-            'roles' => ['ROLE_ADMIN'],
+            'roles' => ['ROLE_SUPER_ADMIN', 'ROLE_ADMIN'],
             'nombre' => 'Administrador',
             'apellido' => 'Sistema',
             'imagen' => 'default'

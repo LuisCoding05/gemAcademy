@@ -53,12 +53,19 @@ const UserManagement = () => {
 
     const handlePageChange = (newPage) => {
         setCurrentPage(newPage);
-    };
-
-    const handleBanUser = (user) => {
+    };    const handleBanUser = (user) => {
         // Evitar que el admin se banee a sí mismo
         if (user.id === currentUser.id) {
             setError('No puedes banearte a ti mismo');
+            return;
+        }
+
+        // Verificar si el usuario actual es super admin
+        const isCurrentUserSuperAdmin = currentUser.roles.includes('ROLE_SUPER_ADMIN');
+
+        // Evitar que se banee a un super administrador si no eres super admin
+        if (user.roles.includes('ROLE_SUPER_ADMIN') && !isCurrentUserSuperAdmin) {
+            setError('No puedes banear a un Super Administrador');
             return;
         }
 
@@ -81,12 +88,19 @@ const UserManagement = () => {
             },
             onCancel: () => setModalConfig(prev => ({ ...prev, show: false }))
         });
-    };
-
-    const handleToggleAdmin = (user) => {
+    };    const handleToggleAdmin = (user) => {
         // Evitar que el admin se quite sus propios permisos
         if (user.id === currentUser.id) {
             setError('No puedes modificar tus propios permisos de administrador');
+            return;
+        }
+
+        // Verificar si el usuario actual es super admin
+        const isCurrentUserSuperAdmin = currentUser.roles.includes('ROLE_SUPER_ADMIN');
+
+        // Evitar que se modifiquen los permisos de un super administrador si no eres super admin
+        if (user.roles.includes('ROLE_SUPER_ADMIN') && !isCurrentUserSuperAdmin) {
+            setError('No puedes modificar los permisos de un Super Administrador');
             return;
         }
 
@@ -97,11 +111,19 @@ const UserManagement = () => {
             message: isAdmin
                 ? `¿Estás seguro de que deseas quitar el rol de administrador a ${user.username}?`
                 : `¿Estás seguro de que deseas hacer administrador a ${user.username}?`,
-            onConfirm: async () => {
-                try {
-                    const newRoles = isAdmin 
-                        ? ['ROLE_USER']
-                        : ['ROLE_USER', 'ROLE_ADMIN'];
+            onConfirm: async () => {                try {
+                    let newRoles;
+                    
+                    // Preservar ROLE_SUPER_ADMIN si ya lo tiene
+                    if (user.roles.includes('ROLE_SUPER_ADMIN')) {
+                        newRoles = isAdmin 
+                            ? ['ROLE_USER', 'ROLE_SUPER_ADMIN']
+                            : ['ROLE_USER', 'ROLE_ADMIN', 'ROLE_SUPER_ADMIN'];
+                    } else {
+                        newRoles = isAdmin 
+                            ? ['ROLE_USER']
+                            : ['ROLE_USER', 'ROLE_ADMIN'];
+                    }
                     
                     await axios.put(`/api/home/users/${user.id}/update`, {
                         roles: newRoles
@@ -155,14 +177,14 @@ const UserManagement = () => {
                             <div className="table-responsive">
                                 <table className={`table ${isDarkMode ? 'table-dark' : 'table-striped'}`}>
                                     <thead>
-                                        <tr>
-                                            <th>ID</th>
+                                        <tr>                                            <th>ID</th>
                                             <th>Usuario</th>
                                             <th>Email</th>
                                             <th>Nombre</th>
                                             <th>Fecha de registro</th>
                                             <th>Última conexión</th>
                                             <th>Estado</th>
+                                            <th>Rol</th>
                                             <th>Acciones</th>
                                         </tr>
                                     </thead>
@@ -174,27 +196,52 @@ const UserManagement = () => {
                                                 <td>{user.email}</td>
                                                 <td>{user.nombre} {user.apellido}</td>
                                                 <td>{new Date(user.fechaRegistro).toLocaleDateString()}</td>
-                                                <td>{user.ultimaConexion ? new Date(user.ultimaConexion).toLocaleDateString() : 'N/A'}</td>
-                                                <td>
+                                                <td>{user.ultimaConexion ? new Date(user.ultimaConexion).toLocaleDateString() : 'N/A'}</td>                                                <td>
                                                     <span className={`badge ${user.banned ? 'bg-danger' : 'bg-success'}`}>
                                                         {user.banned ? 'Baneado' : 'Activo'}
                                                     </span>
                                                 </td>
                                                 <td>
+                                                    {user.roles.includes('ROLE_SUPER_ADMIN') && (
+                                                        <span className="badge bg-info">Super Admin</span>
+                                                    )}
+                                                    {user.roles.includes('ROLE_ADMIN') && !user.roles.includes('ROLE_SUPER_ADMIN') && (
+                                                        <span className="badge bg-primary">Admin</span>
+                                                    )}
+                                                    {!user.roles.includes('ROLE_ADMIN') && !user.roles.includes('ROLE_SUPER_ADMIN') && (
+                                                        <span className="badge bg-secondary">Usuario</span>
+                                                    )}
+                                                </td><td>
                                                     <div className="btn-group">
                                                         <button
                                                             className={`btn btn-sm ${user.banned ? 'btn-success' : 'btn-danger'}`}
-                                                            onClick={() => handleBanUser(user)}
-                                                            disabled={user.id === currentUser.id}
-                                                            title={user.id === currentUser.id ? 'No puedes banearte a ti mismo' : ''}
+                                                            onClick={() => handleBanUser(user)}                                                            disabled={
+                                                                user.id === currentUser.id || 
+                                                                (user.roles.includes('ROLE_SUPER_ADMIN') && !currentUser.roles.includes('ROLE_SUPER_ADMIN'))
+                                                            }
+                                                            title={
+                                                                user.id === currentUser.id 
+                                                                ? 'No puedes banearte a ti mismo' 
+                                                                : (user.roles.includes('ROLE_SUPER_ADMIN') && !currentUser.roles.includes('ROLE_SUPER_ADMIN'))
+                                                                ? 'No puedes banear a un Super Administrador'
+                                                                : ''
+                                                            }
                                                         >
                                                             {user.banned ? 'Desbanear' : 'Banear'}
                                                         </button>
                                                         <button
                                                             className={`btn btn-sm ${user.roles.includes('ROLE_ADMIN') ? 'btn-warning' : 'btn-info'}`}
-                                                            onClick={() => handleToggleAdmin(user)}
-                                                            disabled={user.id === currentUser.id}
-                                                            title={user.id === currentUser.id ? 'No puedes modificar tus propios permisos' : ''}
+                                                            onClick={() => handleToggleAdmin(user)}                                                            disabled={
+                                                                user.id === currentUser.id || 
+                                                                (user.roles.includes('ROLE_SUPER_ADMIN') && !currentUser.roles.includes('ROLE_SUPER_ADMIN'))
+                                                            }
+                                                            title={
+                                                                user.id === currentUser.id 
+                                                                ? 'No puedes modificar tus propios permisos' 
+                                                                : (user.roles.includes('ROLE_SUPER_ADMIN') && !currentUser.roles.includes('ROLE_SUPER_ADMIN'))
+                                                                ? 'No puedes modificar los permisos de un Super Administrador'
+                                                                : ''
+                                                            }
                                                         >
                                                             {user.roles.includes('ROLE_ADMIN') ? 'Quitar Admin' : 'Hacer Admin'}
                                                         </button>
