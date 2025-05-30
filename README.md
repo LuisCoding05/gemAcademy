@@ -153,7 +153,8 @@ Simplemente recorte el ".example" de cada .env y modifica los valores según tu 
 
 > **NOTA:** No he compartido mi clave de aplicación, por lo tanto
 a la hora de registrar un nuevo usuario tendréis que crear la vuestra
-siguiendo el formato que hay en el ejemplo
+siguiendo el formato que hay en el ejemplo, ya que sino no enviará el
+código de confirmación y tendrás que acceder a él manualmente desde PHPMyadmin o como podáis
 
 ### Backend
 
