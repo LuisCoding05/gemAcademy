@@ -11,7 +11,7 @@ class DebugController extends AbstractController
     #[Route('/api/debug/logs', name: 'api_debug_logs', methods: ['GET'])]
     public function getLogs(): JsonResponse
     {
-        $logFile = $this->getParameter('kernel.logs_dir') . '/prod.log';
+        $logFile = $this->getParameter('kernel.logs_dir') . '/2025-05-31-prod.log';
         $phpErrorLog = $this->getParameter('kernel.project_dir') . '/var/log/php_errors.log';
         
         $logs = [];

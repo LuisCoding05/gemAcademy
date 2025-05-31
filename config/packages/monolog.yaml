@@ -2,14 +2,18 @@ monolog:
     handlers:
         main:
             type: rotating_file
-            path: "%kernel.logs_dir%/dev.log"
-            level: debug
+            path: '%kernel.logs_dir%/prod.log'
+            level: notice
+            max_files: 10
             channels: ["!event"]
+
         security:
             type: rotating_file
-            path: "%kernel.logs_dir%/security.log"
-            level: debug
+            path: '%kernel.logs_dir%/security.log'
+            level: warning
+            max_files: 10
             channels: ["security"]
+
         console:
             type: console
             process_psr_3_messages: false
