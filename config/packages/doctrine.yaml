@@ -37,7 +37,7 @@ when@prod:
     doctrine:
         orm:
             # Permitir auto-generación como fallback si los proxies no existen
-            auto_generate_proxy_classes: '%env(bool:default:false:DOCTRINE_AUTO_GENERATE_PROXIES)%'
+            auto_generate_proxy_classes: true
             proxy_dir: '%kernel.cache_dir%/doctrine/orm/Proxies'
             query_cache_driver:
                 type: pool
