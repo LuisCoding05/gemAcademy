@@ -29,9 +29,8 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\ManyToOne(inversedBy: 'usuarios')]
     private ?Imagen $imagen = null;
-
-    #[ORM\Column(options: ['default' => false])]
-    private ?bool $ban = null;
+    #[ORM\Column(type: 'smallint', options: ['default' => 0])]
+    private ?int $ban = 0;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE)]
     private ?\DateTimeInterface $fechaRegistro = null;
@@ -74,9 +73,8 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(targetEntity: Curso::class, mappedBy: 'profesor')]
     private Collection $cursos;
-
-    #[ORM\Column]
-    private ?bool $verificado = null;
+    #[ORM\Column(type: 'smallint')]
+    private ?int $verificado = 0;
 
     #[ORM\Column(length: 150)]
     private ?string $nombre = null;
@@ -179,16 +177,14 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         $this->imagen = $imagen;
 
         return $this;
-    }
-
-    public function isBan(): ?bool
+    }    public function isBan(): ?bool
     {
-        return $this->ban;
+        return $this->ban === 1;
     }
 
     public function setBan(bool $ban): static
     {
-        $this->ban = $ban;
+        $this->ban = $ban ? 1 : 0;
 
         return $this;
     }
@@ -395,21 +391,19 @@ class Usuario implements UserInterface, PasswordAuthenticatedUserInterface
         }
 
         return $this;
-    }
-
-    public function isVerificado(): ?bool
+    }    public function isVerificado(): ?bool
     {
-        return $this->verificado;
+        return $this->verificado === 1;
     }
 
     public function isBanned(): ?bool
     {
-        return $this->ban;
+        return $this->ban === 1;
     }
 
     public function setVerificado(bool $verificado): static
     {
-        $this->verificado = $verificado;
+        $this->verificado = $verificado ? 1 : 0;
 
         return $this;
     }

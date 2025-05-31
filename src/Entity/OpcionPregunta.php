@@ -14,10 +14,9 @@ class OpcionPregunta
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $texto = null;
-
-    #[ORM\Column(options: ['default' => false])]
-    private ?bool $esCorrecta = null;
+    private ?string $texto = null;    
+    #[ORM\Column(type: 'smallint', options: ['default' => 0])]
+    private ?int $esCorrecta = 0;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $retroalimentacion = null;
@@ -41,16 +40,14 @@ class OpcionPregunta
         $this->texto = $texto;
 
         return $this;
-    }
-
-    public function isEsCorrecta(): ?bool
+    }    public function isEsCorrecta(): ?bool
     {
-        return $this->esCorrecta;
+        return $this->esCorrecta === 1;
     }
 
     public function setEsCorrecta(bool $esCorrecta): static
     {
-        $this->esCorrecta = $esCorrecta;
+        $this->esCorrecta = $esCorrecta ? 1 : 0;
 
         return $this;
     }

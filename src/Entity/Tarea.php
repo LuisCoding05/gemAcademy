@@ -33,9 +33,8 @@ class Tarea
 
     #[ORM\Column(options: ['default' => 100])]
     private ?int $puntosMaximos = null;
-
-    #[ORM\Column(options: ['default' => true])]
-    private ?bool $esObligatoria = null;
+    #[ORM\Column(type: 'smallint', options: ['default' => 1])]
+    private ?int $esObligatoria = 1;
 
     /**
      * @var Collection<int, EntregaTarea>
@@ -133,16 +132,14 @@ class Tarea
         $this->puntosMaximos = $puntosMaximos;
 
         return $this;
-    }
-
-    public function isEsObligatoria(): ?bool
+    }    public function isEsObligatoria(): ?bool
     {
-        return $this->esObligatoria;
+        return $this->esObligatoria === 1;
     }
 
     public function setEsObligatoria(bool $esObligatoria): static
     {
-        $this->esObligatoria = $esObligatoria;
+        $this->esObligatoria = $esObligatoria ? 1 : 0;
 
         return $this;
     }

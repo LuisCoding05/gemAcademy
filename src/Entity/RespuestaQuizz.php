@@ -23,9 +23,8 @@ class RespuestaQuizz
 
     #[ORM\Column(length: 255)]
     private ?string $respuesta = null;
-
-    #[ORM\Column]
-    private ?bool $esCorrecta = null;
+    #[ORM\Column(type: 'smallint')]
+    private ?int $esCorrecta = 0;
 
     #[ORM\Column(options: ['default' => 10])]
     private ?int $puntosObtenidos = null;
@@ -69,16 +68,14 @@ class RespuestaQuizz
         $this->respuesta = $respuesta;
 
         return $this;
-    }
-
-    public function isEsCorrecta(): ?bool
+    }    public function isEsCorrecta(): ?bool
     {
-        return $this->esCorrecta;
+        return $this->esCorrecta === 1;
     }
 
     public function setEsCorrecta(bool $esCorrecta): static
     {
-        $this->esCorrecta = $esCorrecta;
+        $this->esCorrecta = $esCorrecta ? 1 : 0;
 
         return $this;
     }

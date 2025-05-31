@@ -18,12 +18,11 @@ class TipoArchivo
 
     #[ORM\Column(length: 255)]
     private ?string $descripcion = null;
+    #[ORM\Column(type: 'smallint')]
+    private ?int $permitidoMaterial = 0;
 
-    #[ORM\Column]
-    private ?bool $permitidoMaterial = null;
-
-    #[ORM\Column]
-    private ?bool $permitidoTarea = null;
+    #[ORM\Column(type: 'smallint')]
+    private ?int $permitidoTarea = 0;
 
     #[ORM\Column]
     private ?int $maxTamanoMb = null;
@@ -55,28 +54,26 @@ class TipoArchivo
         $this->descripcion = $descripcion;
 
         return $this;
-    }
-
-    public function isPermitidoMaterial(): ?bool
+    }    public function isPermitidoMaterial(): ?bool
     {
-        return $this->permitidoMaterial;
+        return $this->permitidoMaterial === 1;
     }
 
     public function setPermitidoMaterial(bool $permitidoMaterial): static
     {
-        $this->permitidoMaterial = $permitidoMaterial;
+        $this->permitidoMaterial = $permitidoMaterial ? 1 : 0;
 
         return $this;
     }
 
     public function isPermitidoTarea(): ?bool
     {
-        return $this->permitidoTarea;
+        return $this->permitidoTarea === 1;
     }
 
     public function setPermitidoTarea(bool $permitidoTarea): static
     {
-        $this->permitidoTarea = $permitidoTarea;
+        $this->permitidoTarea = $permitidoTarea ? 1 : 0;
 
         return $this;
     }

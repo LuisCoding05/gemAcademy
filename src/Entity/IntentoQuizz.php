@@ -32,9 +32,8 @@ class IntentoQuizz
 
     #[ORM\Column(nullable: true)]
     private ?int $puntuacionTotal = null;
-
-    #[ORM\Column(nullable: true)]
-    private ?bool $completado = null;
+    #[ORM\Column(type: 'smallint', nullable: true)]
+    private ?int $completado = null;
 
     /**
      * @var Collection<int, RespuestaQuizz>
@@ -113,16 +112,14 @@ class IntentoQuizz
         $this->puntuacionTotal = $puntuacionTotal;
 
         return $this;
-    }
-
-    public function isCompletado(): ?bool
+    }    public function isCompletado(): ?bool
     {
-        return $this->completado;
+        return $this->completado === 1;
     }
 
     public function setCompletado(bool $completado): static
     {
-        $this->completado = $completado;
+        $this->completado = $completado ? 1 : 0;
 
         return $this;
     }
