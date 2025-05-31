@@ -102,7 +102,19 @@ RUN touch var/log/php_errors.log var/log/prod.log
 
 # Limpiar caché y verificar configuración
 RUN php bin/console cache:clear --env=prod --no-debug || echo "Cache clear failed - continuing..."
+
+# Generar proxies de Doctrine explícitamente
+RUN php bin/console doctrine:generate:proxies --env=prod --no-debug || echo "Proxy generation failed - continuing..."
+
+# Warming up cache después de generar proxies
 RUN php bin/console cache:warmup --env=prod --no-debug || echo "Cache warmup failed - continuing..."
+
+# Verificar que los proxies se generaron correctamente
+RUN ls -la var/cache/prod/doctrine/orm/Proxies/ || echo "Proxy directory not found - will be created at runtime"
+
+# Copiar y configurar script de entrada
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Ajusta los permisos para que www-data tenga acceso a toda la aplicación
 RUN chown -R www-data:www-data /var/www/html
@@ -113,8 +125,8 @@ RUN chmod -R 775 var public/uploads
 # Expone el puerto 80 (Apache por defecto escucha en este puerto)
 EXPOSE 80
 
-# El comando por defecto de la imagen php:apache ya inicia Apache, así que no se necesita un CMD explícito aquí.
-# Si necesitas un script de entrada personalizado, puedes añadirlo con CMD.
+# Usar el script de entrada personalizado
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Limpia la caché de apt
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*

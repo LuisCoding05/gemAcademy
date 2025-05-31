@@ -67,7 +67,63 @@ class DebugController extends AbstractController
             'app_env' => $_ENV['APP_ENV'] ?? 'Not set',
             'cors_origin' => $_ENV['CORS_ALLOW_ORIGIN'] ?? 'Not set',
             'timestamp' => date('Y-m-d H:i:s')
-        ]);
+        ]);    }
+    
+    #[Route('/api/debug/doctrine', name: 'api_debug_doctrine', methods: ['GET'])]
+    public function getDoctrine(): JsonResponse
+    {
+        try {
+            $em = $this->entityManager;
+            $config = $em->getConfiguration();
+            
+            $debug_info = [
+                'proxy_dir' => $config->getProxyDir(),
+                'auto_generate_proxies' => $config->getAutoGenerateProxyClasses(),
+                'cache_dir' => $this->getParameter('kernel.cache_dir'),
+                'proxy_dir_exists' => is_dir($config->getProxyDir()),
+                'proxy_dir_writable' => is_writable($config->getProxyDir()),
+                'proxy_files' => [],
+                'entities' => []
+            ];
+            
+            // Listar archivos proxy existentes
+            if (is_dir($config->getProxyDir())) {
+                $proxy_files = glob($config->getProxyDir() . '/*.php');
+                if ($proxy_files) {
+                    $debug_info['proxy_files'] = array_map('basename', $proxy_files);
+                    $debug_info['proxy_count'] = count($proxy_files);
+                } else {
+                    $debug_info['proxy_files'] = [];
+                    $debug_info['proxy_count'] = 0;
+                }
+            } else {
+                $debug_info['proxy_count'] = 0;
+                $debug_info['error'] = 'Proxy directory does not exist';
+            }
+            
+            // Listar entidades registradas
+            $metadata = $em->getMetadataFactory()->getAllMetadata();
+            foreach ($metadata as $meta) {
+                $debug_info['entities'][] = [
+                    'class' => $meta->getName(),
+                    'proxy_class' => $config->getProxyNamespace() . '\\' . basename(str_replace('\\', '/', $meta->getName())),
+                ];
+            }
+            
+            return new JsonResponse([
+                'status' => 'success',
+                'doctrine' => $debug_info,
+                'timestamp' => date('Y-m-d H:i:s')
+            ]);
+            
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'timestamp' => date('Y-m-d H:i:s')
+            ], 500);
+        }
     }
     
     #[Route('/api/debug/database', name: 'api_debug_database', methods: ['GET'])]
