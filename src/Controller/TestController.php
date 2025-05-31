@@ -57,10 +57,10 @@ final class TestController extends AbstractController
             $qb->andWhere('l.fecha <= :endDate')
                ->setParameter('endDate', new \DateTime($endDate));
         }
-        
-        // Obtener el total de registros para la paginación
+          // Obtener el total de registros para la paginación
         $countQb = clone $qb;
-        $countQb->select('COUNT(l.id)');
+        $countQb->select('COUNT(DISTINCT l.id)')
+                ->resetDQLPart('orderBy'); // Eliminar ORDER BY para la consulta de conteo
         $totalLogs = $countQb->getQuery()->getSingleScalarResult();
         
         // Aplicar paginación
