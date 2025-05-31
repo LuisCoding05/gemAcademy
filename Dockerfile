@@ -44,10 +44,6 @@ RUN echo "APP_DEBUG=0" >> .env
 # Asegurar que bin/console es ejecutable
 RUN chmod +x bin/console
 
-# Instala las dependencias de Composer
-# Es importante correr esto ANTES de cambiar permisos para que composer pueda escribir en vendor
-RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction --no-progress
-
 # Eliminar el .env temporal después de la instalación de Composer
 RUN rm .env
 
