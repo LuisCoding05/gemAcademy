@@ -1,6 +1,21 @@
 # Usa una imagen base de PHP con Apache
 FROM php:8.2-apache
 
+# Instala software-properties-common y añade el repositorio de Ondrej para versiones actualizadas
+RUN apt-get update && apt-get install -y \
+    software-properties-common \
+    gnupg2 \
+    lsb-release \
+    ca-certificates \
+    wget
+
+# Añade el repositorio de Ondrej PHP
+RUN wget -qO /etc/apt/trusted.gpg.d/php.gpg https://packages.sury.org/php/apt.gpg \
+    && echo "deb https://packages.sury.org/php/ $(lsb_release -sc) main" > /etc/apt/sources.list.d/php.list
+
+# Actualiza los paquetes después de añadir el nuevo repositorio
+RUN apt-get update
+
 # Instala extensiones de PHP comunes y necesarias para Symfony
 # Puedes agregar o quitar extensiones según tus necesidades
 RUN apt-get update && apt-get install -y \
@@ -14,9 +29,13 @@ RUN apt-get update && apt-get install -y \
     libjpeg-dev \
     libfreetype6-dev \
     libpq-dev \
+    libxml2-dev \
+    libonig-dev \
+    libssl-dev \
+    pkg-config \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd \
-    && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip opcache intl exif
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip opcache intl exif mbstring xml
 
 # Configura el DocumentRoot de Apache para que apunte al directorio public/ de Symfony
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
@@ -72,6 +91,18 @@ RUN echo "APP_DEBUG=0" >> .env
 
 # Crear directorios necesarios de Symfony si no existen
 RUN mkdir -p var/cache var/log var/sessions public/uploads
+
+# Configurar PHP para mostrar errores en logs
+RUN echo "log_errors = On" >> /usr/local/etc/php/conf.d/docker-php-errors.ini
+RUN echo "error_log = /var/www/html/var/log/php_errors.log" >> /usr/local/etc/php/conf.d/docker-php-errors.ini
+RUN echo "display_errors = Off" >> /usr/local/etc/php/conf.d/docker-php-errors.ini
+
+# Crear archivos de log
+RUN touch var/log/php_errors.log var/log/prod.log
+
+# Limpiar caché y verificar configuración
+RUN php bin/console cache:clear --env=prod --no-debug || echo "Cache clear failed - continuing..."
+RUN php bin/console cache:warmup --env=prod --no-debug || echo "Cache warmup failed - continuing..."
 
 # Ajusta los permisos para que www-data tenga acceso a toda la aplicación
 RUN chown -R www-data:www-data /var/www/html
