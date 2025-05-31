@@ -25,90 +25,104 @@ class AuthController extends AbstractController
         private readonly UserPasswordHasherInterface $passwordHasher,
         private readonly LoggerInterface $logger,
         private readonly EmailService $emailService
-    ) {}
-
-    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
+    ) {}    #[Route('/api/login', name: 'api_login', methods: ['POST'])]
     public function login(Request $request, JWTTokenManagerInterface $JWTManager): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
-        $this->logger->info('Datos recibidos:', $data);
-        
-        if (!isset($data['email']) || !isset($data['password'])) {
-            $this->logger->error('Faltan campos requeridos', $data);
+        try {
+            $data = json_decode($request->getContent(), true);
+            $this->logger->info('Datos recibidos:', $data ?? []);
+            
+            if (!isset($data['email']) || !isset($data['password'])) {
+                $this->logger->error('Faltan campos requeridos', $data ?? []);
+                return $this->json([
+                    'message' => 'Email y contraseña son requeridos'
+                ], 400);
+            }
+
+            $user = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $data['email']]);
+            $this->logger->info('Usuario encontrado:', ['user' => $user ? $user->getId() : null]);
+
+            if ($user && (!$user->isVerificado())) {
+                $this->logger->error('Usuario no verificado');
+                return $this->json([
+                    'message' => 'Usuario no verificado. Por favor, verifica tu cuenta con el código enviado a tu correo electrónico.'
+                ], 401);
+            }
+
+            if ($user && ($user->isBanned())) {
+                $this->logger->error('Usuario baneado');
+                return $this->json([
+                    'message' => 'No tienes acceso.'
+                ], 401);
+            }
+
+            if (!$user || !$this->passwordHasher->isPasswordValid($user, $data['password'])) {
+                $this->logger->error('Credenciales inválidas');
+                return $this->json([
+                    'message' => 'Credenciales inválidas'
+                ], 401);
+            }
+
+            $user->setUltimaConexion(new \DateTime());
+            $user->setTokenVerificacion(null);
+            
+            // Registrar el log de inicio de sesión
+            $log = new Log();
+            $log->setUsuario($user);
+            $this->entityManager->persist($log);
+            $this->entityManager->flush();
+
+            $token = $JWTManager->create($user);
+
+            // Verificar el token generado
+            try {
+                $decodedToken = $JWTManager->parse($token);
+                $this->logger->info('Token decodificado:', [
+                    'payload' => $decodedToken
+                ]);
+            } catch (\Exception $e) {
+                $this->logger->error('Error al verificar token:', [
+                    'error' => $e->getMessage()
+                ]);
+            }
+            
+            // Verificar que el token sea válido
+            if (!$token) {
+                $this->logger->error('Error al generar el token');
+                return $this->json([
+                    'message' => 'Error al generar el token de autenticación'
+                ], 500);
+            }
+
+            $this->logger->info('Token generado correctamente');
+
             return $this->json([
-                'message' => 'Email y contraseña son requeridos'
-            ], 400);
-        }
-
-        $user = $this->entityManager->getRepository(Usuario::class)->findOneBy(['email' => $data['email']]);
-        $this->logger->info('Usuario encontrado:', ['user' => $user ? $user->getId() : null]);
-
-        if ($user && (!$user->isVerificado())) {
-            $this->logger->error('Usuario no verificado');
-            return $this->json([
-                'message' => 'Usuario no verificado. Por favor, verifica tu cuenta con el código enviado a tu correo electrónico.'
-            ], 401);
-        }
-
-        if ($user && ($user->isBanned())) {
-            $this->logger->error('Usuario no verificado');
-            return $this->json([
-                'message' => 'No tienes acceso.'
-            ], 401);
-        }
-
-        if (!$user || !$this->passwordHasher->isPasswordValid($user, $data['password'])) {
-            $this->logger->error('Credenciales inválidas');
-            return $this->json([
-                'message' => 'Credenciales inválidas'
-            ], 401);
-        }
-
-        $user->setUltimaConexion(new \DateTime());
-        $user->setTokenVerificacion(null);
-        // Registrar el log de inicio de sesión
-        $log = new Log();
-        $log->setUsuario($user);
-        $this->entityManager->persist($log);
-        $this->entityManager->flush();
-
-        $token = $JWTManager->create($user);
-
-        // Verificar el token generado
-    try {
-        $decodedToken = $JWTManager->parse($token);
-        $this->logger->info('Token decodificado:', [
-            'payload' => $decodedToken
-        ]);
-    } catch (\Exception $e) {
-        $this->logger->error('Error al verificar token:', [
-            'error' => $e->getMessage()
-        ]);
-    }
-    // Verificar que el token sea válido
-    if (!$token) {
-        $this->logger->error('Error al generar el token');
-        return $this->json([
-            'message' => 'Error al generar el token de autenticación'
-        ], 500);
-    }
-
-        $this->logger->info('Token generado correctamente');
-
-        return $this->json([
-            'token' => $token,
-            'user' => [
-                'id' => $user->getId(),
-                'email' => $user->getEmail(),
-                'nombre' => $user->getNombre(),
-                'apellido' => $user->getApellido(),
-                'roles' => $user->getRoles(),
-                'verificado' => $user->isVerificado(),
-                'imagen' => [
-                    'url' => $user->getImagen() ? $user->getImagen()->getUrl() : 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp'
+                'token' => $token,
+                'user' => [
+                    'id' => $user->getId(),
+                    'email' => $user->getEmail(),
+                    'nombre' => $user->getNombre(),
+                    'apellido' => $user->getApellido(),
+                    'roles' => $user->getRoles(),
+                    'verificado' => $user->isVerificado(),
+                    'imagen' => [
+                        'url' => $user->getImagen() ? $user->getImagen()->getUrl() : 'https://res.cloudinary.com/dlgpvjulu/image/upload/v1744483544/default_bumnyb.webp'
+                    ]
                 ]
-            ]
-        ]);
+            ]);
+        } catch (\Exception $e) {
+            $this->logger->error('Error en login:', [
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return $this->json([
+                'message' => 'Error interno del servidor',
+                'error' => $e->getMessage() // Solo para debugging, quitar en producción final
+            ], 500);
+        }
     }
 
     #[Route('/api/register', name: 'api_register', methods: ['POST'])]

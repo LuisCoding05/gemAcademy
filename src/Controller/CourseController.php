@@ -36,10 +36,9 @@ final class CourseController extends AbstractController
         // Parámetros de filtrado
         $nombreCurso = $request->query->get('nombre', '');
         $usernameProfesor = $request->query->get('username', '');
-        
-        // Construir la consulta
+          // Construir la consulta
         $qb = $this->entityManager->createQueryBuilder();
-        $qb->select('c')
+        $qb->select('c, p')
            ->from(Curso::class, 'c')
            ->leftJoin('c.profesor', 'p')
            ->orderBy('c.fechaCreacion', 'DESC');
@@ -54,10 +53,23 @@ final class CourseController extends AbstractController
             $qb->andWhere('p.username LIKE :username')
                ->setParameter('username', '%' . $usernameProfesor . '%');
         }
+          // Obtener el total de registros para la paginación
+        $countQb = $this->entityManager->createQueryBuilder();
+        $countQb->select('COUNT(DISTINCT c.id)')
+                ->from(Curso::class, 'c')
+                ->leftJoin('c.profesor', 'p');
         
-        // Obtener el total de registros para la paginación
-        $countQb = clone $qb;
-        $countQb->select('COUNT(c.id)');
+        // Aplicar los mismos filtros para el conteo
+        if (!empty($nombreCurso)) {
+            $countQb->andWhere('c.nombre LIKE :nombre')
+                   ->setParameter('nombre', '%' . $nombreCurso . '%');
+        }
+        
+        if (!empty($usernameProfesor)) {
+            $countQb->andWhere('p.username LIKE :username')
+                   ->setParameter('username', '%' . $usernameProfesor . '%');
+        }
+        
         $totalCursos = $countQb->getQuery()->getSingleScalarResult();
         
         // Aplicar paginación
