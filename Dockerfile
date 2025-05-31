@@ -25,6 +25,9 @@ RUN sed -ri -e 's!/var/www/!${APACHE_DOCUMENT_ROOT}!g' /etc/apache2/apache2.conf
 # Habilita mod_rewrite de Apache
 RUN a2enmod rewrite
 
+# Establece el entorno de la aplicación a producción
+ENV APP_ENV prod
+
 # Instala Composer globalmente
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
