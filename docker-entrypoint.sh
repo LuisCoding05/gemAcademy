@@ -15,13 +15,12 @@ log "Starting container initialization..."
 mkdir -p var/cache/prod/doctrine/orm/Proxies
 log "Cache directories created"
 
-# Verificar y generar claves JWT si no existen
+# Verificar y generar claves JWT si no existen o si el passphrase cambió
+JWT_PASSPHRASE="${JWT_PASSPHRASE:-build_temp_passphrase_2025_secure}"
+
 if [ ! -f "config/jwt/private.pem" ] || [ ! -f "config/jwt/public.pem" ]; then
     log "Generating JWT keys..."
     mkdir -p config/jwt
-    
-    # Obtener el passphrase de las variables de entorno o usar uno por defecto
-    JWT_PASSPHRASE="${JWT_PASSPHRASE:-default_passphrase_change_me}"
     
     # Generar claves JWT
     openssl genpkey -algorithm rsa -aes256 -pass pass:$JWT_PASSPHRASE -out config/jwt/private.pem || log "JWT private key generation failed"
@@ -34,7 +33,24 @@ if [ ! -f "config/jwt/private.pem" ] || [ ! -f "config/jwt/public.pem" ]; then
     
     log "JWT keys generated successfully"
 else
-    log "JWT keys already exist"
+    log "JWT keys exist, testing passphrase..."
+    # Verificar si el passphrase actual funciona con las claves existentes
+    if ! openssl rsa -in config/jwt/private.pem -passin pass:$JWT_PASSPHRASE -noout > /dev/null 2>&1; then
+        log "Passphrase mismatch detected, regenerating JWT keys..."
+        
+        # Regenerar las claves con el passphrase correcto
+        openssl genpkey -algorithm rsa -aes256 -pass pass:$JWT_PASSPHRASE -out config/jwt/private.pem || log "JWT private key regeneration failed"
+        openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:$JWT_PASSPHRASE || log "JWT public key regeneration failed"
+        
+        # Ajustar permisos
+        chmod 600 config/jwt/private.pem
+        chmod 644 config/jwt/public.pem
+        chown www-data:www-data config/jwt/*.pem
+        
+        log "JWT keys regenerated with correct passphrase"
+    else
+        log "JWT keys and passphrase are valid"
+    fi
 fi
 
 # Verificar y generar proxies si no existen

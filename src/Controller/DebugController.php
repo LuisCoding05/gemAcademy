@@ -146,11 +146,25 @@ class DebugController extends AbstractController
                 'config_dir_exists' => is_dir($projectDir . '/config/jwt'),
                 'config_dir_writable' => is_writable($projectDir . '/config/jwt'),
             ];
-            
-            // Intentar leer información básica de las claves (sin exponer contenido sensible)
+              // Intentar leer información básica de las claves (sin exponer contenido sensible)
             if (file_exists($privateKeyPath)) {
                 $debug_info['private_key_size'] = filesize($privateKeyPath);
                 $debug_info['private_key_modified'] = date('Y-m-d H:i:s', filemtime($privateKeyPath));
+                
+                // Verificar si el passphrase actual funciona con la clave privada
+                $passphrase = $_ENV['JWT_PASSPHRASE'] ?? '';
+                if ($passphrase) {
+                    $command = "openssl rsa -in " . escapeshellarg($privateKeyPath) . " -passin pass:" . escapeshellarg($passphrase) . " -noout 2>&1";
+                    $output = [];
+                    $returnCode = 0;
+                    exec($command, $output, $returnCode);
+                    $debug_info['passphrase_valid'] = ($returnCode === 0);
+                    if ($returnCode !== 0) {
+                        $debug_info['passphrase_error'] = implode(' ', $output);
+                    }
+                } else {
+                    $debug_info['passphrase_valid'] = 'No passphrase set';
+                }
             }
             
             if (file_exists($publicKeyPath)) {
