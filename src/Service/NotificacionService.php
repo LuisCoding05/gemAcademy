@@ -46,7 +46,7 @@ class NotificacionService
         $notificaciones = $qb->select('n')
             ->from(Notificacion::class, 'n')
             ->where('n.usuario = :usuario')
-            ->andWhere('n.leida = false')
+            ->andWhere('n.leida = 0')
             ->setParameter('usuario', $usuario)
             ->getQuery()
             ->getResult();

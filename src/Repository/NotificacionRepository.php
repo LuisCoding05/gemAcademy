@@ -37,7 +37,7 @@ class NotificacionRepository extends ServiceEntityRepository
         return $this->createQueryBuilder('n')
             ->select('COUNT(n.id)')
             ->andWhere('n.usuario = :usuario')
-            ->andWhere('n.leida = false')
+            ->andWhere('n.leida = 0')
             ->setParameter('usuario', $usuario)
             ->getQuery()
             ->getSingleScalarResult();

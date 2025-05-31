@@ -33,9 +33,9 @@ class Notificacion
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $contenido = null;
-
-    #[ORM\Column]
-    private ?bool $leida = false;
+    
+    #[ORM\Column(type: 'smallint')]
+    private ?int $leida = 0;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $url = null;
@@ -44,12 +44,10 @@ class Notificacion
     private ?\DateTimeInterface $fechaCreacion = null;
 
     #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $fechaLectura = null;
-
-    public function __construct()
+    private ?\DateTimeInterface $fechaLectura = null;    public function __construct()
     {
         $this->fechaCreacion = new \DateTime();
-        $this->leida = false;
+        $this->leida = 0;
     }
 
     public function getId(): ?int
@@ -99,16 +97,14 @@ class Notificacion
     {
         $this->contenido = $contenido;
         return $this;
-    }
-
-    public function isLeida(): ?bool
+    }    public function isLeida(): ?bool
     {
-        return $this->leida;
+        return $this->leida === 1;
     }
 
     public function setLeida(bool $leida): static
     {
-        $this->leida = $leida;
+        $this->leida = $leida ? 1 : 0;
         if ($leida && $this->fechaLectura === null) {
             $this->fechaLectura = new \DateTime();
         }
