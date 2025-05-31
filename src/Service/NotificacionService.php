@@ -39,12 +39,17 @@ class NotificacionService
     {
         $notificacion->setLeida(true);
         $this->entityManager->flush();
-    }
-
-    public function marcarTodasComoLeidas(Usuario $usuario): void
+    }    public function marcarTodasComoLeidas(Usuario $usuario): void
     {
-        $notificaciones = $this->entityManager->getRepository(Notificacion::class)
-            ->findBy(['usuario' => $usuario, 'leida' => false]);
+        // Usar DQL para ser más explícito con PostgreSQL
+        $qb = $this->entityManager->createQueryBuilder();
+        $notificaciones = $qb->select('n')
+            ->from(Notificacion::class, 'n')
+            ->where('n.usuario = :usuario')
+            ->andWhere('n.leida = false')
+            ->setParameter('usuario', $usuario)
+            ->getQuery()
+            ->getResult();
 
         foreach ($notificaciones as $notificacion) {
             $notificacion->setLeida(true);

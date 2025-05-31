@@ -32,16 +32,13 @@ class NotificacionRepository extends ServiceEntityRepository
             ->setMaxResults($limit)
             ->getQuery()
             ->getResult();
-    }
-
-    public function countUnreadByUsuario(Usuario $usuario): int
+    }    public function countUnreadByUsuario(Usuario $usuario): int
     {
         return $this->createQueryBuilder('n')
             ->select('COUNT(n.id)')
             ->andWhere('n.usuario = :usuario')
-            ->andWhere('n.leida = :leida')
+            ->andWhere('n.leida = false')
             ->setParameter('usuario', $usuario)
-            ->setParameter('leida', false)
             ->getQuery()
             ->getSingleScalarResult();
     }

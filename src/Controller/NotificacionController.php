@@ -22,48 +22,62 @@ class NotificacionController extends AbstractController
     ) {
         $this->notificacionService = $notificacionService;
         $this->entityManager = $entityManager;
-    }
-
-    #[Route('', name: 'get_notificaciones', methods: ['GET'])]
+    }    #[Route('', name: 'get_notificaciones', methods: ['GET'])]
     public function getNotificaciones(Request $request): JsonResponse
     {
-        $usuario = $this->getUser();
-        $page = $request->query->getInt('page', 1);
-        $limit = $request->query->getInt('limit', 10);
-        
-        $notificaciones = $this->entityManager->getRepository(Notificacion::class)
-            ->findByUsuario($usuario, $page, $limit);
+        try {
+            $usuario = $this->getUser();
+            $page = $request->query->getInt('page', 1);
+            $limit = $request->query->getInt('limit', 10);
+            
+            $notificaciones = $this->entityManager->getRepository(Notificacion::class)
+                ->findByUsuario($usuario, $page, $limit);
 
-        $totalNotifications = $this->entityManager->getRepository(Notificacion::class)
-            ->getTotalNotificationCount($usuario);
+            $totalNotifications = $this->entityManager->getRepository(Notificacion::class)
+                ->getTotalNotificationCount($usuario);
 
-        $totalPages = ceil($totalNotifications / $limit);
+            $totalPages = ceil($totalNotifications / $limit);
 
-        $data = array_map(function($notificacion) {
-            return [
-                'id' => $notificacion->getId(),
-                'tipo' => $notificacion->getTipo(),
-                'titulo' => $notificacion->getTitulo(),
-                'contenido' => $notificacion->getContenido(),
-                'leida' => $notificacion->isLeida(),
-                'url' => $notificacion->getUrl(),
-                'fechaCreacion' => $notificacion->getFechaCreacion()->format('Y-m-d H:i:s'),
-                'fechaLectura' => $notificacion->getFechaLectura() ? 
-                    $notificacion->getFechaLectura()->format('Y-m-d H:i:s') : null,
-            ];
-        }, $notificaciones);
+            $data = array_map(function($notificacion) {
+                return [
+                    'id' => $notificacion->getId(),
+                    'tipo' => $notificacion->getTipo(),
+                    'titulo' => $notificacion->getTitulo(),
+                    'contenido' => $notificacion->getContenido(),
+                    'leida' => $notificacion->isLeida(),
+                    'url' => $notificacion->getUrl(),
+                    'fechaCreacion' => $notificacion->getFechaCreacion()->format('Y-m-d H:i:s'),
+                    'fechaLectura' => $notificacion->getFechaLectura() ? 
+                        $notificacion->getFechaLectura()->format('Y-m-d H:i:s') : null,
+                ];
+            }, $notificaciones);
 
-        return $this->json([
-            'notificaciones' => $data,
-            'noLeidas' => $this->entityManager->getRepository(Notificacion::class)
-                ->countUnreadByUsuario($usuario),
-            'paginacion' => [
-                'paginaActual' => $page,
-                'totalPaginas' => $totalPages,
-                'totalNotificaciones' => $totalNotifications,
-                'porPagina' => $limit
-            ]
-        ]);
+            return $this->json([
+                'notificaciones' => $data,
+                'noLeidas' => $this->entityManager->getRepository(Notificacion::class)
+                    ->countUnreadByUsuario($usuario),
+                'paginacion' => [
+                    'paginaActual' => $page,
+                    'totalPaginas' => $totalPages,
+                    'totalNotificaciones' => $totalNotifications,
+                    'porPagina' => $limit
+                ]
+            ]);
+            
+        } catch (\Exception $e) {
+            // Log detallado del error para debugging
+            error_log('Error en getNotificaciones: ' . json_encode([
+                'message' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString()
+            ]));
+            
+            return $this->json([
+                'error' => 'Error interno del servidor',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
     #[Route('/{id}/leer', name: 'marcar_notificacion_leida', methods: ['PUT'])]
