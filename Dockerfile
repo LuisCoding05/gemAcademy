@@ -29,6 +29,12 @@ RUN a2enmod rewrite
 # Establece el entorno de la aplicación a producción
 ENV APP_ENV prod
 
+# Configurar Apache para permitir .htaccess
+RUN echo '<Directory ${APACHE_DOCUMENT_ROOT}>' >> /etc/apache2/apache2.conf && \
+    echo '    AllowOverride All' >> /etc/apache2/apache2.conf && \
+    echo '    Require all granted' >> /etc/apache2/apache2.conf && \
+    echo '</Directory>' >> /etc/apache2/apache2.conf
+
 # Instala Composer globalmente
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
