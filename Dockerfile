@@ -62,6 +62,9 @@ RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader -
 # Eliminar el .env temporal después de la instalación de Composer
 RUN rm .env
 
+# Crear directorios necesarios de Symfony si no existen
+RUN mkdir -p var/cache var/log var/sessions public/uploads
+
 # Ajusta los permisos para los directorios de Symfony que necesitan ser escribibles
 RUN chown -R www-data:www-data var public
 RUN chmod -R 775 var public
