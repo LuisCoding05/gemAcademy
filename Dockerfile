@@ -60,8 +60,9 @@ RUN chmod +x bin/console
 # Omitimos los auto-scripts durante el build para evitar problemas con variables de entorno
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts
 
-# Eliminar el .env temporal después de la instalación de Composer
-RUN rm .env
+# Crear un .env básico para producción (las variables de entorno de Render tomarán precedencia)
+RUN echo "APP_ENV=prod" > .env
+RUN echo "APP_DEBUG=0" >> .env
 
 # Crear directorios necesarios de Symfony si no existen
 RUN mkdir -p var/cache var/log var/sessions public/uploads
