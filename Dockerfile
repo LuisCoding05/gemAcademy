@@ -37,12 +37,19 @@ WORKDIR /var/www/html
 # Copia los archivos de tu aplicación al contenedor
 COPY . /var/www/html/
 
+# Crear un archivo .env temporal para el build, asegurando que APP_ENV es prod
+RUN echo "APP_ENV=prod" > .env
+RUN echo "APP_DEBUG=0" >> .env
+
 # Asegurar que bin/console es ejecutable
 RUN chmod +x bin/console
 
 # Instala las dependencias de Composer
 # Es importante correr esto ANTES de cambiar permisos para que composer pueda escribir en vendor
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+
+# Eliminar el .env temporal después de la instalación de Composer
+RUN rm .env
 
 # Ajusta los permisos para los directorios de Symfony que necesitan ser escribibles
 RUN chown -R www-data:www-data var public
