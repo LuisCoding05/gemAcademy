@@ -24,7 +24,7 @@ if [ ! -f "config/jwt/private.pem" ] || [ ! -f "config/jwt/public.pem" ]; then
     JWT_PASSPHRASE="${JWT_PASSPHRASE:-default_passphrase_change_me}"
     
     # Generar claves JWT
-    openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkcs8 -pass pass:$JWT_PASSPHRASE || log "JWT private key generation failed"
+    openssl genpkey -algorithm rsa -aes256 -pass pass:$JWT_PASSPHRASE -out config/jwt/private.pem || log "JWT private key generation failed"
     openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:$JWT_PASSPHRASE || log "JWT public key generation failed"
     
     # Ajustar permisos

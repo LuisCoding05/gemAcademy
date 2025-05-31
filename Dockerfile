@@ -84,7 +84,7 @@ RUN mkdir -p config/jwt
 RUN apt-get update && apt-get install -y openssl
 
 # Generar claves JWT con el passphrase configurado
-RUN openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkcs8 -pass pass:build_temp_passphrase_2025_secure
+RUN openssl genpkey -algorithm rsa -aes256 -pass pass:build_temp_passphrase_2025_secure -out config/jwt/private.pem
 RUN openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:build_temp_passphrase_2025_secure
 
 # Verificar que las claves se generaron correctamente
