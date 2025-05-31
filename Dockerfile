@@ -13,9 +13,10 @@ RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
     libfreetype6-dev \
+    libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) gd \
-    && docker-php-ext-install pdo pdo_mysql zip opcache intl exif
+    && docker-php-ext-install pdo pdo_mysql pdo_pgsql zip opcache intl exif
 
 # Configura el DocumentRoot de Apache para que apunte al directorio public/ de Symfony
 ENV APACHE_DOCUMENT_ROOT /var/www/html/public
@@ -40,7 +41,7 @@ COPY . /var/www/html/
 # Crear un archivo .env temporal para el build, asegurando que APP_ENV es prod
 RUN echo "APP_ENV=prod" > .env
 RUN echo "APP_DEBUG=0" >> .env
-RUN echo "DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db" >> .env
+RUN echo "DATABASE_URL=postgresql://temp:temp@localhost:5432/temp?serverVersion=16&charset=utf8" >> .env
 RUN echo "APP_SECRET=temp_secret_for_build_only" >> .env
 RUN echo "JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem" >> .env
 RUN echo "JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem" >> .env
@@ -65,9 +66,11 @@ RUN rm .env
 # Crear directorios necesarios de Symfony si no existen
 RUN mkdir -p var/cache var/log var/sessions public/uploads
 
-# Ajusta los permisos para los directorios de Symfony que necesitan ser escribibles
-RUN chown -R www-data:www-data var public
-RUN chmod -R 775 var public
+# Ajusta los permisos para que www-data tenga acceso a toda la aplicación
+RUN chown -R www-data:www-data /var/www/html
+RUN chmod -R 755 /var/www/html
+# Permisos especiales para directorios que necesitan ser escribibles
+RUN chmod -R 775 var public/uploads
 
 # Expone el puerto 80 (Apache por defecto escucha en este puerto)
 EXPOSE 80
