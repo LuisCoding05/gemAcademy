@@ -123,6 +123,54 @@ class DebugController extends AbstractController
                 'trace' => $e->getTraceAsString(),
                 'timestamp' => date('Y-m-d H:i:s')
             ], 500);
+        }    }
+    
+    #[Route('/api/debug/jwt', name: 'api_debug_jwt', methods: ['GET'])]
+    public function getJwtInfo(): JsonResponse
+    {
+        try {
+            $projectDir = $this->getParameter('kernel.project_dir');
+            $privateKeyPath = $projectDir . '/config/jwt/private.pem';
+            $publicKeyPath = $projectDir . '/config/jwt/public.pem';
+            
+            $debug_info = [
+                'private_key_path' => $privateKeyPath,
+                'public_key_path' => $publicKeyPath,
+                'private_key_exists' => file_exists($privateKeyPath),
+                'public_key_exists' => file_exists($publicKeyPath),
+                'private_key_readable' => is_readable($privateKeyPath),
+                'public_key_readable' => is_readable($publicKeyPath),
+                'jwt_secret_key_env' => $_ENV['JWT_SECRET_KEY'] ?? 'Not set',
+                'jwt_public_key_env' => $_ENV['JWT_PUBLIC_KEY'] ?? 'Not set',
+                'jwt_passphrase_env' => isset($_ENV['JWT_PASSPHRASE']) ? '***SET***' : 'Not set',
+                'config_dir_exists' => is_dir($projectDir . '/config/jwt'),
+                'config_dir_writable' => is_writable($projectDir . '/config/jwt'),
+            ];
+            
+            // Intentar leer información básica de las claves (sin exponer contenido sensible)
+            if (file_exists($privateKeyPath)) {
+                $debug_info['private_key_size'] = filesize($privateKeyPath);
+                $debug_info['private_key_modified'] = date('Y-m-d H:i:s', filemtime($privateKeyPath));
+            }
+            
+            if (file_exists($publicKeyPath)) {
+                $debug_info['public_key_size'] = filesize($publicKeyPath);
+                $debug_info['public_key_modified'] = date('Y-m-d H:i:s', filemtime($publicKeyPath));
+            }
+            
+            return new JsonResponse([
+                'status' => 'success',
+                'jwt' => $debug_info,
+                'timestamp' => date('Y-m-d H:i:s')
+            ]);
+            
+        } catch (\Exception $e) {
+            return new JsonResponse([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'timestamp' => date('Y-m-d H:i:s')
+            ], 500);
         }
     }
     

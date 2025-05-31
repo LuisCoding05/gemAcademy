@@ -70,12 +70,29 @@ RUN echo "DATABASE_URL=postgresql://temp:temp@localhost:5432/temp?serverVersion=
 RUN echo "APP_SECRET=temp_secret_for_build_only" >> .env
 RUN echo "JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem" >> .env
 RUN echo "JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem" >> .env
-RUN echo "JWT_PASSPHRASE=temp_passphrase_for_build" >> .env
+RUN echo "JWT_PASSPHRASE=build_temp_passphrase_2025_secure" >> .env
 RUN echo "CORS_ALLOW_ORIGIN=^https://temp-build\.com$" >> .env
 RUN echo "MAILER_DSN=smtp://temp@temp.com:pass@localhost:1025" >> .env
 
 # Verificar que el archivo .env se creó correctamente
 RUN cat .env
+
+# Crear directorio JWT y generar claves
+RUN mkdir -p config/jwt
+
+# Instalar openssl si no está disponible
+RUN apt-get update && apt-get install -y openssl
+
+# Generar claves JWT con el passphrase configurado
+RUN openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkcs8 -pass pass:build_temp_passphrase_2025_secure
+RUN openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:build_temp_passphrase_2025_secure
+
+# Verificar que las claves se generaron correctamente
+RUN ls -la config/jwt/
+
+# Configurar permisos seguros para las claves JWT
+RUN chmod 600 config/jwt/private.pem
+RUN chmod 644 config/jwt/public.pem
 
 # Asegurar que bin/console es ejecutable
 RUN chmod +x bin/console
@@ -121,6 +138,10 @@ RUN chown -R www-data:www-data /var/www/html
 RUN chmod -R 755 /var/www/html
 # Permisos especiales para directorios que necesitan ser escribibles
 RUN chmod -R 775 var public/uploads
+# Permisos especiales para claves JWT (mantener seguros)
+RUN chown www-data:www-data config/jwt/*.pem
+RUN chmod 600 config/jwt/private.pem
+RUN chmod 644 config/jwt/public.pem
 
 # Expone el puerto 80 (Apache por defecto escucha en este puerto)
 EXPOSE 80

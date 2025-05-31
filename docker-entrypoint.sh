@@ -15,6 +15,28 @@ log "Starting container initialization..."
 mkdir -p var/cache/prod/doctrine/orm/Proxies
 log "Cache directories created"
 
+# Verificar y generar claves JWT si no existen
+if [ ! -f "config/jwt/private.pem" ] || [ ! -f "config/jwt/public.pem" ]; then
+    log "Generating JWT keys..."
+    mkdir -p config/jwt
+    
+    # Obtener el passphrase de las variables de entorno o usar uno por defecto
+    JWT_PASSPHRASE="${JWT_PASSPHRASE:-default_passphrase_change_me}"
+    
+    # Generar claves JWT
+    openssl genpkey -out config/jwt/private.pem -aes256 -algorithm rsa -pkcs8 -pass pass:$JWT_PASSPHRASE || log "JWT private key generation failed"
+    openssl pkey -in config/jwt/private.pem -out config/jwt/public.pem -pubout -passin pass:$JWT_PASSPHRASE || log "JWT public key generation failed"
+    
+    # Ajustar permisos
+    chmod 600 config/jwt/private.pem
+    chmod 644 config/jwt/public.pem
+    chown www-data:www-data config/jwt/*.pem
+    
+    log "JWT keys generated successfully"
+else
+    log "JWT keys already exist"
+fi
+
 # Verificar y generar proxies si no existen
 if [ ! "$(ls -A var/cache/prod/doctrine/orm/Proxies/)" ]; then
     log "Generating Doctrine proxies..."
