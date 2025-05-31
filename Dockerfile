@@ -125,8 +125,5 @@ RUN chmod -R 775 var public/uploads
 # Expone el puerto 80 (Apache por defecto escucha en este puerto)
 EXPOSE 80
 
-# Usar el script de entrada personalizado
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
-
 # Limpia la caché de apt
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
