@@ -34,13 +34,16 @@ WORKDIR /var/www/html
 # Copia los archivos de tu aplicación al contenedor
 COPY . /var/www/html/
 
+# Asegurar que bin/console es ejecutable
+RUN chmod +x bin/console
+
 # Instala las dependencias de Composer
 # Es importante correr esto ANTES de cambiar permisos para que composer pueda escribir en vendor
-RUN composer install --no-dev --optimize-autoloader --no-interaction --no-progress
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction --no-progress
 
 # Ajusta los permisos para los directorios de Symfony que necesitan ser escribibles
-RUN chown -R www-data:www-data var public/uploads
-RUN chmod -R 775 var public/uploads
+RUN chown -R www-data:www-data var public
+RUN chmod -R 775 var public
 
 # Expone el puerto 80 (Apache por defecto escucha en este puerto)
 EXPOSE 80
