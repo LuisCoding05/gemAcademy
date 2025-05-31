@@ -60,12 +60,48 @@ RUN chmod +x bin/console
 # Omitimos los auto-scripts durante el build para evitar problemas con variables de entorno
 RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts
 
+# Ejecutar auto-scripts de Composer después de la instalación
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer run-script auto-scripts --no-interaction
+
+# Crear directorios necesarios de Symfony si no existen
+RUN mkdir -p var/cache var/log var/sessions public/uploads scripts
+
+# Configuración de la base de datos y schema durante el build
+# Esto asegura que la estructura esté lista desde el primer despliegue
+
+# Hacer el script ejecutable
+RUN chmod +x scripts/generate-schema.php
+
+# Generar schema SQL usando comandos de Symfony
+RUN echo "🗄️ Generando schema de base de datos..." && \
+    php scripts/generate-schema.php && \
+    echo "✅ Schema SQL preparado para despliegue"
+
+# Verificar que el archivo de schema se creó y mostrar información
+RUN if [ -f "/tmp/schema.sql" ]; then \
+        echo "📄 Archivo schema.sql disponible ($(wc -l < /tmp/schema.sql) líneas)"; \
+        echo "📋 Primeras líneas del schema:"; \
+        head -n 3 /tmp/schema.sql; \
+    else \
+        echo "⚠️ Advertencia: No se pudo generar el archivo schema.sql"; \
+    fi
+
 # Crear un .env básico para producción (las variables de entorno de Render tomarán precedencia)
 RUN echo "APP_ENV=prod" > .env
 RUN echo "APP_DEBUG=0" >> .env
 
 # Crear directorios necesarios de Symfony si no existen
 RUN mkdir -p var/cache var/log var/sessions public/uploads
+
+# Generar cache de producción
+RUN echo "🔥 Generando cache de producción..." && \
+    php bin/console cache:clear --env=prod --no-debug && \
+    php bin/console cache:warmup --env=prod --no-debug && \
+    echo "✅ Cache de producción generado"
+
+# Copiar script de inicialización mejorado
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Ajusta los permisos para que www-data tenga acceso a toda la aplicación
 RUN chown -R www-data:www-data /var/www/html
@@ -76,8 +112,8 @@ RUN chmod -R 775 var public/uploads
 # Expone el puerto 80 (Apache por defecto escucha en este puerto)
 EXPOSE 80
 
-# El comando por defecto de la imagen php:apache ya inicia Apache, así que no se necesita un CMD explícito aquí.
-# Si necesitas un script de entrada personalizado, puedes añadirlo con CMD.
+# Usar nuestro script de inicialización como punto de entrada
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 
 # Limpia la caché de apt
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
