@@ -40,9 +40,24 @@ COPY . /var/www/html/
 # Crear un archivo .env temporal para el build, asegurando que APP_ENV es prod
 RUN echo "APP_ENV=prod" > .env
 RUN echo "APP_DEBUG=0" >> .env
+RUN echo "DATABASE_URL=sqlite:///%kernel.project_dir%/var/data.db" >> .env
+RUN echo "APP_SECRET=temp_secret_for_build_only" >> .env
+RUN echo "JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem" >> .env
+RUN echo "JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem" >> .env
+RUN echo "JWT_PASSPHRASE=temp_passphrase_for_build" >> .env
+RUN echo "CORS_ALLOW_ORIGIN=^https://temp-build\.com$" >> .env
+RUN echo "MAILER_DSN=smtp://temp@temp.com:pass@localhost:1025" >> .env
+
+# Verificar que el archivo .env se creó correctamente
+RUN cat .env
 
 # Asegurar que bin/console es ejecutable
 RUN chmod +x bin/console
+
+# Instala las dependencias de Composer
+# Es importante correr esto ANTES de cambiar permisos para que composer pueda escribir en vendor
+# Omitimos los auto-scripts durante el build para evitar problemas con variables de entorno
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer install --no-dev --optimize-autoloader --no-interaction --no-progress --no-scripts
 
 # Eliminar el .env temporal después de la instalación de Composer
 RUN rm .env
