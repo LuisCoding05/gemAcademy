@@ -562,3 +562,50 @@ aside.footer-widget ul li a {
   color: var(--dark-text);
   border-color: var(--dark-card-border);
 }
+
+/* Estilos para la descripción del quiz */
+.quiz-description {
+  padding: 15px;
+  border-left: 4px solid var(--color-resaltado);
+  background-color: var(--color-fondo-tarjeta);
+  border-radius: 5px;
+  margin-bottom: 15px;
+}
+
+.dark-mode .quiz-description {
+  background-color: var(--dark-card-bg);
+  color: var(--dark-text);
+  border-left-color: var(--color-resaltado);
+}
+
+.quiz-description p {
+  margin-bottom: 10px;
+  line-height: 1.6;
+}
+
+.quiz-description p:last-child {
+  margin-bottom: 0;
+}
+
+.quiz-description ul, .quiz-description ol {
+  padding-left: 20px;
+  margin-bottom: 10px;
+}
+
+.quiz-description li {
+  margin-bottom: 5px;
+}
+
+.quiz-description h1, .quiz-description h2, .quiz-description h3,
+.quiz-description h4, .quiz-description h5, .quiz-description h6 {
+  margin-top: 15px;
+  margin-bottom: 10px;
+}
+
+.quiz-description strong, .quiz-description b {
+  font-weight: 600;
+}
+
+.quiz-description em, .quiz-description i {
+  font-style: italic;
+}

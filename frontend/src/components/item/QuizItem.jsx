@@ -185,10 +185,19 @@ const QuizItem = ({ item, courseId }) => {
                 />
             </div>
         );
-    }
-
-    return (
+    }    return (
         <div className="quiz-details">
+            {/* Descripción del quiz */}
+            {item.descripcion && (
+                <div className="mb-4">
+                    <h5>Descripción</h5>
+                    <div 
+                        className={`ck-content quiz-description ${isDarkMode ? 'text-light' : ''}`}
+                        dangerouslySetInnerHTML={{ __html: item.descripcion }}
+                    />
+                </div>
+            )}
+
             <div className="mb-4">
                 <h5>Puntos</h5>
                 <p>{item.puntos} puntos (calificación sobre 10)</p>
