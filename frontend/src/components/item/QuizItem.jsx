@@ -6,6 +6,7 @@ import Icon from '../Icon';
 import Loader from '../common/Loader';
 import QuizAttempt from './QuizAttempt';
 import QuizForm from './QuizForm';
+import QuizResults from './QuizResults';
 
 const QuizItem = ({ item, courseId }) => {
     const { isDarkMode } = useTheme();
@@ -15,10 +16,14 @@ const QuizItem = ({ item, courseId }) => {
     const [error, setError] = useState(null);
     const [isEditing, setIsEditing] = useState(location.state?.isEditing || false);
     const [currentItem, setCurrentItem] = useState(item);
+    const [showResults, setShowResults] = useState(null); // Estado para mostrar resultados
 
     const intentosCompletados = item.intentos?.filter(i => i.completado)?.length || 0;
     const puedeIntentar = item.intentosPermitidos === 0 || intentosCompletados < item.intentosPermitidos;
     const intentoEnProgreso = item.intentos?.find(i => !i.completado);
+    const ultimoIntentoCompletado = item.intentos?.filter(i => i.completado)?.sort((a, b) => 
+        new Date(b.fechaFin) - new Date(a.fechaFin)
+    )[0];
 
     const handleStartQuiz = async () => {
         try {
@@ -154,6 +159,16 @@ const QuizItem = ({ item, courseId }) => {
                 onCancel={() => setIsEditing(false)}
             />
         );
+    }    // Si se están mostrando los resultados
+    if (showResults) {
+        return (
+            <QuizResults
+                intentoId={showResults}
+                quizId={item.id}
+                courseId={courseId}
+                onBack={() => setShowResults(null)}
+            />
+        );
     }
 
     if (currentIntento) {
@@ -207,8 +222,7 @@ const QuizItem = ({ item, courseId }) => {
                                                 Fin: {new Date(intento.fechaFin).toLocaleString()}
                                             </small>
                                         )}
-                                    </div>
-                                    <div>
+                                    </div>                                    <div>
                                         <span className={`badge ${intento.completado ? 'bg-success' : 'bg-warning'}`}>
                                             {intento.completado ? 'Completado' : 'En progreso'}
                                         </span>
@@ -217,17 +231,35 @@ const QuizItem = ({ item, courseId }) => {
                                                 {intento.calificacion}/10
                                             </span>
                                         )}
+                                        {intento.completado && (
+                                            <button
+                                                className="btn btn-sm btn-outline-info ms-2"
+                                                onClick={() => setShowResults(intento.id)}
+                                                title="Ver resultados detallados"
+                                            >
+                                                <Icon name="eye" size={14} />
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
-            )}
-
-            {error && (
+            )}            {error && (
                 <div className="alert alert-danger" role="alert">
                     {error}
+                </div>
+            )}            {/* Botón para ver resultados del último intento completado */}
+            {ultimoIntentoCompletado && (
+                <div className="mb-3">
+                    <button 
+                        className="btn btn-outline-info me-2"
+                        onClick={() => setShowResults(ultimoIntentoCompletado.id)}
+                    >
+                        <Icon name="eye" className="me-2" />
+                        Ver Últimos Resultados
+                    </button>
                 </div>
             )}
 
