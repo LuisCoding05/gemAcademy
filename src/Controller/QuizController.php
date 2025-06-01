@@ -154,43 +154,37 @@ final class QuizController extends AbstractController
             return $this->json([
                 'message' => 'No estás inscrito en este curso'
             ], 403);
-        }
-
-        // Verificar si tiene intentos disponibles
+        }        // Verificar si tiene intentos disponibles
         $intentos = $this->entityManager->getRepository(IntentoQuizz::class)
             ->findBy([
                 'idQuizz' => $quiz,
                 'idUsuario' => $usuario,
-                'completado' => true
+                'completado' => 1
             ]);
 
         if ($quiz->getIntentosPermitidos() !== 0 && count($intentos) >= $quiz->getIntentosPermitidos()) {
             return $this->json([
                 'message' => 'Has alcanzado el número máximo de intentos permitidos'
             ], 400);
-        }
-
-        // Verificar si tiene un intento sin completar
+        }        // Verificar si tiene un intento sin completar
         $intentoActivo = $this->entityManager->getRepository(IntentoQuizz::class)
             ->findOneBy([
                 'idQuizz' => $quiz,
                 'idUsuario' => $usuario,
-                'completado' => false
+                'completado' => 0
             ]);
 
         if ($intentoActivo) {
             return $this->json([
                 'message' => 'Ya tienes un intento sin completar'
             ], 400);
-        }
-
-        // Crear nuevo intento
+        }        // Crear nuevo intento
         try {
             $intento = new IntentoQuizz();
             $intento->setIdQuizz($quiz);
             $intento->setIdUsuario($usuario);
             $intento->setFechaInicio(new \DateTime());
-            $intento->setCompletado(false);
+            $intento->setCompletado(0);
             
             $this->entityManager->persist($intento);
             $this->entityManager->flush();
@@ -345,10 +339,9 @@ final class QuizController extends AbstractController
 
             // Calcular nota sobre 10 con 2 decimales
             $notaFinal = ($puntuacionMaxima > 0) ? round(($puntuacionObtenida / $puntuacionMaxima) * 10, 2) : 0;
-            
-            // Actualizar el intento
+              // Actualizar el intento
             $intento->setFechaFin(new \DateTime());
-            $intento->setCompletado(true);
+            $intento->setCompletado(1);
             $intento->setPuntuacionTotal($puntuacionObtenida);
             $intento->setCalificacion(strval($notaFinal));
 
@@ -362,13 +355,12 @@ final class QuizController extends AbstractController
                     'idCurso' => $quiz->getIdCurso()
                 ]);
 
-            if ($usuarioCurso) {
-                // Verificar si es el primer intento completado de este quiz
+            if ($usuarioCurso) {                // Verificar si es el primer intento completado de este quiz
                 $intentosAnteriores = $this->entityManager->getRepository(IntentoQuizz::class)
                     ->findBy([
                         'idQuizz' => $quiz,
                         'idUsuario' => $usuario,
-                        'completado' => true
+                        'completado' => 1
                     ]);
 
                 if (count($intentosAnteriores) === 0) {
@@ -435,11 +427,9 @@ final class QuizController extends AbstractController
         $fechaInicio = $intento->getFechaInicio();
         $ahora = new \DateTime();
         $diferencia = $ahora->diff($fechaInicio);
-        $minutosTranscurridos = ($diferencia->days * 24 * 60) + ($diferencia->h * 60) + $diferencia->i;
-
-        if ($minutosTranscurridos >= $quiz->getTiempoLimite() && !$intento->isCompletado()) {
+        $minutosTranscurridos = ($diferencia->days * 24 * 60) + ($diferencia->h * 60) + $diferencia->i;        if ($minutosTranscurridos >= $quiz->getTiempoLimite() && !$intento->isCompletado()) {
             // Marcar el intento como completado
-            $intento->setCompletado(true);
+            $intento->setCompletado(1);
             $intento->setFechaFin($ahora);
             $intento->setPuntuacionTotal(0); // Si se abandona, la puntuación es 0
             
@@ -458,7 +448,144 @@ final class QuizController extends AbstractController
         ]);
     }
 
-    // After a quiz attempt is completed and graded
+     #[Route('/api/item/{id}/quiz/{quizId}/results/{intentoId}', name: 'app_quiz_results', methods: ['GET'])]
+    public function getQuizResults($id, $quizId, $intentoId): JsonResponse
+    {
+        // Obtener el quiz y validar acceso
+        $quiz = $this->entityManager->getRepository(Quizz::class)->find($quizId);
+        if (!$quiz || $quiz->getIdCurso()->getId() != $id) {
+            return $this->json([
+                'message' => 'Quiz no encontrado'
+            ], 404);
+        }
+
+        // Verificar el intento
+        $intento = $this->entityManager->getRepository(IntentoQuizz::class)->find($intentoId);
+        if (!$intento || $intento->getIdQuizz()->getId() !== $quiz->getId()) {
+            return $this->json([
+                'message' => 'Intento no válido'
+            ], 404);
+        }
+
+        // Verificar que el intento esté completado
+        if (!$intento->isCompletado()) {
+            return $this->json([
+                'message' => 'El intento no ha sido completado aún'
+            ], 400);
+        }
+
+        // Verificar que el usuario tenga acceso a este intento
+        $user = $this->getUser();
+        $usuario = $this->entityManager->getRepository(Usuario::class)
+            ->findOneBy(['email' => $user->getUserIdentifier()]);
+
+        // Permitir acceso al estudiante que hizo el intento o al profesor del curso
+        $isOwner = $intento->getIdUsuario()->getId() === $usuario->getId();
+        $isProfesor = $quiz->getIdCurso()->getProfesor()->getId() === $usuario->getId();
+
+        if (!$isOwner && !$isProfesor) {
+            return $this->json([
+                'message' => 'No tienes acceso a estos resultados'
+            ], 403);
+        }
+
+        // Obtener todas las respuestas del intento
+        $respuestas = $this->entityManager->getRepository(RespuestaQuizz::class)
+            ->findBy(['idIntento' => $intento]);
+
+        // Crear un mapa de respuestas por pregunta
+        $respuestasPorPregunta = [];
+        foreach ($respuestas as $respuesta) {
+            $respuestasPorPregunta[$respuesta->getIdPregunta()->getId()] = $respuesta;
+        }
+
+        // Obtener todas las preguntas del quiz con sus opciones
+        $preguntas = $quiz->getPreguntaQuizzs();
+        $resultados = [];
+
+        foreach ($preguntas as $pregunta) {
+            $respuestaUsuario = $respuestasPorPregunta[$pregunta->getId()] ?? null;
+            
+            // Obtener todas las opciones de la pregunta
+            $opciones = [];
+            $opcionCorrecta = null;
+            $opcionSeleccionada = null;
+
+            foreach ($pregunta->getOpcionPreguntas() as $opcion) {
+                $opcionData = [
+                    'id' => $opcion->getId(),
+                    'texto' => $opcion->getTexto(),
+                    'esCorrecta' => $opcion->isEsCorrecta(),
+                    'retroalimentacion' => $opcion->getRetroalimentacion()
+                ];
+
+                $opciones[] = $opcionData;
+
+                if ($opcion->isEsCorrecta()) {
+                    $opcionCorrecta = $opcionData;
+                }
+
+                // Identificar la opción seleccionada por el usuario
+                if ($respuestaUsuario && $respuestaUsuario->getRespuesta() === $opcion->getTexto()) {
+                    $opcionSeleccionada = $opcionData;
+                }
+            }
+
+            $resultados[] = [
+                'pregunta' => [
+                    'id' => $pregunta->getId(),
+                    'texto' => $pregunta->getPregunta(),
+                    'puntos' => $pregunta->getPuntos(),
+                    'orden' => $pregunta->getOrden()
+                ],
+                'opciones' => $opciones,
+                'respuestaUsuario' => $opcionSeleccionada,
+                'respuestaCorrecta' => $opcionCorrecta,
+                'esCorrecta' => $respuestaUsuario ? $respuestaUsuario->isEsCorrecta() : false,
+                'puntosObtenidos' => $respuestaUsuario ? $respuestaUsuario->getPuntosObtenidos() : 0,
+                'retroalimentacion' => $opcionSeleccionada ? $opcionSeleccionada['retroalimentacion'] : null
+            ];
+        }
+
+        // Ordenar por orden de pregunta
+        usort($resultados, function($a, $b) {
+            if ($a['pregunta']['orden'] === null && $b['pregunta']['orden'] === null) return 0;
+            if ($a['pregunta']['orden'] === null) return 1;
+            if ($b['pregunta']['orden'] === null) return -1;
+            return $a['pregunta']['orden'] - $b['pregunta']['orden'];
+        });
+
+        // Calcular estadísticas generales
+        $totalPreguntas = count($resultados);
+        $preguntasCorrectas = array_reduce($resultados, function($count, $resultado) {
+            return $count + ($resultado['esCorrecta'] ? 1 : 0);
+        }, 0);
+
+        return $this->json([
+            'intento' => [
+                'id' => $intento->getId(),
+                'fechaInicio' => $intento->getFechaInicio()->format('Y-m-d H:i:s'),
+                'fechaFin' => $intento->getFechaFin()->format('Y-m-d H:i:s'),
+                'puntuacionTotal' => $intento->getPuntuacionTotal(),
+                'calificacion' => $intento->getCalificacion(),
+                'completado' => $intento->isCompletado()
+            ],
+            'quiz' => [
+                'id' => $quiz->getId(),
+                'titulo' => $quiz->getTitulo(),
+                'descripcion' => $quiz->getDescripcion(),
+                'puntosTotales' => $quiz->getPuntosTotales()
+            ],
+            'estadisticas' => [
+                'totalPreguntas' => $totalPreguntas,
+                'preguntasCorrectas' => $preguntasCorrectas,
+                'preguntasIncorrectas' => $totalPreguntas - $preguntasCorrectas,
+                'porcentajeAcierto' => $totalPreguntas > 0 ? round(($preguntasCorrectas / $totalPreguntas) * 100, 2) : 0
+            ],
+            'resultados' => $resultados
+        ]);
+    }
+    
     private function handleQuizCompletion(IntentoQuizz $intento): void
     {
         $usuarioCurso = $this->entityManager->getRepository(UsuarioCurso::class)
@@ -467,13 +594,12 @@ final class QuizController extends AbstractController
                 'idCurso' => $intento->getIdQuizz()->getIdCurso()
             ]);
 
-        if ($usuarioCurso) {
-            // Verificar si es el primer intento completado de este quiz específico
+        if ($usuarioCurso) {            // Verificar si es el primer intento completado de este quiz específico
             $intentosAnteriores = $this->entityManager->getRepository(IntentoQuizz::class)
                 ->findBy([
                     'idQuizz' => $intento->getIdQuizz(),
                     'idUsuario' => $intento->getIdUsuario(),
-                    'completado' => true
+                    'completado' => 1
                 ]);
 
             // Si solo hay un intento (el actual) para este quiz, incrementar el contador
